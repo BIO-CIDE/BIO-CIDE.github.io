@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/aane-tips/static/css/main.87aa63d5.css",
+    "main.js": "/aane-tips/static/js/main.72fd5bc0.js",
+    "index.html": "/aane-tips/index.html",
+    "main.87aa63d5.css.map": "/aane-tips/static/css/main.87aa63d5.css.map",
+    "main.72fd5bc0.js.map": "/aane-tips/static/js/main.72fd5bc0.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.87aa63d5.css",
+    "static/js/main.72fd5bc0.js"
+  ]
+}
