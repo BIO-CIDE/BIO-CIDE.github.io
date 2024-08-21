@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>README Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    #content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    pre {
+      background-color: #f4f4f4;
+      padding: 10px;
+      border: 1px solid #ddd;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="content">
+    <h1>README.md</h1>
+    <div id="readme-content"></div>
+  </div>
+
+  <script>
+    async function loadReadme() {
+      try {
+        // Replace 'yourusername/your-repo' with your actual GitHub repository path
+        const response = await fetch('https://github.com/BIO-CIDE/BIO-CIDE.github.io/raw/gh-pages/README.md');
+        const markdown = await response.text();
+        document.getElementById('readme-content').innerHTML = `<pre>${markdown}</pre>`;
+      } catch (error) {
+        document.getElementById('readme-content').innerHTML = '<p>Error loading README.md</p>';
+      }
+    }
+
+    loadReadme();
+  </script>
+
+</body>
+</html>
