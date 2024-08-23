@@ -55,15 +55,23 @@
             transition: background-color 0.3s ease, transform 0.3s ease;
         }
 
-        /* Unique Button Colors */
         .cta-button.tips {
-            background-color: #2ecc71; /* Green */
+            background-color: #ffffff; /* White */
+            color: #1e1e1e; /* Dark text */
         }
-
+        
         .cta-button.tips:hover {
-            background-color: #27ae60;
+            background: linear-gradient(270deg, #ff0000, #00ff00, #0000ff, #ff00ff, #00ffff, #ffff00);
+            background-size: 1200% 1200%;
+            animation: rainbow 5s ease infinite;
             transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.4);
+        }
+        
+        @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         .cta-button.analyzer {
