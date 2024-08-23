@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price Guide/Lookup</title>
+
+    <!-- Tailwind CSS CDN for styling -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+    <!-- React and ReactDOM CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <!-- SheetJS for parsing Excel files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+
+    <!-- Babel for JSX support -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f0f0f0; }
+    </style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const PriceLookupTool = () => {
+        const [csvData, setCsvData] = useState([]);
+        const [searchTerm, setSearchTerm] = useState('');
+        const [lastUpdated, setLastUpdated] = useState('');
+
+        // Function to fetch the Excel file from the same directory
+        const fetchExcelFile = async () => {
+            try {
+                const fileUrl = "Source.xlsx"; // Excel file in the same directory
+                
+                // Fetch the file
+                const response = await fetch(fileUrl);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                // Get the file blob
+                const fileBlob = await response.blob();
+                parseExcelFile(fileBlob);
+
+                // Set last modified date
+                const lastModified = new Date(response.headers.get('Last-Modified'));
+                setLastUpdated(lastModified.toLocaleString());
+
+            } catch (error) {
+                console.error('Error fetching the Excel file:', error);
+            }
+        };
+
+        // Function to parse the Excel file using SheetJS
+        const parseExcelFile = (fileBlob) => {
+            const reader = new FileReader();
+            
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                // Parse the first sheet of the Excel file
+                const sheet = workbook.Sheets[workbook.SheetNames[0]]; // Get the first sheet
+                const jsonData = XLSX.utils.sheet_to_json(sheet);
+                
+                // Set the parsed data in state
+                setCsvData(jsonData);
+            };
+
+            reader.readAsArrayBuffer(fileBlob);
+        };
+
+        // Fetch the Excel file on component mount
+        useEffect(() => {
+            fetchExcelFile();
+        }, []);
+
+        // Function to handle search input
+        const handleSearch = (event) => {
+            setSearchTerm(event.target.value.toLowerCase());
+        };
+
+        // Filtered data based on search term
+        const filteredData = csvData.filter(
+            (row) =>
+                row['BCI #']?.toLowerCase().includes(searchTerm) ||
+                row['Description']?.toLowerCase().includes(searchTerm)
+        );
+
+        return (
+            <div className="p-4 sm:p-6 md:p-8 mx-200 bg-white shadow-lg rounded-lg">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-center text-gray-800">Price Lookup Tool</h1>
+
+                <div className="text-right text-sm text-gray-500">
+                    Last updated: {lastUpdated || 'Loading...'}
+                </div>
+
+                {/* Search input */}
+                <input
+                    type="text"
+                    className="mt-4 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Search by BCI # or Description"
+                    value={searchTerm}
+                    onChange={handleSearch}
+                />
+
+                {/* Display results in table */}
+                <table className="min-w-full table-auto mt-6 bg-white shadow-md rounded-lg">
+                    <thead>
+                        <tr className="bg-gray-100 border-b">
+                            <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">BCI #</th>
+                            <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">Description</th>
+                            <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">UOM</th>
+                            <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">Dist. Price</th>
+                            <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">BU Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredData.length > 0 ? (
+                            filteredData.map((row, index) => (
+                                <tr key={index} className="border-b">
+                                    <td className="py-2 px-4">{row['BCI #']}</td>
+                                    <td className="py-2 px-4">{row['Description']}</td>
+                                    <td className="py-2 px-4">{row['UOM']}</td>
+                                    <td className="py-2 px-4">{row['Dist. Price']}</td>
+                                    <td className="py-2 px-4">{row['BU Cost']}</td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="5" className="text-center py-4">No data found</td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        );
+    };
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<PriceLookupTool />);
+</script>
+
+</body>
+</html>
