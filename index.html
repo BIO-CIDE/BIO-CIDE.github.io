@@ -45,7 +45,6 @@
 
         .cta-button {
             display: block;
-            background-color: #3498db;
             color: white;
             padding: 15px 30px;
             text-decoration: none;
@@ -56,33 +55,41 @@
             transition: background-color 0.3s ease, transform 0.3s ease;
         }
 
-        .cta-button:hover {
+        /* Unique Button Colors */
+        .cta-button.tips {
+            background-color: #2ecc71; /* Green */
+        }
+
+        .cta-button.tips:hover {
+            background-color: #27ae60;
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        .cta-button.analyzer {
+            background-color: #3498db; /* Blue */
+        }
+
+        .cta-button.analyzer:hover {
             background-color: #2980b9;
             transform: scale(1.05);
             box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
         }
 
-        /* Button colors */
         .cta-button.price-guide {
-            background-color: #e67e22;
+            background-color: #e67e22; /* Orange */
         }
 
         .cta-button.price-guide:hover {
             background-color: #d35400;
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(230, 126, 34, 0.4);
         }
 
-        /* Animations */
-        @keyframes pulse {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.05);
-            }
-        }
-
-        .pulse-animation {
-            animation: pulse 1.5s infinite;
+        /* Hover Effects */
+        .cta-button:active {
+            transform: scale(0.95);
+            transition: transform 0.1s;
         }
     </style>
 </head>
@@ -93,8 +100,8 @@
         </svg>
     </div>
     <div class="button-container">
-        <a href="https://bio-cide.github.io/aane-tips" class="cta-button pulse-animation">AANE Tip Calculator</a>
-        <a href="https://bio-cide.github.io/equipment-cost" class="cta-button">Water Treatment System Cost Analyzer</a>
+        <a href="https://bio-cide.github.io/aane-tips" class="cta-button tips">AANE Tip Calculator</a>
+        <a href="https://bio-cide.github.io/equipment-cost" class="cta-button analyzer">Water Treatment System Cost Analyzer</a>
         <a href="https://bio-cide.github.io/price-guide" class="cta-button price-guide">Price Guide</a>
     </div>
 </body>
