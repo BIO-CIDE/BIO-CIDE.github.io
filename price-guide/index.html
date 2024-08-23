@@ -147,11 +147,16 @@
         // Search filter
         const handleSearch = (event) => setSearchTerm(event.target.value.toLowerCase());
 
-        const filteredData = csvData.filter(
-            (row) =>
-                row.bciNumber?.toLowerCase().includes(searchTerm) ||
-                row.description?.toLowerCase().includes(searchTerm)
-        );
+        const filteredData = csvData.filter((row) => {
+            const bciNumber = row.bciNumber ? String(row.bciNumber).toLowerCase() : '';
+            const description = row.description ? String(row.description).toLowerCase() : '';
+            
+            return (
+                bciNumber.includes(searchTerm) ||
+                description.includes(searchTerm)
+            );
+        });
+
 
         // Add item to selection
         const addToSelection = (item, quantity) => {
