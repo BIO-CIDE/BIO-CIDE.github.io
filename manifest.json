@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Water Tools",
+  "name": "Water Tools & Cost Calculators",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +20,8 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#1e1e1e",
+  "background_color": "#1e1e1e",
+  "description": "A suite of tools including the AANE Tip Calculator, Water Treatment Cost Analyzer, Price Guide, and Water Consumption Calculator.",
+  "orientation": "portrait"
 }
