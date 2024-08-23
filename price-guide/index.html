@@ -20,6 +20,38 @@
 
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f0f0f0; }
+
+        .row:hover {
+            background-color: #e2e8f0;
+            transition: background-color 0.3s ease;
+        }
+
+        .input-focused {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .btn {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        .cart-item {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -33,80 +65,85 @@
         const [csvData, setCsvData] = useState([]);
         const [searchTerm, setSearchTerm] = useState('');
         const [lastUpdated, setLastUpdated] = useState('');
+        const [cart, setCart] = useState([]);
+        const [totalAmount, setTotalAmount] = useState(0);
 
-        // Function to fetch the Excel file from the same directory
+        // Fetch the Excel file from the same directory
         const fetchExcelFile = async () => {
             try {
                 const fileUrl = "Source.xlsx"; // Excel file in the same directory
                 
-                // Fetch the file
                 const response = await fetch(fileUrl);
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-
-                // Get the file blob
                 const fileBlob = await response.blob();
                 parseExcelFile(fileBlob);
 
-                // Set last modified date (for demo, using current date)
                 setLastUpdated(new Date().toLocaleString());
-
             } catch (error) {
                 console.error('Error fetching the Excel file:', error);
             }
         };
 
-        // Function to parse the Excel file using SheetJS
+        // Parse the Excel file using SheetJS
         const parseExcelFile = (fileBlob) => {
             const reader = new FileReader();
-            
             reader.onload = function (e) {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
-
-                // Assuming we want to parse the first sheet
                 const sheet = workbook.Sheets[workbook.SheetNames[0]];
-
-                // Convert the sheet to JSON (but without headers)
                 const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-                // Process the raw data (assuming M3 Part Number is column B which is index 1)
                 const filteredData = rawData.filter(row => {
-                    const m3PartNumber = row[1]; // Column B (index 1)
-                    // Ignore rows where M3 Part Number doesn't start with "Q"
+                    const m3PartNumber = row[1]; 
                     return m3PartNumber && m3PartNumber.startsWith("Q");
                 }).map(row => ({
-                    bciNumber: row[0], // Column A
-                    description: row[2], // Column C
-                    uom: row[3], // Column D
-                    distPrice: row[4] // Column E
+                    bciNumber: row[0],
+                    description: row[2],
+                    uom: row[3],
+                    distPrice: parseFloat(row[4].replace(/[^\d.-]/g, '')).toFixed(2), // Convert to dollars
                 }));
 
-                // Set the filtered data in state
                 setCsvData(filteredData);
             };
-
             reader.readAsArrayBuffer(fileBlob);
         };
 
-        // Fetch the Excel file on component mount
+        // Fetch the Excel file on mount
         useEffect(() => {
             fetchExcelFile();
         }, []);
 
-        // Function to handle search input
-        const handleSearch = (event) => {
-            setSearchTerm(event.target.value.toLowerCase());
-        };
+        // Search filter
+        const handleSearch = (event) => setSearchTerm(event.target.value.toLowerCase());
 
-        // Filtered data based on search term (but not including M3 Part Number)
         const filteredData = csvData.filter(
             (row) =>
                 row.bciNumber?.toLowerCase().includes(searchTerm) ||
                 row.description?.toLowerCase().includes(searchTerm)
         );
+
+        // Add item to cart
+        const addToCart = (item, quantity) => {
+            const updatedCart = [...cart];
+            const existingItem = updatedCart.find(i => i.bciNumber === item.bciNumber);
+            const priceTotal = item.distPrice * quantity;
+
+            if (existingItem) {
+                existingItem.quantity = quantity;
+                existingItem.total = priceTotal;
+            } else {
+                updatedCart.push({ ...item, quantity, total: priceTotal });
+            }
+
+            setCart(updatedCart);
+            updateTotalAmount(updatedCart);
+        };
+
+        const updateTotalAmount = (updatedCart) => {
+            const total = updatedCart.reduce((sum, item) => sum + item.total, 0);
+            setTotalAmount(total.toFixed(2));
+        };
 
         return (
             <div className="p-4 sm:p-6 md:p-8 mx-200 bg-white shadow-lg rounded-lg">
@@ -119,7 +156,7 @@
                 {/* Search input */}
                 <input
                     type="text"
-                    className="mt-4 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    className={`mt-4 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${searchTerm && 'input-focused'}`}
                     placeholder="Search by BCI # or Description"
                     value={searchTerm}
                     onChange={handleSearch}
@@ -132,26 +169,57 @@
                             <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">BCI #</th>
                             <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">Description</th>
                             <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">UOM</th>
-                            <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">Dist. Price</th>
+                            <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">Price</th>
+                            <th className="py-3 px-4 text-left text-sm font-semibold text-gray-600">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filteredData.length > 0 ? (
                             filteredData.map((row, index) => (
-                                <tr key={index} className="border-b">
+                                <tr key={index} className={`border-b row ${index % 2 === 0 ? 'bg-gray-100' : 'bg-white'}`}>
                                     <td className="py-2 px-4">{row.bciNumber}</td>
                                     <td className="py-2 px-4">{row.description}</td>
                                     <td className="py-2 px-4">{row.uom}</td>
-                                    <td className="py-2 px-4">{row.distPrice}</td>
+                                    <td className="py-2 px-4">${row.distPrice}</td>
+                                    <td className="py-2 px-4">
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            placeholder="Qty"
+                                            className="border rounded px-2 py-1 w-16"
+                                            onChange={(e) => addToCart(row, Number(e.target.value))}
+                                        />
+                                    </td>
                                 </tr>
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="4" className="text-center py-4">No data found</td>
+                                <td colSpan="5" className="text-center py-4">No data found</td>
                             </tr>
                         )}
                     </tbody>
                 </table>
+
+                {/* Cart Section */}
+                {cart.length > 0 && (
+                    <div className="mt-6">
+                        <h2 className="text-xl font-semibold mb-4">Cart</h2>
+                        {cart.map((item, index) => (
+                            <div key={index} className="cart-item">
+                                <div><strong>{item.description}</strong> ({item.bciNumber})</div>
+                                <div>Quantity: {item.quantity}</div>
+                                <div>Total: ${item.total.toFixed(2)}</div>
+                            </div>
+                        ))}
+                        <div className="text-right text-xl font-semibold">Total: ${totalAmount}</div>
+                        <button
+                            className="btn mt-4"
+                            onClick={() => navigator.clipboard.writeText(JSON.stringify(cart, null, 2))}
+                        >
+                            Copy Cart
+                        </button>
+                    </div>
+                )}
             </div>
         );
     };
