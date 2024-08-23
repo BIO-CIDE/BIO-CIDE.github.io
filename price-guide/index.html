@@ -91,6 +91,7 @@
         const [lastUpdated, setLastUpdated] = useState('');
         const [selection, setSelection] = useState([]);
         const [totalAmount, setTotalAmount] = useState(0);
+        const [totalItems, setTotalItems] = useState(0);
         const [notification, setNotification] = useState(false);
 
         // Fetch the Excel file from the same directory
@@ -125,6 +126,7 @@
                 }).map(row => ({
                     bciNumber: row[0],
                     description: row[2],
+                    uom: row[3],
                     distPrice: formatPrice(row[4]), // Convert price to currency format
                 }));
 
@@ -169,6 +171,7 @@
 
             setSelection(updatedSelection);
             updateTotalAmount(updatedSelection);
+            updateTotalItems(updatedSelection);
         };
 
         const updateTotalAmount = (updatedSelection) => {
@@ -176,10 +179,15 @@
             setTotalAmount(total.toFixed(2));
         };
 
+        const updateTotalItems = (updatedSelection) => {
+            const totalItemsCount = updatedSelection.reduce((sum, item) => sum + item.quantity, 0);
+            setTotalItems(totalItemsCount);
+        };
+
         const handleCopyCart = () => {
             const selectionText = selection.map(item => 
-                `${item.bciNumber} ${item.description} ${item.distPrice} ${item.quantity}x`
-            ).join('\n') + `\nTotal: $${totalAmount}`;
+                `${item.quantity}x (${item.bciNumber}) [${item.description}] @ ${item.distPrice} ${item.uom}`
+            ).join('\n') + `\nUnique Items: ${selection.length}, Total Items: ${totalItems}, Total: $${totalAmount}`;
 
             navigator.clipboard.writeText(selectionText).then(() => {
                 setNotification(true);
