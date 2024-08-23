@@ -101,7 +101,7 @@
                     bciNumber: row[0],
                     description: row[2],
                     uom: row[3],
-                    distPrice: formatPrice(row[4]), // Convert to dollars with error handling
+                    distPrice: formatPrice(row[4]), // Format price safely
                 }));
 
                 setCsvData(filteredData);
@@ -111,9 +111,10 @@
 
         // Helper function to safely format price
         const formatPrice = (price) => {
+            if (price === undefined || price === null) return '0.00'; // Handle missing/invalid price
             if (typeof price === 'number') return price.toFixed(2); // If price is already a number
-            if (typeof price === 'string') return parseFloat(price.replace(/[^\d.-]/g, '')).toFixed(2); // Remove any non-numeric characters
-            return '0.00'; // Default for empty or invalid prices
+            if (typeof price === 'string') return parseFloat(price.replace(/[^\d.-]/g, '')).toFixed(2); // If price is a string, remove non-numeric characters
+            return '0.00'; // Default for other invalid cases
         };
 
         // Fetch the Excel file on mount
