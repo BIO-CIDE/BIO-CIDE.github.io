@@ -27,25 +27,39 @@
 <div id="root"></div>
 
 <script type="text/babel">
-    const { useState } = React;
+    const { useState, useEffect } = React;
 
     const PriceLookupTool = () => {
         const [csvData, setCsvData] = useState([]);
         const [searchTerm, setSearchTerm] = useState('');
         const [lastUpdated, setLastUpdated] = useState('');
 
-        // Function to handle file input
-        const handleFileUpload = (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const lastModified = new Date(file.lastModified);
-                setLastUpdated(lastModified.toLocaleString());
-                parseExcelFile(file);
+        // Function to fetch the Excel file from the same directory
+        const fetchExcelFile = async () => {
+            try {
+                const fileUrl = "Source.xlsx"; // Excel file in the same directory
+                
+                // Fetch the file
+                const response = await fetch(fileUrl);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                // Get the file blob
+                const fileBlob = await response.blob();
+                parseExcelFile(fileBlob);
+
+                // Set last modified date (for demo, using current date)
+                setLastUpdated(new Date().toLocaleString());
+
+            } catch (error) {
+                console.error('Error fetching the Excel file:', error);
             }
         };
 
         // Function to parse the Excel file using SheetJS
-        const parseExcelFile = (file) => {
+        const parseExcelFile = (fileBlob) => {
             const reader = new FileReader();
             
             reader.onload = function (e) {
@@ -74,8 +88,13 @@
                 setCsvData(filteredData);
             };
 
-            reader.readAsArrayBuffer(file);
+            reader.readAsArrayBuffer(fileBlob);
         };
+
+        // Fetch the Excel file on component mount
+        useEffect(() => {
+            fetchExcelFile();
+        }, []);
 
         // Function to handle search input
         const handleSearch = (event) => {
@@ -96,14 +115,6 @@
                 <div className="text-right text-sm text-gray-500">
                     Last updated: {lastUpdated || 'No file uploaded'}
                 </div>
-
-                {/* File upload input */}
-                <input
-                    type="file"
-                    className="mt-4 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    accept=".xlsx, .xls"
-                    onChange={handleFileUpload}
-                />
 
                 {/* Search input */}
                 <input
