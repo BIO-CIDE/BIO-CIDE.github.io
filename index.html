@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nav Page</title>
+    <title>Nav Page - Dark Mode</title>
     <style>
+        /* Dark Mode Styles */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             line-height: 1.6;
-            color: #333;
+            background-color: #1e1e1e;
+            color: #f0f0f0;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
@@ -17,36 +19,70 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
+            transition: all 0.3s ease;
         }
+
         .logo-container {
             display: flex;
             justify-content: center;
             align-items: center;
             margin-bottom: 30px;
         }
+
         .logo {
             max-width: 300px;
             height: auto;
+            fill: #f0f0f0;
+            transition: all 0.3s ease;
         }
+
         .button-container {
             display: flex;
             flex-direction: column;
             gap: 20px;
+            width: 100%;
         }
+
         .cta-button {
-            display: inline-block;
+            display: block;
             background-color: #3498db;
             color: white;
             padding: 15px 30px;
             text-decoration: none;
-            border-radius: 5px;
+            border-radius: 10px;
             font-weight: bold;
             font-size: 18px;
-            transition: background-color 0.3s ease;
             text-align: center;
+            transition: background-color 0.3s ease, transform 0.3s ease;
         }
+
         .cta-button:hover {
             background-color: #2980b9;
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        /* Button colors */
+        .cta-button.price-guide {
+            background-color: #e67e22;
+        }
+
+        .cta-button.price-guide:hover {
+            background-color: #d35400;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .pulse-animation {
+            animation: pulse 1.5s infinite;
         }
     </style>
 </head>
@@ -57,8 +93,9 @@
         </svg>
     </div>
     <div class="button-container">
-        <a href="https://bio-cide.github.io/aane-tips" class="cta-button">AANE Tip Calculator</a>
+        <a href="https://bio-cide.github.io/aane-tips" class="cta-button pulse-animation">AANE Tip Calculator</a>
         <a href="https://bio-cide.github.io/equipment-cost" class="cta-button">Water Treatment System Cost Analyzer</a>
+        <a href="https://bio-cide.github.io/price-guide" class="cta-button price-guide">Price Guide</a>
     </div>
 </body>
 </html>
