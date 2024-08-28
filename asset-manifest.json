@@ -4,7 +4,11 @@
     "main.js": "/equipment-cost/static/js/main.6c112686.js",
     "index.html": "/equipment-cost/index.html",
     "main.44491bbc.css.map": "/equipment-cost/static/css/main.44491bbc.css.map",
-    "main.6c112686.js.map": "/equipment-cost/static/js/main.6c112686.js.map"
+    "main.6c112686.js.map": "/equipment-cost/static/js/main.6c112686.js.map",
+    "index.html2": "/index.html",
+    "index.html": "/water-calc/index.html",
+    "index.html": "/price-guide/index.html",
+    "index.html": "/aane-tips/index.html"
   },
   "entrypoints": [
     "static/css/main.44491bbc.css",
