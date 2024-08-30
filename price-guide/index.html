@@ -214,10 +214,15 @@
 
         const handleCopyCart = () => {
             try {
-                const selectionText = selection.map(item => 
-                    `${item.quantity}x (${item.bciNumber.toUpperCase()}) [${item.description.toUpperCase()}] @ ${item.distPrice.toUpperCase()} ${item.uom.toUpperCase()}`
-                ).join('\n') + `\nUNIQUE ITEMS: ${selection.length}, TOTAL ITEMS: ${totalItems}, TOTAL: $${totalAmount}`;
-
+                const selectionText = selection.map(item => {
+                    const bciNumber = item.bciNumber ? String(item.bciNumber).toUpperCase() : 'N/A';
+                    const description = item.description ? String(item.description).toUpperCase() : 'N/A';
+                    const distPrice = item.distPrice ? String(item.distPrice).toUpperCase() : 'N/A';
+                    const uom = item.uom ? String(item.uom).toUpperCase() : 'N/A';
+                    
+                    return `${item.quantity}x (${bciNumber}) [${description}] @ ${distPrice} ${uom}`;
+                }).join('\n') + `\nUNIQUE ITEMS: ${selection.length}, TOTAL ITEMS: ${totalItems}, TOTAL: $${totalAmount}`;
+        
                 navigator.clipboard.writeText(selectionText).then(() => {
                     showNotification('Selection copied to clipboard!');
                 }).catch((err) => {
