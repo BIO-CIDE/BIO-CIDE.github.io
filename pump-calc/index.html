@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pump Ratio Dose Calculator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-4">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function PumpRatioCalculator() {
+            const [maxGPM, setMaxGPM] = useState(15);
+            const [desiredPPM, setDesiredPPM] = useState(5);
+            const [ratio, setRatio] = useState(10);
+            const [analogGPH, setAnalogGPH] = useState(0);
+            const [mlPulse, setMlPulse] = useState(0);
+            const [error, setError] = useState('');
+            
+            const CHEMICAL_CONCENTRATION = 50000;
+            const MAX_PUMP_GPH = 2.0;
+
+            const validateInputs = (gpm, ppm, r) => {
+                if (gpm < 15) return 'Flow rate must be at least 15 GPM';
+                if (r < 1 || r > 20) return 'Ratio must be between 1 and 20';
+                if ((gpm * ppm) > 1650) return 'Flow rate × PPM exceeds pump capacity (1650)';
+                return '';
+            };
+
+            useEffect(() => {
+                const errorMsg = validateInputs(maxGPM, desiredPPM, ratio);
+                setError(errorMsg);
+
+                if (!errorMsg) {
+                    const gph = (maxGPM * 60 * desiredPPM) / CHEMICAL_CONCENTRATION;
+                    const mlPerPulse = (desiredPPM * 1 * 3785.41) / CHEMICAL_CONCENTRATION / ratio;
+                    setAnalogGPH(gph);
+                    setMlPulse(mlPerPulse);
+                }
+            }, [maxGPM, desiredPPM, ratio]);
+
+            const handleMaxGPMChange = (value) => {
+                const newValue = Math.max(15, value);
+                setMaxGPM(newValue);
+            };
+
+            const handleRatioChange = (value) => {
+                const newValue = Math.min(20, Math.max(1, value));
+                setRatio(newValue);
+            };
+
+            return (
+                <div className="max-w-2xl mx-auto p-4 md:p-6 bg-white rounded-lg shadow-lg">
+                    <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">Pump Ratio Dose Calculator</h2>
+                    
+                    {error && (
+                        <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                            {error}
+                        </div>
+                    )}
+
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Maximum Flow Rate (GPM)
+                                </label>
+                                <input
+                                    type="number"
+                                    min="15"
+                                    value={maxGPM}
+                                    onChange={(e) => handleMaxGPMChange(parseFloat(e.target.value) || 15)}
+                                    className="p-2 border rounded w-full focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Desired PPM
+                                </label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={desiredPPM}
+                                    onChange={(e) => setDesiredPPM(parseFloat(e.target.value) || 0)}
+                                    className="p-2 border rounded w-full focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Ratio (Analog:Pulse)
+                            </label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="20"
+                                value={ratio}
+                                onChange={(e) => handleRatioChange(parseFloat(e.target.value) || 1)}
+                                className="p-2 border rounded w-full focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+
+                        <div className="mt-8 p-4 bg-gray-50 rounded shadow-inner">
+                            <h3 className="font-semibold text-lg mb-4 text-center">Pump Settings</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="p-4 bg-white rounded shadow">
+                                    <p className="font-medium text-gray-600">Analog Pump</p>
+                                    <p className="text-xl">{error ? '---' : `${analogGPH.toFixed(3)} GPH`}</p>
+                                </div>
+                                <div className="p-4 bg-white rounded shadow">
+                                    <p className="font-medium text-gray-600">Pulse Pump</p>
+                                    <p className="text-xl">{error ? '---' : `${mlPulse.toFixed(3)} mL/pulse`}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const container = document.getElementById('root');
+        const root = ReactDOM.createRoot(container);
+        root.render(<PumpRatioCalculator />);
+    </script>
+</body>
+</html>
