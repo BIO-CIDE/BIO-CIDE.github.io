@@ -1,67 +1,63 @@
-const CACHE_NAME = 'mosi-controller-v1';
+// sw.js
+
+const CACHE_NAME = 'mosi-controller-v2';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/app.js',
-  '/manifest.json',
-  '/icon-192.svg',
-  '/icon-512.svg',
-  '/share.svg',
-  '/splash-640x1136.png',
-  '/splash-750x1334.png',
-  '/splash-1242x2208.png',
-  '/splash-1125x2436.png'
+    '/',
+    '/mosi-controller/index.html',
+    '/mosi-controller/app.js',
+    '/mosi-controller/manifest.json',
+    '/mosi-controller/icon-192.svg',
+    '/mosi-controller/icon-512.svg',
+    '/mosi-controller/share.svg',
+    '/mosi-controller/splash-640x1136.png',
+    '/mosi-controller/splash-750x1334.png',
+    '/mosi-controller/splash-1242x2208.png',
+    '/mosi-controller/splash-1125x2436.png'
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(ASSETS))
-      .then(() => self.skipWaiting())
-  );
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then((cache) => cache.addAll(ASSETS))
+            .then(() => self.skipWaiting())
+    );
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
-  );
+    event.waitUntil(
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
+                cacheNames.map((cacheName) => {
+                    if (cacheName !== CACHE_NAME) {
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        }).then(() => self.clients.claim())
+    );
 });
 
 self.addEventListener('fetch', (event) => {
-  // Don't cache .local connections
-  if (event.request.url.includes('.local')) {
-    return;
-  }
+    if (event.request.url.includes('.local')) {
+        return;
+    }
 
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version or fetch new version
-        return response || fetch(event.request)
-          .then((response) => {
-            // Check if we received a valid response
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
+    event.respondWith(
+        caches.match(event.request)
+            .then((response) => {
+                return response || fetch(event.request).then((fetchResponse) => {
+                    if (!fetchResponse || fetchResponse.status !== 200 || fetchResponse.type !== 'basic') {
+                        return fetchResponse;
+                    }
 
-            // Clone the response
-            const responseToCache = response.clone();
+                    const responseToCache = fetchResponse.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, responseToCache);
+                    });
 
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
-
-            return response;
-          });
-      })
-  );
+                    return fetchResponse;
+                });
+            })
+            .catch(() => caches.match('/'))
+    );
 });
