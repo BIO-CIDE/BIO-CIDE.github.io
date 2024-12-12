@@ -1,16 +1,15 @@
-// Constants and global variables
+// app.js
+
 let deferredPrompt;
 const MAX_HISTORY = 5;
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 const CONNECTION_TIMEOUT = 5000; // 5 seconds timeout for connections
 
-// Initialize the application when the page loads
 window.onload = () => {
     initializeApp();
     registerServiceWorker();
 };
 
-// Main initialization function
 function initializeApp() {
     loadHistory();
     checkInstallation();
@@ -18,16 +17,13 @@ function initializeApp() {
     handlePlatformSpecifics();
 }
 
-// Setup all event listeners
 function setupEventListeners() {
-    // Add Enter key support for serial input
     document.getElementById('serialNumber').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             connect();
         }
     });
 
-    // Add input validation
     document.getElementById('serialNumber').addEventListener('input', (e) => {
         const input = e.target;
         const value = input.value.toUpperCase();
@@ -35,18 +31,16 @@ function setupEventListeners() {
         validateSerialInput(value);
     });
 
-    // Install button event listener
     const installButton = document.getElementById('installButton');
     if (installButton) {
         installButton.addEventListener('click', handleInstallClick);
     }
 }
 
-// Register service worker
 async function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
         try {
-            const registration = await navigator.serviceWorker.register('/sw.js');
+            const registration = await navigator.serviceWorker.register('./mosi-controller/sw.js');
             console.log('ServiceWorker registration successful:', registration);
         } catch (error) {
             console.error('ServiceWorker registration failed:', error);
@@ -54,13 +48,11 @@ async function registerServiceWorker() {
     }
 }
 
-// Handle platform-specific features
 function handlePlatformSpecifics() {
     if (isIOS && !isInStandaloneMode()) {
         showIOSInstallHint();
     }
 
-    // Handle PWA installation prompt
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
@@ -68,14 +60,14 @@ function handlePlatformSpecifics() {
     });
 }
 
-// Check if running in standalone mode
 function isInStandaloneMode() {
-    return (window.matchMedia('(display-mode: standalone)').matches) ||
-           (window.navigator.standalone) ||
-           document.referrer.includes('android-app://');
+    return (
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone ||
+        document.referrer.includes('android-app://')
+    );
 }
 
-// Check installation status
 function checkInstallation() {
     const installButton = document.getElementById('installButton');
     const iosInstallHint = document.getElementById('iosInstallHint');
@@ -86,13 +78,10 @@ function checkInstallation() {
     }
 }
 
-// Show iOS installation hint
 function showIOSInstallHint() {
     const hint = document.getElementById('iosInstallHint');
     if (hint) {
         hint.style.display = 'block';
-        
-        // Hide hint when user taps anywhere else
         document.addEventListener('click', (e) => {
             if (!hint.contains(e.target)) {
                 hint.style.display = 'none';
@@ -101,14 +90,13 @@ function showIOSInstallHint() {
     }
 }
 
-// Handle install button click
 async function handleInstallClick() {
     if (!deferredPrompt) return;
-    
+
     try {
         const result = await deferredPrompt.prompt();
         console.log(`Installation prompt result: ${result.outcome}`);
-        
+
         if (result.outcome === 'accepted') {
             console.log('User accepted installation');
         }
@@ -120,12 +108,11 @@ async function handleInstallClick() {
     }
 }
 
-// Validate serial number input
 function validateSerialInput(value) {
     const connectButton = document.getElementById('connectButton');
     const statusDiv = document.getElementById('status');
     const isValid = /^EM\d{0,4}$/.test(value);
-    
+
     if (!isValid && value !== '') {
         statusDiv.textContent = 'Invalid format. Use EMxxxx format.';
         connectButton.disabled = true;
@@ -135,31 +122,29 @@ function validateSerialInput(value) {
     }
 }
 
-// Load connection history
 function loadHistory() {
     const history = JSON.parse(localStorage.getItem('connectionHistory') || '[]');
     updateHistoryDisplay(history);
 }
 
-// Update history display
 function updateHistoryDisplay(history) {
     const historyList = document.getElementById('historyList');
     historyList.innerHTML = '';
-    
+
     history.forEach(serial => {
         const li = document.createElement('li');
         li.className = 'history-item';
-        
+
         const serialText = document.createElement('span');
         serialText.textContent = serial;
-        
+
         const connectBtn = document.createElement('button');
         connectBtn.textContent = 'Connect';
         connectBtn.onclick = () => {
             document.getElementById('serialNumber').value = serial;
             connect();
         };
-        
+
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = '×';
         deleteBtn.className = 'delete-btn';
@@ -167,19 +152,18 @@ function updateHistoryDisplay(history) {
             e.stopPropagation();
             removeFromHistory(serial);
         };
-        
+
         li.appendChild(serialText);
         const buttonGroup = document.createElement('div');
         buttonGroup.className = 'button-group';
         buttonGroup.appendChild(connectBtn);
         buttonGroup.appendChild(deleteBtn);
         li.appendChild(buttonGroup);
-        
+
         historyList.appendChild(li);
     });
 }
 
-// Add device to history
 function addToHistory(serial) {
     let history = JSON.parse(localStorage.getItem('connectionHistory') || '[]');
     history = history.filter(item => item !== serial);
@@ -189,7 +173,6 @@ function addToHistory(serial) {
     updateHistoryDisplay(history);
 }
 
-// Remove device from history
 function removeFromHistory(serial) {
     let history = JSON.parse(localStorage.getItem('connectionHistory') || '[]');
     history = history.filter(item => item !== serial);
@@ -197,13 +180,12 @@ function removeFromHistory(serial) {
     updateHistoryDisplay(history);
 }
 
-// Main connect function
 async function connect() {
     const serialNumber = document.getElementById('serialNumber').value.trim();
     const statusDiv = document.getElementById('status');
     const connectButton = document.getElementById('connectButton');
     const loadingOverlay = document.getElementById('loadingOverlay');
-    
+
     if (!/^EM\d{4}$/.test(serialNumber)) {
         statusDiv.textContent = 'Invalid serial number format. Use EMxxxx format.';
         return;
@@ -214,7 +196,6 @@ async function connect() {
     statusDiv.textContent = 'Connecting...';
 
     try {
-        // Try HTTPS first, then HTTP
         const protocols = ['https', 'http'];
         let connected = false;
         let finalUrl;
@@ -233,10 +214,10 @@ async function connect() {
             statusDiv.textContent = 'Connected! Redirecting...';
             window.location.href = finalUrl;
         } else {
-            throw new Error('Connection failed');
+            throw new Error('Device not found on the network.');
         }
     } catch (error) {
-        statusDiv.textContent = 'Could not connect. Please check if the device is powered on and connected to the network.';
+        statusDiv.textContent = 'Could not connect. Please check if the device is powered on and connected.';
         console.error('Connection error:', error);
     } finally {
         connectButton.disabled = false;
@@ -244,7 +225,6 @@ async function connect() {
     }
 }
 
-// Try to connect to a specific URL
 async function tryConnect(url) {
     try {
         const controller = new AbortController();
@@ -268,7 +248,6 @@ async function tryConnect(url) {
     }
 }
 
-// Handle online/offline status
 window.addEventListener('online', () => {
     document.getElementById('status').textContent = 'Network connection restored';
     setTimeout(() => {
@@ -278,11 +257,4 @@ window.addEventListener('online', () => {
 
 window.addEventListener('offline', () => {
     document.getElementById('status').textContent = 'Network connection lost';
-});
-
-// Handle visibility changes
-document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-        loadHistory();  // Refresh history when tab becomes visible
-    }
 });
