@@ -4,21 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>MOSI Controller</title>
-    
+
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#cb2026">
     <meta name="description" content="MOSI Controller Connection Manager">
-    
+
     <!-- iOS specific meta tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="MOSI">
-    
+
     <!-- Icons -->
     <link rel="icon" href="icon-192.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icon-192.svg">
-    
+
     <!-- iOS splash screens -->
     <link rel="apple-touch-startup-image" href="splash-640x1136.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)">
     <link rel="apple-touch-startup-image" href="splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
@@ -46,15 +46,6 @@
             justify-content: center;
         }
 
-        @supports (padding: max(0px)) {
-            body {
-                padding-left: max(20px, env(safe-area-inset-left));
-                padding-right: max(20px, env(safe-area-inset-right));
-                padding-bottom: max(20px, env(safe-area-inset-bottom));
-                padding-top: max(20px, env(safe-area-inset-top));
-            }
-        }
-
         .container {
             max-width: 600px;
             width: 100%;
@@ -74,7 +65,8 @@
         input {
             padding: 12px;
             font-size: 16px;
-            width: 200px;
+            width: calc(100% - 24px);
+            max-width: 300px;
             background-color: var(--surface-color);
             border: 2px solid var(--primary-color);
             border-radius: 8px;
@@ -113,6 +105,15 @@
         #status {
             margin-top: 20px;
             font-style: italic;
+            color: #ffc107;
+        }
+
+        .success {
+            color: #4caf50;
+        }
+
+        .error {
+            color: #f44336;
         }
 
         .history {
@@ -190,24 +191,6 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        .ios-install-hint {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            background-color: var(--surface-color);
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            animation: slideUp 0.3s ease-out;
-            display: none;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
     </style>
 </head>
 <body>
@@ -219,10 +202,9 @@
         <h1>MOSI Controller</h1>
         <div class="input-group">
             <input type="text" id="serialNumber" placeholder="Enter Serial (e.g., EM1001)" 
-                   pattern="EM\d{4}" title="Format: EM followed by 4 digits"
-                   oninput="this.value = this.value.toUpperCase();">
+                   pattern="EM\d{4}" title="Format: EM followed by 4 digits">
         </div>
-        <button onclick="connect()" id="connectButton">Connect</button>
+        <button id="connectButton">Connect</button>
         <div id="status"></div>
 
         <div class="history">
@@ -232,10 +214,7 @@
     </div>
 
     <button id="installButton">Install App</button>
-    <div id="iosInstallHint" class="ios-install-hint">
-        To install: tap <img src="share.svg" style="vertical-align: middle; height: 20px"> and then "Add to Home Screen"
-    </div>
 
-    <script src="app.js"></script>
+    <script src="app.js" defer></script>
 </body>
 </html>
