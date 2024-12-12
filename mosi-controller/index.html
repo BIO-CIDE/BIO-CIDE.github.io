@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>MOSI Controller</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#cb2026">
+    <meta name="description" content="MOSI Controller Connection Manager">
+    
+    <!-- iOS specific meta tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MOSI">
+    
+    <!-- Icons -->
+    <link rel="icon" href="/icon-192.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon-192.svg">
+    
+    <!-- iOS splash screens -->
+    <link rel="apple-touch-startup-image" href="/splash-640x1136.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
+    <link rel="apple-touch-startup-image" href="/splash-1242x2208.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="/splash-1125x2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
+
+    <style>
+        :root {
+            --primary-color: #cb2026;
+            --background-color: #303030;
+            --surface-color: #404040;
+            --text-color: #e0e0e0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @supports (padding: max(0px)) {
+            body {
+                padding-left: max(20px, env(safe-area-inset-left));
+                padding-right: max(20px, env(safe-area-inset-right));
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+                padding-top: max(20px, env(safe-area-inset-top));
+            }
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        input {
+            padding: 12px;
+            font-size: 16px;
+            width: 200px;
+            background-color: var(--surface-color);
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            color: var(--text-color);
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #ff262d;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        button:hover {
+            background-color: #a11920;
+        }
+
+        button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-style: italic;
+        }
+
+        .history {
+            margin-top: 30px;
+            text-align: left;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .history h2 {
+            color: var(--primary-color);
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .history-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .history-item {
+            background-color: var(--surface-color);
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .history-item button {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        #installButton {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: none;
+            z-index: 100;
+            padding: 12px 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .ios-install-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background-color: var(--surface-color);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            animation: slideUp 0.3s ease-out;
+            display: none;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="container">
+        <h1>MOSI Controller</h1>
+        <div class="input-group">
+            <input type="text" id="serialNumber" placeholder="Enter Serial (e.g., EM1001)" 
+                   pattern="EM\d{4}" title="Format: EM followed by 4 digits"
+                   oninput="this.value = this.value.toUpperCase();">
+        </div>
+        <button onclick="connect()" id="connectButton">Connect</button>
+        <div id="status"></div>
+
+        <div class="history">
+            <h2>Recent Connections</h2>
+            <ul id="historyList" class="history-list"></ul>
+        </div>
+    </div>
+
+    <button id="installButton">Install App</button>
+    <div id="iosInstallHint" class="ios-install-hint">
+        To install: tap <img src="/share.svg" style="vertical-align: middle; height: 20px"> and then "Add to Home Screen"
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>
