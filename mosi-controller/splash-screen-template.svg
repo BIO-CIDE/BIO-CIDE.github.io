@@ -1,0 +1,34 @@
+<!-- splash-screen-template.svg -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1242 2208">
+    <!-- Background -->
+    <rect width="100%" height="100%" fill="#303030"/>
+    
+    <!-- Center Logo Group -->
+    <g transform="translate(621, 1104) scale(2)">
+        <!-- Pump representation -->
+        <circle cx="0" cy="0" r="67" fill="none" stroke="#cb2026" stroke-width="11"/>
+        
+        <!-- Flow lines -->
+        <path d="M0 -67 L0 67" stroke="#cb2026" stroke-width="11" stroke-linecap="round"/>
+        <path d="M-45 0 L45 0" stroke="#cb2026" stroke-width="11" stroke-linecap="round"/>
+        
+        <!-- Center accents -->
+        <circle cx="0" cy="0" r="22" fill="#cb2026"/>
+        <circle cx="0" cy="0" r="11" fill="#fff"/>
+        
+        <!-- Corner elements -->
+        <circle cx="0" cy="-67" r="9" fill="#cb2026"/>
+        <circle cx="0" cy="67" r="9" fill="#cb2026"/>
+        <circle cx="-45" cy="0" r="9" fill="#cb2026"/>
+        <circle cx="45" cy="0" r="9" fill="#cb2026"/>
+    </g>
+    
+    <!-- App Name -->
+    <text x="621" y="1400" 
+          font-family="Arial, sans-serif" 
+          font-size="72" 
+          fill="#cb2026" 
+          text-anchor="middle">
+        MOSI Controller
+    </text>
+</svg>
