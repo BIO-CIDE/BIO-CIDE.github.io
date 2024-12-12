@@ -1,0 +1,22 @@
+<!-- icon-512.svg -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#303030" rx="100" ry="100"/>
+  
+  <!-- Abstract pump representation -->
+  <circle cx="256" cy="256" r="180" fill="none" stroke="#cb2026" stroke-width="30"/>
+  
+  <!-- Flow lines -->
+  <path d="M256 76 L256 436" stroke="#cb2026" stroke-width="30" stroke-linecap="round"/>
+  <path d="M136 256 L376 256" stroke="#cb2026" stroke-width="30" stroke-linecap="round"/>
+  
+  <!-- Corner accents -->
+  <circle cx="256" cy="256" r="60" fill="#cb2026"/>
+  <circle cx="256" cy="256" r="30" fill="#fff"/>
+  
+  <!-- Dynamic corner elements -->
+  <circle cx="256" cy="76" r="25" fill="#cb2026"/>
+  <circle cx="256" cy="436" r="25" fill="#cb2026"/>
+  <circle cx="136" cy="256" r="25" fill="#cb2026"/>
+  <circle cx="376" cy="256" r="25" fill="#cb2026"/>
+</svg>
