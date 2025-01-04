@@ -1,0 +1,1873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EDIE Pre-Installation Checklist</title>
+
+  <!-- Tailwind CSS (CDN) -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+    rel="stylesheet"
+  />
+
+  <!-- Font Awesome (CDN) for icons -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+
+  <!-- Updated Styling -->
+  <style>
+    :root {
+      --flow-stroke-width: 2;
+      --flow-stroke-color: #444;
+      --flow-fill-color: none;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; 
+      padding: 20px;
+      background-color: #f0f0f0;
+    }
+    .sticky { position: sticky; }
+    .no-print { display: block; }
+    .print-open { display: block !important; }
+
+    @media print {
+      .no-print { display: none !important; }
+      .print-open { display: block !important; }
+    }
+
+    /* Hide spin buttons in numeric inputs (some browsers) */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    /* Flow Canvas styles */
+    .flow-canvas {
+      position: relative;
+      width: 100%;
+      max-width: 800px;
+      height: 600px;
+      background: #eef;
+      border: 2px dashed #aaa;
+      overflow: hidden;
+      margin: 0 auto;
+      border-radius: 8px;
+    }
+
+    /* Base flow-item styles */
+    .flow-item {
+      position: absolute;
+      cursor: move;
+      user-select: none;
+      transform-origin: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Labels */
+    .flow-label {
+      font-size: 12px;
+      color: #333;
+      text-align: center;
+      pointer-events: none;
+      opacity: 1; /* Always visible to prevent overlap issues */
+      transition: opacity 0.3s;
+      position: absolute;
+      top: 100%; /* Position below the SVG */
+      left: 50%;
+      transform: translateX(-50%) translateY(5px);
+      white-space: nowrap;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: 10px;
+      z-index: 1;
+    }
+
+    /* Delete button */
+    .delete-button {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 12px;
+      display: none; /* Hidden by default */
+      z-index: 2;
+    }
+
+    .flow-item.selected .delete-button {
+      display: flex;
+    }
+
+    /* Specific shapes using SVG */
+    .flow-svg {
+      width: 100%;
+      height: 100%;
+      /* Ensures SVG fills the container */
+      object-fit: cover;
+    }
+
+    .flow-svg path,
+    .flow-svg rect,
+    .flow-svg circle,
+    .flow-svg line,
+    .flow-svg polygon {
+      stroke: var(--flow-stroke-color);
+      stroke-width: var(--flow-stroke-width);
+      fill: var(--flow-fill-color);
+    }
+
+    /* Resize handle */
+    .flow-resize {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: red;
+      bottom: 0;
+      right: 0;
+      cursor: nwse-resize;
+      display: none; /* Hidden by default */
+      z-index: 2;
+    }
+
+    .flow-item.selected .flow-resize {
+      display: block;
+    }
+
+    /* Snapping guidelines (optional visual aid) */
+    .snap-line {
+      position: absolute;
+      background: rgba(255, 0, 0, 0.5);
+      pointer-events: none;
+    }
+
+    /* Editable label input */
+    .edit-label-input {
+      position: absolute;
+      top: 100%; /* Position below the SVG */
+      left: 50%;
+      transform: translateX(-50%) translateY(5px);
+      z-index: 3;
+      display: none;
+      background: white;
+      padding: 2px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 10px;
+    }
+
+    .flow-item.selected .edit-label-input {
+      display: block;
+    }
+
+    /* Ensure all flow-items have consistent initial dimensions */
+    .flow-item.pipe {
+      width: 200px;
+      height: 40px;
+    }
+
+    .flow-item.valve,
+    .flow-item.regulator,
+    .flow-item.gauge {
+      width: 100px;
+      height: 100px;
+    }
+
+    .flow-item.tank,
+    .flow-item.boostertank,
+    .flow-item.boosterpump,
+    .flow-item.filter,
+    .flow-item.flowmeter,
+    .flow-item.injectionsite {
+      width: 100px;
+      height: 100px;
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- React / ReactDOM -->
+<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+
+<!-- Babel (in-browser JSX compile) -->
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+
+const { useState, useEffect, useRef } = React;
+
+/*******************************************
+ * Helper Components
+ *******************************************/
+const CheckboxItem = ({ label, subtext, onChange, checked, required }) => (
+  <div className="flex items-start gap-2 py-1">
+    <input
+      type="checkbox"
+      className="mt-1.5"
+      onChange={onChange}
+      checked={checked}
+    />
+    <div>
+      <span>
+        {label}
+        {required && <span className="text-red-600 ml-1">*</span>}
+      </span>
+      {subtext && <p className="text-sm text-gray-600 ml-4">{subtext}</p>}
+    </div>
+  </div>
+);
+
+const SectionHeader = ({ title, isOpen, onToggle, required, warning }) => (
+  <button
+    onClick={onToggle}
+    className={`w-full flex justify-between items-center p-4 bg-red-600 text-white hover:bg-red-700 ${
+      isOpen ? 'print-open' : ''
+    }`}
+  >
+    <div className="flex items-center gap-2">
+      <span className="font-semibold">{title}</span>
+      {required && (
+        <span className="text-xs bg-white text-red-600 px-2 py-0.5 rounded">
+          Required
+        </span>
+      )}
+      {warning && (
+        <div className="flex items-center gap-1 text-xs bg-yellow-400 text-red-600 px-2 py-0.5 rounded">
+          <i className="fa-solid fa-triangle-exclamation"></i>
+          <span>{warning}</span>
+        </div>
+      )}
+    </div>
+    {isOpen ? (
+      <i className="fa-solid fa-chevron-down"></i>
+    ) : (
+      <i className="fa-solid fa-chevron-right"></i>
+    )}
+  </button>
+);
+
+const InfoAlert = ({ type = 'info', children }) => {
+  const styles = {
+    info: 'bg-blue-50 border-blue-400 text-blue-700',
+    warning: 'bg-yellow-50 border-yellow-400 text-yellow-700',
+    error: 'bg-red-50 border-red-400 text-red-700',
+    success: 'bg-green-50 border-green-400 text-green-700'
+  };
+  return (
+    <div className={`${styles[type]} border-l-4 p-3 text-sm`}>
+      {children}
+    </div>
+  );
+};
+
+const ProgressBar = ({ progress }) => (
+  <div className="sticky top-0 z-50 bg-white border-b px-4 py-3 shadow-sm -mx-4 no-print">
+    <div className="max-w-4xl mx-auto">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm font-semibold text-gray-700">
+          Installation Readiness
+        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-red-600 font-semibold">
+            {progress}% Complete
+          </span>
+          {progress === 100 && (
+            <i className="fa-solid fa-check text-green-600"></i>
+          )}
+        </div>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div
+          className={`h-2 rounded-full transition-all duration-500 ${
+            progress === 100 ? 'bg-green-500' : 'bg-red-600'
+          }`}
+          style={{ width: `${progress}%` }}
+        ></div>
+      </div>
+    </div>
+  </div>
+);
+
+/*******************************************
+ * FlowmeterCalculator Component
+ *******************************************/
+const FlowmeterCalculator = () => {
+  const [diameter, setDiameter] = useState('');
+  const [beforeLength, setBeforeLength] = useState(0);
+  const [afterLength, setAfterLength] = useState(0);
+
+  useEffect(()=>{
+    if(!diameter){
+      setBeforeLength(0);
+      setAfterLength(0);
+      return;
+    }
+    const dVal = parseFloat(diameter);
+    if(isNaN(dVal)|| dVal<=0){
+      setBeforeLength(0);
+      setAfterLength(0);
+    } else {
+      setBeforeLength(dVal*10);
+      setAfterLength(dVal*5);
+    }
+  },[diameter]);
+
+  const total = beforeLength + 6 + afterLength;
+  const asciiDiagram = () => {
+    if(!diameter || beforeLength<=0|| afterLength<=0) return '';
+    return `Flow --(${beforeLength}" )-- [ FlowMeter (6") ] --(${afterLength}" )-- ->`;
+  };
+
+  return (
+    <div className="p-3 bg-gray-50 border rounded space-y-3 text-sm">
+      <div>
+        <label className="block font-semibold mb-1">
+          Pipe Diameter (inches):
+        </label>
+        <input
+          type="number"
+          className="border p-2 rounded w-24"
+          placeholder="2"
+          value={diameter}
+          onChange={(e)=> setDiameter(e.target.value)}
+        />
+        <p className="text-gray-500 text-xs mt-1">
+          Example for 2" line: 20" before + 6" meter + 10" after = 36" total
+        </p>
+      </div>
+      {diameter && beforeLength>0 && afterLength>0 && (
+        <div className="bg-white p-2 rounded border">
+          <p className="mb-1">Required sections:</p>
+          <ul className="ml-4 list-disc">
+            <li>Before meter: {beforeLength}"</li>
+            <li>Meter itself: 6"</li>
+            <li>After meter: {afterLength}"</li>
+            <li className="font-semibold">Total: {total}"</li>
+          </ul>
+          <pre className="mt-2 text-xs text-gray-700 whitespace-pre-wrap">
+{asciiDiagram()}
+          </pre>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/*******************************************
+ * TraineeList Component
+ *******************************************/
+const TraineeList = ({ trainees, onAdd, onRemove }) => {
+  const [inputName, setInputName] = useState('');
+
+  const handleAdd = () => {
+    if(!inputName.trim()) return;
+    onAdd(inputName.trim());
+    setInputName('');
+  };
+  return (
+    <div>
+      <div className="flex items-end gap-2">
+        <div>
+          <label className="block text-sm font-semibold mb-1">
+            Add Trainee Name:
+          </label>
+          <input
+            type="text"
+            className="p-2 border rounded"
+            placeholder="e.g. John Doe"
+            value={inputName}
+            onChange={(e)=> setInputName(e.target.value)}
+          />
+        </div>
+        <button
+          onClick={handleAdd}
+          className="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700"
+        >
+          Add
+        </button>
+      </div>
+      <div className="mt-3 space-y-2">
+        {trainees.length===0?(
+          <p className="text-sm text-gray-500">No trainees yet.</p>
+        ):(
+          trainees.map(t=>(
+            <div key={t.id} className="border rounded p-2 bg-white flex items-center gap-2">
+              <span>{t.name}</span>
+              <button
+                onClick={()=>onRemove(t.id)}
+                className="ml-auto text-red-500 hover:text-red-700 text-sm"
+                title="Remove Trainee"
+              >
+                <i className="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+/*******************************************
+ * ShapeSVG Component
+ * Updated shapes based on user request
+ *******************************************/
+const ShapeSVG = ({ shapeClass }) => {
+  const commonProps = {
+    xmlns: "http://www.w3.org/2000/svg",
+    viewBox: "0 0 100 100", // Adjusted for consistent scaling
+    "aria-label": shapeClass.charAt(0).toUpperCase() + shapeClass.slice(1),
+    className: "flow-svg",
+    preserveAspectRatio: "none" // Ensures SVG stretches to fill container
+  };
+
+  switch (shapeClass) {
+    case 'pipe':
+      return (
+        <svg {...commonProps}>
+          <rect x="0" y="40" width="100" height="20" rx="10" ry="10" />
+        </svg>
+      );
+    case 'valve':
+      return (
+        <svg {...commonProps}>
+          <polygon points="50,15 85,50 50,85 15,50" />
+          <line x1="0" y1="50" x2="15" y2="50" />
+          <line x1="85" y1="50" x2="100" y2="50" />
+          <line x1="50" y1="15" x2="50" y2="0" />
+        </svg>
+      );
+    case 'tank':
+      return (
+        <svg {...commonProps}>
+          <ellipse cx="50" cy="50" rx="30" ry="15" fill="lightblue" />
+          <rect x="20" y="35" width="60" height="30" rx="5" ry="5" />
+          <ellipse cx="50" cy="65" rx="30" ry="15" fill="lightblue" />
+        </svg>
+      );
+    case 'boostertank':
+      return (
+        <svg {...commonProps}>
+          <rect x="25" y="10" width="50" height="80" rx="10" ry="10" />
+          <ellipse cx="50" cy="10" rx="25" ry="10" fill="lightblue" />
+          <ellipse cx="50" cy="90" rx="25" ry="10" fill="lightblue" />
+        </svg>
+      );
+    case 'boosterpump':
+      return (
+        <svg {...commonProps}>
+          <rect x="20" y="35" width="60" height="30" rx="5" ry="5" />
+          <circle cx="80" cy="50" r="5" />
+          <line x1="80" y1="50" x2="100" y2="50" strokeWidth="2" />
+          <line x1="80" y1="50" x2="80" y2="20" strokeWidth="2" />
+        </svg>
+      );
+    case 'filter':
+      return (
+        <svg {...commonProps}>
+          <polygon points="50,10 90,80 10,80" />
+          <line x1="50" y1="10" x2="50" y2="80" />
+        </svg>
+      );
+    case 'regulator':
+      return (
+        <svg {...commonProps}>
+          <polygon points="50,15 80,50 50,85 20,50" />
+          <circle cx="50" cy="50" r="5" fill="#fff" />
+        </svg>
+      );
+    case 'gauge':
+      return (
+        <svg {...commonProps}>
+          <polygon points="50,10 70,30 70,70 50,90 30,70 30,30" />
+          <line x1="50" y1="50" x2="80" y2="50" strokeWidth="2" />
+          <polygon points="50,0 55,15 50,10 45,15" />
+        </svg>
+      );
+    case 'flowmeter':
+      return (
+        <svg {...commonProps}>
+          <rect x="20" y="20" width="60" height="60" fill="none" strokeWidth="2" />
+          <line x1="50" y1="50" x2="80" y2="50" strokeWidth="2" />
+          <line x1="50" y1="50" x2="50" y2="20" strokeWidth="2" />
+        </svg>
+      );
+    case 'injectionsite':
+      return (
+        <svg {...commonProps}>
+          <circle cx="50" cy="20" r="5" />
+          <line x1="50" y1="25" x2="50" y2="80" strokeWidth="2" />
+          <circle cx="50" cy="80" r="5" />
+          <line x1="50" y1="85" x2="50" y2="100" strokeWidth="2" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+};
+
+/*******************************************
+ * FlowLayoutCanvas Component
+ * Updated to handle new shapes and editable labels
+ *******************************************/
+const FlowLayoutCanvas = () => {
+  const canvasRef = useRef(null);
+  const [shapes] = useState([
+    { label: 'Pipe', className: 'pipe' },
+    { label: 'Valve', className: 'valve' },
+    { label: 'Tank', className: 'tank' },
+    { label: 'Booster Tank', className: 'boostertank' },
+    { label: 'Booster Pump', className: 'boosterpump' },
+    { label: 'Filter', className: 'filter' },
+    { label: 'Pressure Regulator', className: 'regulator' },
+    { label: 'Pressure Gauge', className: 'gauge' },
+    { label: 'Flowmeter', className: 'flowmeter' },
+    { label: 'Injection Site', className: 'injectionsite' },
+  ]);
+  const [newShape, setNewShape] = useState(shapes[0].className);
+  const [items, setItems] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
+
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x:0, y:0 });
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeOffset, setResizeOffset] = useState({ x:0, y:0 });
+
+  const snapThreshold = 20; // pixels
+
+  const handleAdd = () => {
+    const shapeObj = shapes.find(s=>s.className===newShape);
+    if(!shapeObj) return;
+    const newItem = {
+      id: Date.now(),
+      x: 50,
+      y: 50,
+      w: newShape === 'pipe' ? 200 : 100, // Initial width for pipe stretching or default
+      h: 100,  // Fixed height to match SVG viewBox
+      angle: 0,
+      shapeClass: shapeObj.className,
+      label: shapeObj.label,
+      customLabel: '', // For additional specifications
+      selected: false
+    };
+    setItems([...items, newItem]);
+  };
+
+  const selectItem = (id)=>{
+    setItems(prev=>
+      prev.map(it=>({ ...it, selected: it.id===id }))
+    );
+    setSelectedId(id);
+  };
+
+  const rotateItem = (deg) => {
+    if(!selectedId) return;
+    setItems(prev=>
+      prev.map(it=>{
+        if(it.id === selectedId){
+          return {...it, angle: (it.angle + deg) % 360 };
+        }
+        return it;
+      })
+    );
+  };
+
+  const deleteItem = (id) => {
+    setItems(prev => prev.filter(it => it.id !== id));
+    if(selectedId === id){
+      setSelectedId(null);
+    }
+  };
+
+  const resetCanvas = () => {
+    if(window.confirm("Are you sure you want to reset the canvas? All components will be removed.")){
+      setItems([]);
+      setSelectedId(null);
+    }
+  };
+
+  // Define connection points for each shape
+  const getConnectionPoints = (item) => {
+    const { x, y, w, h, angle } = item;
+    const radians = angle * (Math.PI / 180);
+    const cos = Math.cos(radians);
+    const sin = Math.sin(radians);
+    const centerX = x + w / 2;
+    const centerY = y + h / 2;
+
+    // Define connection points relative to the center
+    const points = {
+      top: { x: centerX, y: y },
+      bottom: { x: centerX, y: y + h },
+      left: { x: x, y: centerY },
+      right: { x: x + w, y: centerY },
+    };
+
+    // Rotate points around the center
+    const rotatedPoints = {};
+    for(let key in points){
+      const dx = points[key].x - centerX;
+      const dy = points[key].y - centerY;
+      rotatedPoints[key] = {
+        x: centerX + dx * cos - dy * sin,
+        y: centerY + dx * sin + dy * cos
+      };
+    }
+
+    return rotatedPoints;
+  };
+
+  // Snapping logic
+  useEffect(()=>{
+    const handleMouseDown = (e) => {
+      const canvas = canvasRef.current;
+      if(!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const offsetX = e.clientX - rect.left;
+      const offsetY = e.clientY - rect.top;
+
+      // Find the topmost item under the cursor
+      let foundItem = null;
+      for(let i=items.length-1; i>=0; i--){
+        const it = items[i];
+        // Calculate rotated bounding box
+        const radians = it.angle * (Math.PI / 180);
+        const cos = Math.cos(radians);
+        const sin = Math.sin(radians);
+        const dx = offsetX - (it.x + it.w / 2);
+        const dy = offsetY - (it.y + it.h / 2);
+        const xRot = dx * cos + dy * sin + it.w / 2;
+        const yRot = -dx * sin + dy * cos + it.h / 2;
+        if(xRot >=0 && xRot <= it.w && yRot >=0 && yRot <= it.h){
+          foundItem = it;
+          break;
+        }
+      }
+
+      if(foundItem){
+        selectItem(foundItem.id);
+        const localX = offsetX - foundItem.x;
+        const localY = offsetY - foundItem.y;
+        if(localX > foundItem.w-10 && localY > foundItem.h-10){
+          setIsResizing(true);
+          setResizeOffset({ x:offsetX, y:offsetY });
+        } else {
+          setIsDragging(true);
+          setDragOffset({
+            x: offsetX - foundItem.x,
+            y: offsetY - foundItem.y
+          });
+          // Automatically focus the label input when dragging starts
+          setTimeout(()=>{
+            const input = document.getElementById(`edit-label-${foundItem.id}`);
+            if(input){
+              input.focus();
+            }
+          }, 0);
+        }
+      } else {
+        // Clicked on empty space
+        setSelectedId(null);
+        setItems(prev=> prev.map(it=> ({ ...it, selected:false })));
+      }
+    };
+
+    const handleMouseMove = (e) => {
+      if(!canvasRef.current) return;
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const offsetX = e.clientX - rect.left;
+      const offsetY = e.clientY - rect.top;
+
+      if(isDragging && selectedId){
+        let newItems = items.map(it=>{
+          if(it.id === selectedId){
+            let newX = offsetX - dragOffset.x;
+            let newY = offsetY - dragOffset.y;
+
+            // Snapping logic
+            let snapped = false;
+            items.forEach(other => {
+              if(other.id === selectedId) return;
+              const otherPoints = getConnectionPoints(other);
+              const currentItemPoints = getConnectionPoints({...it, x: newX, y: newY});
+              for(let key in currentItemPoints){
+                for(let okey in otherPoints){
+                  const dx = currentItemPoints[key].x - otherPoints[okey].x;
+                  const dy = currentItemPoints[key].y - otherPoints[okey].y;
+                  const distance = Math.sqrt(dx*dx + dy*dy);
+                  if(distance < snapThreshold){
+                    // Snap the current item's key point to the other item's okey point
+                    newX += otherPoints[okey].x - currentItemPoints[key].x;
+                    newY += otherPoints[okey].y - currentItemPoints[key].y;
+                    snapped = true;
+                    break;
+                  }
+                }
+                if(snapped) break;
+              }
+            });
+
+            return { ...it, x: newX, y: newY };
+          }
+          return it;
+        });
+        setItems(newItems);
+      }
+
+      if(isResizing && selectedId){
+        setItems(prev=>
+          prev.map(it=>{
+            if(it.id === selectedId){
+              let newW = it.w + (offsetX - resizeOffset.x);
+              let newH = it.h + (offsetY - resizeOffset.y);
+              if(newW < 60) newW = 60; // Minimum width to maintain visibility
+              if(newH < 40) newH = 40; // Fixed height
+              return { ...it, w: newW, h: newH };
+            }
+            return it;
+          })
+        );
+        setResizeOffset({ x: offsetX, y: offsetY });
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      setIsResizing(false);
+    };
+
+    const canvas = canvasRef.current;
+    if(canvas){
+      canvas.addEventListener('mousedown', handleMouseDown);
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return ()=>{
+      if(canvas){
+        canvas.removeEventListener('mousedown', handleMouseDown);
+      }
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [items, isDragging, isResizing, selectedId, dragOffset, resizeOffset]);
+
+  // Handle label editing
+  const handleLabelChange = (id, newLabel) => {
+    setItems(prev =>
+      prev.map(it => {
+        if(it.id === id){
+          return { ...it, customLabel: newLabel };
+        }
+        return it;
+      })
+    );
+  };
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <select
+          className="border p-1 rounded"
+          value={newShape}
+          onChange={(e)=> setNewShape(e.target.value)}
+        >
+          {shapes.map(sh=> (
+            <option key={sh.className} value={sh.className}>{sh.label}</option>
+          ))}
+        </select>
+        <button
+          onClick={handleAdd}
+          className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Add
+        </button>
+        <button
+          onClick={resetCanvas}
+          className="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 ml-auto"
+        >
+          Reset Canvas
+        </button>
+        {selectedId && (
+          <div className="flex items-center gap-2 ml-4">
+            <span className="text-sm">Rotate:</span>
+            <button
+              onClick={()=> rotateItem(-15)}
+              className="bg-gray-300 hover:bg-gray-400 px-2 rounded"
+            >
+              -15°
+            </button>
+            <button
+              onClick={()=> rotateItem(15)}
+              className="bg-gray-300 hover:bg-gray-400 px-2 rounded"
+            >
+              +15°
+            </button>
+          </div>
+        )}
+      </div>
+      <div
+        ref={canvasRef}
+        className="flow-canvas"
+      >
+        {items.map(it=>(
+          <div
+            key={it.id}
+            className={`flow-item ${it.shapeClass} ${it.selected?'selected':''}`}
+            style={{
+              left: it.x,
+              top: it.y,
+              width: it.w,
+              height: it.h,
+              transform: `rotate(${it.angle}deg)`,
+              zIndex: it.selected ? 10 : 1
+            }}
+            onClick={(e)=> {
+              e.stopPropagation();
+              selectItem(it.id);
+              // Automatically focus the label input when selected
+              setTimeout(()=>{
+                const input = document.getElementById(`edit-label-${it.id}`);
+                if(input){
+                  input.focus();
+                }
+              }, 0);
+            }}
+          >
+            {/* Delete Button */}
+            <button
+              className="delete-button"
+              onClick={(e)=> {
+                e.stopPropagation();
+                deleteItem(it.id);
+              }}
+              title="Delete Component"
+            >
+              &times;
+            </button>
+            {/* SVG Shape */}
+            <ShapeSVG shapeClass={it.shapeClass} />
+            {/* Label (Custom if available) */}
+            <div className="flow-label">
+              {it.customLabel ? it.customLabel : it.label}
+            </div>
+            {/* Editable Label Input - Renamed to "Add Spec" */}
+            <input
+              type="text"
+              id={`edit-label-${it.id}`} // Unique ID for each input
+              className="edit-label-input p-1 border rounded text-xs"
+              placeholder="Add Spec..."
+              value={it.customLabel}
+              onChange={(e)=> handleLabelChange(it.id, e.target.value)}
+              onClick={(e) => e.stopPropagation()} // Prevent triggering onBlur when clicking inside
+              onBlur={() => setSelectedId(null)} // Hide input on blur
+            />
+            {/* Resize Handle */}
+            <div className="flow-resize"></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/*******************************************
+ * EDIEChecklist (Main Component)
+ *******************************************/
+const EDIEChecklist = () => {
+  const [openSection, setOpenSection] = useState('space');
+  const [printMode, setPrintMode] = useState(false);
+
+  // Basic form data
+  const [formData, setFormData] = useState({
+    location:'',
+    date:'',
+    contact:'',
+    phone:'',
+    address:'',
+    wallSpace:false,
+    mountingHeight:false,
+    floorSpace:false,
+    containerPosition:false,
+    powerOutlet:false,
+    powerDistance:'',
+    injectionPort:false,
+    ventilation:false,
+    precursorSize:'15-gallon',
+    activatorSize:'15-gallon',
+    differentAcidRatio:false,
+    acidRatio:'',
+    notes:'',
+    visibleNotes:'',
+    // New fields for Kemin Water Test
+    requestDemandTest:false,
+    requestColiformReport:false
+  });
+
+  // Water Analysis
+  // Each param: { checked: bool, value: '' }
+  const [waterParams, setWaterParams] = useState({
+    coliform:{checked:false, value:''},
+    arsenic:{checked:false, value:''},
+    lead:{checked:false, value:''},
+    manganese:{checked:false, value:''},
+    sulfides:{checked:false, value:''},
+    iron:{checked:false, value:''},
+    chlorine:{checked:false, value:''},
+    ph:{checked:false, value:''},
+    tds:{checked:false, value:''},
+    orp:{checked:false, value:''},
+    sodium:{checked:false, value:''},
+    specifyDemand: false,
+    demandPpm:''
+  });
+
+  // For images
+  const [uploadedImages, setUploadedImages] = useState([]);
+
+  // Alternative Arrangements
+  const [arrangements, setArrangements] = useState({
+    needsStand:false,
+    nonPvcPiping:false,
+    needsSaddleClamp:false,
+    extendedPower:false,
+    extendedInjection:false,
+    extendedFlowmeter:false
+  });
+
+  // Tools/Kit Inventory
+  // We'll just display them as a list, as requested
+  const emergencyComponents = [
+    'Spare JACO fittings and check valves',
+    'Extra level sensors',
+    'Backup injection quills',
+    'Suction/deaeration tubing',
+    'Extended installation tubing',
+    'Spare beacon and pump(s)'
+  ];
+  const toolItems = [
+    'Tubing cutters',
+    'Adjustable wrenches',
+    'Thread sealant/Teflon tape',
+    'Measuring tape',
+    'Level',
+    'Phillips screwdriver',
+    'Drill and mounting screws with bits',
+    'Hammer drill and concrete screws (for concrete walls)',
+    '2x4 planks (for wall reinforcement)',
+    'Drill bits: 1/2in (saddle, cone bit recommended), 1/8in (pilot holes)',
+    'Container opening tools (drum bungs removable with screwdrivers/channel locks)'
+  ];
+  const safetyItems = [
+    'Chemical-resistant gloves',
+    'Respirator (required only for open/leaking chamber)'
+  ];
+  const optionalItems = [
+    'PRO-OXINE/OXINE Droplet Test Kit (for validation/training)',
+    'Zip ties (for cable management)',
+    'Chemical spill kit with sodium thiosulfate (for high-traffic/volume sites)'
+  ];
+
+  // Documentation
+  const [docsEndUserTraining, setDocsEndUserTraining] = useState({
+    operationSafety: false,
+    dropletKit: false,
+    colorimeter: false
+  });
+  const [traineeNames, setTraineeNames] = useState([]);
+
+  // Water Param Row Helper
+  const WaterParamRow = ({ nameKey, label }) => {
+    const param = waterParams[nameKey];
+    if(!param) return null;
+
+    const handleCheck = () => {
+      setWaterParams(prev=>({
+        ...prev,
+        [nameKey]: {
+          ...prev[nameKey],
+          checked: !param.checked,
+          value: param.checked ? '' : param.value
+        }
+      }));
+    };
+    const handleValueChange = (val) => {
+      setWaterParams(prev=>({
+        ...prev,
+        [nameKey]: { ...prev[nameKey], value: val }
+      }));
+    };
+
+    return (
+      <div className="flex items-center gap-2">
+        <CheckboxItem
+          label={label}
+          checked={param.checked}
+          onChange={handleCheck}
+        />
+        {param.checked && (
+          <input
+            type="number"
+            className="border p-1 rounded w-24 text-sm"
+            placeholder="Value"
+            value={param.value}
+            onChange={(e)=> handleValueChange(e.target.value)}
+          />
+        )}
+      </div>
+    );
+  };
+
+  // Basic validations
+  const [errors, setErrors] = useState({});
+  useEffect(()=>{
+    const newErrors={};
+    if(!formData.location) newErrors.location='Facility name is required';
+    if(!formData.date) newErrors.date='Date is required';
+    if(!formData.contact) newErrors.contact='Contact person is required';
+    if(!formData.phone) newErrors.phone='Phone number is required';
+    else if(!/^\+?[\d\s-]{10,}$/.test(formData.phone)){
+      newErrors.phone='Invalid phone number format';
+    }
+    setErrors(newErrors);
+  }, [formData]);
+
+  const toggleSection = (sectionName)=>{
+    if(printMode) return;
+    setOpenSection(prev=>prev===sectionName?'':sectionName);
+  };
+
+  const handlePrint = () => {
+    setPrintMode(true);
+    setOpenSection('all');
+    setTimeout(()=>{
+      window.print();
+      setPrintMode(false);
+      setOpenSection('space'); // revert
+    },300);
+  };
+
+  // Progress Calculation
+  const calcProgress = () => {
+    let completed=0; let total=0;
+    // 5 required fields (including address)
+    total+=5;
+    if(formData.location) completed++;
+    if(formData.date) completed++;
+    if(formData.contact) completed++;
+    if(formData.phone && !errors.phone) completed++;
+    if(formData.address) completed++;
+
+    total+=4; // space checks
+    if(formData.wallSpace) completed++;
+    if(formData.mountingHeight) completed++;
+    if(formData.floorSpace) completed++;
+    if(formData.containerPosition) completed++;
+
+    total+=1; // ventilation
+    if(formData.ventilation) completed++;
+
+    total+=1; // injection port
+    if(formData.injectionPort) completed++;
+
+    // Additional points can be added for other sections
+
+    return Math.round((completed/total)*100);
+  };
+
+  // Handling images
+  const handleFileUpload = (files) => {
+    const allowedTypes = ['image/jpeg','image/png','image/gif'];
+    Array.from(files).forEach(file=>{
+      if(!allowedTypes.includes(file.type)){
+        alert(`File ${file.name} is not a supported image type.`);
+      } else {
+        const url = URL.createObjectURL(file);
+        setUploadedImages(prev=>[...prev, { name:file.name, url }]);
+      }
+    });
+  };
+
+  // Add / remove trainees
+  const [anyTraining, setAnyTraining] = useState(false);
+  useEffect(()=>{
+    const checkedAny = docsEndUserTraining.operationSafety ||
+      docsEndUserTraining.dropletKit ||
+      docsEndUserTraining.colorimeter;
+    setAnyTraining(checkedAny);
+  },[docsEndUserTraining]);
+
+  const addTrainee = (name) => {
+    if(!name.trim()) return;
+    setTraineeNames(prev=> [...prev, { id:Date.now(), name }]);
+  };
+  const removeTrainee = (id) => {
+    setTraineeNames(prev=> prev.filter(t=>t.id!==id));
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto p-4 bg-white">
+      <ProgressBar progress={calcProgress()} />
+
+      {/* Header */}
+      <div className="flex justify-between items-center border-b border-red-600 pb-4 mb-6">
+        <img
+          src="https://www.kemin.com/content/dam/kemin/corporate/ki/company/image/logos/Kemin-Logo-Color.svg"
+          alt="Kemin Logo"
+          className="h-12"
+        />
+        <h1 className="text-2xl font-bold text-red-600">
+          EDIE Pre-Installation Checklist
+        </h1>
+      </div>
+
+      {/* Basic Info Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg mb-6">
+        <div className="space-y-4">
+          {/* Facility Name */}
+          <div>
+            <label className="block text-sm font-semibold mb-1">
+              Facility Name <span className="text-red-600">*</span>
+            </label>
+            <input
+              type="text"
+              className={`w-full p-2 border rounded ${errors.location?'border-red-500':''}`}
+              value={formData.location}
+              onChange={(e)=> setFormData({...formData, location:e.target.value})}
+            />
+            {errors.location && (
+              <p className="text-red-500 text-xs mt-1">{errors.location}</p>
+            )}
+          </div>
+
+          {/* Contact Person */}
+          <div>
+            <label className="block text-sm font-semibold mb-1">
+              Contact Person <span className="text-red-600">*</span>
+            </label>
+            <input
+              type="text"
+              className={`w-full p-2 border rounded ${errors.contact?'border-red-500':''}`}
+              value={formData.contact}
+              onChange={(e)=> setFormData({...formData, contact:e.target.value})}
+            />
+            {errors.contact && (
+              <p className="text-red-500 text-xs mt-1">{errors.contact}</p>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          {/* Date */}
+          <div>
+            <label className="block text-sm font-semibold mb-1">
+              Date <span className="text-red-600">*</span>
+            </label>
+            <input
+              type="date"
+              className={`w-full p-2 border rounded ${errors.date?'border-red-500':''}`}
+              value={formData.date}
+              onChange={(e)=> setFormData({...formData, date:e.target.value})}
+            />
+            {errors.date && (
+              <p className="text-red-500 text-xs mt-1">{errors.date}</p>
+            )}
+          </div>
+          {/* Phone */}
+          <div>
+            <label className="block text-sm font-semibold mb-1">
+              Phone <span className="text-red-600">*</span>
+            </label>
+            <input
+              type="tel"
+              className={`w-full p-2 border rounded ${errors.phone?'border-red-500':''}`}
+              value={formData.phone}
+              onChange={(e)=> setFormData({...formData, phone:e.target.value})}
+            />
+            {errors.phone && (
+              <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Address Field */}
+      <div className="bg-gray-50 p-4 rounded-lg mb-6">
+        <label className="block text-sm font-semibold mb-1">
+          Address
+        </label>
+        <input
+          type="text"
+          className="w-full p-2 border rounded"
+          placeholder="Street, City, State, ZIP"
+          value={formData.address}
+          onChange={(e)=> setFormData({...formData, address:e.target.value})}
+        />
+      </div>
+
+      {/* Space Requirements */}
+      <section className={`border rounded-lg overflow-hidden mb-4 ${printMode||openSection==='all'?'print-open':''}`}>
+        <SectionHeader
+          title="Space Requirements"
+          isOpen={openSection==='space'||openSection==='all'}
+          onToggle={()=>toggleSection('space')}
+          required
+        />
+        {(openSection==='space'||openSection==='all') && (
+          <div className="p-4 space-y-2">
+            <CheckboxItem
+              label="Wall space: 3ft × 2ft minimum for EDIE mounting"
+              subtext="Must be on a sturdy wall capable of supporting unit weight"
+              required
+              checked={formData.wallSpace}
+              onChange={(e)=> setFormData({...formData, wallSpace:e.target.checked})}
+            />
+            <CheckboxItem
+              label="Maximum mounting height: 54in (4.5ft) from floor/bottom of chemical drums"
+              required
+              checked={formData.mountingHeight}
+              onChange={(e)=> setFormData({...formData, mountingHeight:e.target.checked})}
+            />
+            <CheckboxItem
+              label="Floor space for chemical containers"
+              required
+              checked={formData.floorSpace}
+              onChange={(e)=> setFormData({...formData, floorSpace:e.target.checked})}
+            />
+            <CheckboxItem
+              label="Chemical containers must be positioned below EDIE unit"
+              required
+              checked={formData.containerPosition}
+              onChange={(e)=> setFormData({...formData, containerPosition:e.target.checked})}
+            />
+          </div>
+        )}
+      </section>
+
+      {/* Power Requirements */}
+      <section className={`border rounded-lg overflow-hidden mb-4 ${printMode||openSection==='all'?'print-open':''}`}>
+        <SectionHeader
+          title="Power Requirements"
+          isOpen={openSection==='power'||openSection==='all'}
+          onToggle={()=>toggleSection('power')}
+          required
+        />
+        {(openSection==='power'||openSection==='all') && (
+          <div className="p-4 space-y-2">
+            <CheckboxItem
+              label="110V power outlet within 6ft of EDIE mounting location"
+              subtext="If beyond 6ft, specify distance below"
+              required
+              checked={formData.powerOutlet}
+              onChange={(e)=> setFormData({...formData, powerOutlet:e.target.checked})}
+            />
+            {!formData.powerOutlet && (
+              <div className="ml-6">
+                <label className="block text-sm font-semibold">
+                  Distance from EDIE to Power Outlet (ft):
+                </label>
+                <input
+                  type="number"
+                  className="p-2 border rounded w-32"
+                  value={formData.powerDistance}
+                  onChange={(e)=> setFormData({...formData, powerDistance:e.target.value})}
+                />
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* Water Line Requirements */}
+      <section className={`border rounded-lg overflow-hidden mb-4 ${printMode||openSection==='all'?'print-open':''}`}>
+        <SectionHeader
+          title="Water Line Requirements"
+          isOpen={openSection==='water'||openSection==='all'}
+          onToggle={()=>toggleSection('water')}
+          required
+        />
+        {(openSection==='water'||openSection==='all') && (
+          <div className="p-4 space-y-4">
+            <CheckboxItem
+              label="1/2″ injection port in water line"
+              subtext="Female NPT Connection required"
+              required
+              checked={formData.injectionPort}
+              onChange={(e)=> setFormData({...formData, injectionPort:e.target.checked})}
+            />
+            <InfoAlert type="info">
+              <p className="font-semibold">Flowmeter Calculator</p>
+              <p className="text-sm">
+                Ensure there is adequate area for mounting the flowmeter. Enter your
+                pipe diameter below to see how much straight pipe is needed before
+                and after the meter.
+              </p>
+              <div className="mt-2">
+                <FlowmeterCalculator />
+              </div>
+            </InfoAlert>
+
+            {/* Removed Duplicate Kemin Water Test Request Section */}
+
+          </div>
+        )}
+      </section>
+
+      {/* Chemical Storage Requirements */}
+      <section className={`border rounded-lg overflow-hidden mb-4 ${printMode||openSection==='all'?'print-open':''}`}>
+        <SectionHeader
+          title="Chemical Storage Requirements"
+          isOpen={openSection==='chemical'||openSection==='all'}
+          onToggle={()=>toggleSection('chemical')}
+          required
+        />
+        {(openSection==='chemical'||openSection==='all') && (
+          <div className="p-4 space-y-4">
+            <CheckboxItem
+              label="Adequate ventilation for chemical storage area"
+              required
+              checked={formData.ventilation}
+              onChange={(e)=> setFormData({...formData, ventilation:e.target.checked})}
+            />
+            <div>
+              <label className="font-semibold block mb-2">
+                Precursor Container Size:
+              </label>
+              <select
+                className="border p-2 rounded"
+                value={formData.precursorSize}
+                onChange={(e)=>
+                  setFormData({...formData, precursorSize:e.target.value})
+                }
+              >
+                <option value="5-gallon">5-gallon</option>
+                <option value="15-gallon">15-gallon (recommended)</option>
+                <option value="55-gallon">55-gallon</option>
+                <option value="totes">Totes</option>
+              </select>
+            </div>
+            <div>
+              <label className="font-semibold block mb-2">
+                Activator Container Size:
+              </label>
+              <select
+                className="border p-2 rounded"
+                value={formData.activatorSize}
+                onChange={(e)=>
+                  setFormData({...formData, activatorSize:e.target.value})
+                }
+              >
+                <option value="5-gallon">5-gallon</option>
+                <option value="15-gallon">15-gallon (recommended)</option>
+                <option value="55-gallon">55-gallon</option>
+                <option value="totes">Totes</option>
+              </select>
+            </div>
+            <InfoAlert type="info">
+              <p className="font-semibold">Chemical Ratio:</p>
+              <p>Default chemical ratio is 10:1 (precursor:activator)</p>
+              <div className="mt-3 flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={formData.differentAcidRatio}
+                  onChange={(e)=>
+                    setFormData({...formData, differentAcidRatio:e.target.checked})
+                  }
+                />
+                <div>
+                  <span>Specify a different acid ratio if desired</span>
+                  {formData.differentAcidRatio && (
+                    <div className="mt-2">
+                      <label className="text-sm font-semibold block mb-1">
+                        Acid Ratio (e.g. 8:1):
+                      </label>
+                      <input
+                        type="text"
+                        className="p-2 border rounded w-32"
+                        placeholder="8:1"
+                        value={formData.acidRatio}
+                        onChange={(e)=>
+                          setFormData({...formData, acidRatio:e.target.value})
+                        }
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </InfoAlert>
+          </div>
+        )}
+      </section>
+
+      {/* Alternative Arrangements */}
+      <section className={`border rounded-lg overflow-hidden mb-4 ${printMode||openSection==='all'?'print-open':''}`}>
+        <SectionHeader
+          title="Alternative Arrangements"
+          isOpen={openSection==='alternative'||openSection==='all'}
+          onToggle={()=>toggleSection('alternative')}
+          warning="Must specify in advance"
+        />
+        {(openSection==='alternative'||openSection==='all') && (
+          <div className="p-4 space-y-4">
+            <CheckboxItem
+              label="No wall space: EDIE stand required"
+              checked={arrangements.needsStand}
+              onChange={(e)=> setArrangements({...arrangements, needsStand:e.target.checked})}
+            />
+            <CheckboxItem
+              label="Non-PVC piping: FDH flowmeter required instead of FDQ"
+              subtext="Note: FDH limited to 2in pipe/tubing"
+              checked={arrangements.nonPvcPiping}
+              onChange={(e)=>
+                setArrangements({...arrangements, nonPvcPiping:e.target.checked})
+              }
+            />
+            <CheckboxItem
+              label="PVC without injection port: Saddle clamp required"
+              subtext="Metal/PEX pipes are not supported"
+              checked={arrangements.needsSaddleClamp}
+              onChange={(e)=>
+                setArrangements({...arrangements, needsSaddleClamp:e.target.checked})
+              }
+            />
+            <CheckboxItem
+              label="Power beyond 6ft"
+              subtext="Extension cord specifications needed"
+              checked={arrangements.extendedPower}
+              onChange={(e)=>
+                setArrangements({...arrangements, extendedPower:e.target.checked})
+              }
+            />
+            <CheckboxItem
+              label="Injection point beyond 6ft"
+              subtext="Additional tubing length needed (up to 30ft possible)"
+              checked={arrangements.extendedInjection}
+              onChange={(e)=>
+                setArrangements({...arrangements, extendedInjection:e.target.checked})
+              }
+            />
+            <CheckboxItem
+              label="Flowmeter beyond ~9ft (3m)"
+              subtext="Example: 27ft distance requires 2 additional M12 patch cables (1 included)"
+              checked={arrangements.extendedFlowmeter}
+              onChange={(e)=>
+                setArrangements({...arrangements, extendedFlowmeter:e.target.checked})
+              }
+            />
+          </div>
+        )}
+      </section>
+
+      {/* Installation Kit Inventory */}
+      <section className={`border rounded-lg overflow-hidden mb-4 ${printMode||openSection==='all'?'print-open':''}`}>
+        <SectionHeader
+          title="Installation Kit Inventory"
+          isOpen={openSection==='kit'||openSection==='all'}
+          onToggle={()=>toggleSection('kit')}
+        />
+        {(openSection==='kit'||openSection==='all') && (
+          <div className="p-4 space-y-6">
+            <div>
+              <h3 className="font-semibold mb-3 text-red-600">
+                Emergency/Backup Components
+              </h3>
+              <ul className="list-disc ml-5 space-y-1 text-sm">
+                {emergencyComponents.map(it=> (
+                  <li key={it}>{it}</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-3 text-red-600">
+                Tools (All Required)
+              </h3>
+              <ul className="list-disc ml-5 space-y-1 text-sm">
+                {toolItems.map(it=>(
+                  <li key={it}>{it}</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-3 text-red-600">
+                Safety Equipment
+              </h3>
+              <ul className="list-disc ml-5 space-y-1 text-sm">
+                {safetyItems.map(it=>(
+                  <li key={it}>{it}</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-3 text-red-600">
+                Optional/Situation-Specific Items
+              </h3>
+              <ul className="list-disc ml-5 space-y-1 text-sm">
+                {optionalItems.map(it=>(
+                  <li key={it}>{it}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Documentation */}
+      <section className={`border rounded-lg overflow-hidden mb-4 ${printMode||openSection==='all'?'print-open':''}`}>
+        <SectionHeader
+          title="Documentation"
+          isOpen={openSection==='documents'||openSection==='all'}
+          onToggle={()=>toggleSection('documents')}
+        />
+        {(openSection==='documents'||openSection==='all') && (
+          <div className="p-4 space-y-4">
+            <h3 className="font-semibold text-red-600 mb-2">
+              Required Documents (Listed)
+            </h3>
+            <ul className="list-disc ml-5 space-y-1 text-sm">
+              <li>Installation manual (in EDIE)</li>
+              <li>Pre-installation checklist</li>
+              <li>Chemical SDS sheets</li>
+            </ul>
+
+            <h3 className="font-semibold text-red-600 mt-4 mb-2">
+              End-User Training Requirements
+            </h3>
+            <p className="text-sm text-gray-600 mb-3">
+              If any of these boxes are checked, a training log is required.
+            </p>
+            <div className="ml-3 space-y-1">
+              <CheckboxItem
+                label="Operation and Safety"
+                checked={docsEndUserTraining.operationSafety}
+                onChange={()=>
+                  setDocsEndUserTraining(prev=>({
+                    ...prev, operationSafety:!prev.operationSafety
+                  }))
+                }
+              />
+              <CheckboxItem
+                label="Water testing using droplet kit"
+                checked={docsEndUserTraining.dropletKit}
+                onChange={()=>
+                  setDocsEndUserTraining(prev=>({
+                    ...prev, dropletKit:!prev.dropletKit
+                  }))
+                }
+              />
+              <CheckboxItem
+                label="Water testing using colorimeter (e.g. Hach DR300)"
+                checked={docsEndUserTraining.colorimeter}
+                onChange={()=>
+                  setDocsEndUserTraining(prev=>({
+                    ...prev, colorimeter:!prev.colorimeter
+                  }))
+                }
+              />
+            </div>
+            {anyTraining && (
+              <div className="mt-4 bg-blue-50 border-l-4 border-blue-400 p-4 text-sm rounded">
+                <p className="font-semibold mb-2">Trainee Log</p>
+                <TraineeList
+                  trainees={traineeNames}
+                  onAdd={addTrainee}
+                  onRemove={removeTrainee}
+                />
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* Flow Layout */}
+      <section className={`border rounded-lg overflow-hidden mb-4 ${printMode||openSection==='all'?'print-open':''}`}>
+        <SectionHeader
+          title="Flow Layout"
+          isOpen={openSection==='flowLayout'||openSection==='all'}
+          onToggle={()=>toggleSection('flowLayout')}
+        />
+        {(openSection==='flowLayout'||openSection==='all') && (
+          <div className="p-4 space-y-4">
+            <p className="text-sm text-gray-600">
+              Provide pictures or map out the flow layout (or both). 
+              Drag, rotate, and resize components in the canvas below.
+            </p>
+
+            {/* Flow Layout Canvas */}
+            <FlowLayoutCanvas />
+
+            {/* Upload pictures (thumbnails) */}
+            <div className="mt-4 border bg-gray-50 p-4 rounded">
+              <label className="block text-sm font-semibold mb-2">
+                Upload Flow Layout Pictures
+              </label>
+              <div
+                className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-md text-sm text-gray-600"
+              >
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  className="hidden"
+                  id="flow-file-upload"
+                  onChange={(e)=> handleFileUpload(e.target.files)}
+                />
+                <label htmlFor="flow-file-upload" className="cursor-pointer">
+                  <i className="fa-solid fa-upload mr-2"></i>
+                  Click or Drop files here
+                </label>
+              </div>
+              {uploadedImages.length > 0 && (
+                <div className="mt-4 grid grid-cols-3 md:grid-cols-4 gap-2">
+                  {uploadedImages.map((img) => (
+                    <div key={img.url} className="border bg-white p-1 flex items-center justify-center">
+                      <img
+                        src={img.url}
+                        alt={img.name}
+                        title={img.name}
+                        className="h-16 w-auto object-contain"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Water Analysis */}
+      <section className={`border rounded-lg overflow-hidden mb-4 ${printMode||openSection==='all'?'print-open':''}`}>
+        <SectionHeader
+          title="Water Analysis"
+          isOpen={openSection==='waterAnalysis'||openSection==='all'}
+          onToggle={()=>toggleSection('waterAnalysis')}
+        />
+        {(openSection==='waterAnalysis'||openSection==='all') && (
+          <div className="p-4 space-y-4">
+            <p className="text-sm text-gray-600">
+              Select parameters to indicate you have data. Once selected,
+              enter numeric values if available.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+              <WaterParamRow nameKey="coliform" label="Coliform" />
+              <WaterParamRow nameKey="sodium" label="Sodium" />
+              <WaterParamRow nameKey="arsenic" label="Arsenic" />
+              <WaterParamRow nameKey="lead" label="Lead" />
+              <WaterParamRow nameKey="manganese" label="Manganese" />
+              <WaterParamRow nameKey="sulfides" label="Sulfides" />
+              <WaterParamRow nameKey="iron" label="Iron" />
+              <WaterParamRow nameKey="chlorine" label="Chlorine" />
+              <WaterParamRow nameKey="ph" label="pH" />
+              <WaterParamRow nameKey="tds" label="TDS" />
+              <WaterParamRow nameKey="orp" label="ORP" />
+            </div>
+
+            <CheckboxItem
+              label="Specify Demand in PPM"
+              checked={waterParams.specifyDemand}
+              onChange={()=> 
+                setWaterParams(prev=>({
+                  ...prev,
+                  specifyDemand:!prev.specifyDemand
+                }))
+              }
+            />
+            {waterParams.specifyDemand && (
+              <div className="ml-6">
+                <label className="block text-sm font-semibold">
+                  Demand (PPM):
+                </label>
+                <input
+                  type="number"
+                  className="p-2 border rounded w-24"
+                  placeholder="50"
+                  value={waterParams.demandPpm}
+                  onChange={(e)=>
+                    setWaterParams(prev=>({
+                      ...prev,
+                      demandPpm:e.target.value
+                    }))
+                  }
+                />
+              </div>
+            )}
+
+            {/* Kemin Water Test Request Section */}
+            <div className="mt-4">
+              <InfoAlert type="info">
+                <p className="font-semibold">Request Kemin Water Test</p>
+                <p className="text-sm">
+                  Please check with Kemin Customer Lab Services prior to requesting analysis.
+                </p>
+              </InfoAlert>
+              <div className="mt-2 space-y-2">
+                <CheckboxItem
+                  label="Request Demand Test"
+                  checked={formData.requestDemandTest}
+                  onChange={(e)=> setFormData({...formData, requestDemandTest:e.target.checked})}
+                />
+                <CheckboxItem
+                  label="Request Coliform/Trace Minerals Report"
+                  checked={formData.requestColiformReport}
+                  onChange={(e)=> setFormData({...formData, requestColiformReport:e.target.checked})}
+                />
+                {/* Warning Message */}
+                {formData.requestColiformReport && (
+                  <div className="mt-2 bg-red-50 border-l-4 border-red-400 p-3 text-sm text-red-700 rounded">
+                    <i className="fa-solid fa-triangle-exclamation mr-2"></i>
+                    Trace minerals/Coliform requires a water sample to be overnighted in a Kemin-provided kit.
+                  </div>
+                )}
+              </div>
+            </div>
+            {/* End of Kemin Water Test Request Section */}
+
+            <div className="mt-4">
+              <label className="block text-sm font-semibold mb-1">
+                Additional Notes (colors, odors, etc.)
+              </label>
+              <textarea
+                className="w-full p-2 border rounded"
+                rows="2"
+                value={formData.visibleNotes}
+                onChange={(e)=>
+                  setFormData({...formData, visibleNotes:e.target.value})
+                }
+              />
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Additional Notes */}
+      <section className={`border rounded-lg overflow-hidden mb-4 ${printMode||openSection==='all'?'print-open':''}`}>
+        <SectionHeader
+          title="Additional Notes"
+          isOpen={openSection==='notes'||openSection==='all'}
+          onToggle={()=>toggleSection('notes')}
+        />
+        {(openSection==='notes'||openSection==='all') && (
+          <div className="p-4">
+            <label className="block text-sm font-semibold mb-1">
+              Final Notes or Comments:
+            </label>
+            <textarea
+              className="w-full p-2 border rounded"
+              rows="3"
+              placeholder="Add any extra clarifications..."
+              value={formData.notes}
+              onChange={(e)=>
+                setFormData({...formData, notes:e.target.value})
+              }
+            />
+          </div>
+        )}
+      </section>
+
+      {/* Final Verification */}
+      <section className={`border rounded-lg overflow-hidden bg-gray-50 mb-4 ${printMode||openSection==='all'?'print-open':''}`}>
+        <SectionHeader
+          title="Final Verification"
+          isOpen={openSection==='final'||openSection==='all'}
+          onToggle={()=>toggleSection('final')}
+        />
+        {(openSection==='final'||openSection==='all') && (
+          <div className="p-4 space-y-4">
+            <div className="bg-white p-3 rounded border">
+              <CheckboxItem
+                label="I verify that all plumbing modifications will be performed by qualified personnel"
+                subtext="Required due to liability considerations"
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-white p-3 rounded border">
+                <label className="block font-semibold mb-2">
+                  Technical Representative
+                </label>
+                <input
+                  type="text"
+                  className="w-full p-2 border rounded"
+                  placeholder="Name"
+                />
+                <div className="mt-2">
+                  <CheckboxItem label="I verify all requirements have been reviewed" />
+                </div>
+              </div>
+              <div className="bg-white p-3 rounded border">
+                <label className="block font-semibold mb-2">
+                  Customer Representative
+                </label>
+                <input
+                  type="text"
+                  className="w-full p-2 border rounded"
+                  placeholder="Name"
+                />
+                <div className="mt-2">
+                  <CheckboxItem label="I acknowledge all requirements and preparations" />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Sticky bottom progress & print */}
+      <div className="sticky top-0 z-50 bg-white border-b px-4 py-3 shadow-sm -mx-4 my-4 no-print">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-semibold text-gray-700">
+              Completion Progress
+            </span>
+            <span className="text-sm text-red-600 font-semibold">
+              {calcProgress()}%
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className="bg-red-600 h-2 rounded-full transition-all duration-500"
+              style={{width: `${calcProgress()}%`}}
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <div className="fixed bottom-4 right-4 no-print">
+        <button
+          onClick={handlePrint}
+          className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+        >
+          <i className="fa-solid fa-print"></i>
+          Save as PDF
+        </button>
+      </div>
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<EDIEChecklist />);
+</script>
+</body>
+</html>
