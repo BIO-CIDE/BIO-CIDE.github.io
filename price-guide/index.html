@@ -1,325 +1,486 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Price Guide</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Price Guide</title>
 
-    <!-- Tailwind CSS CDN for styling -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Tailwind CSS CDN for styling -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+    rel="stylesheet"
+  />
 
-    <!-- React and ReactDOM CDN -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Font Awesome for icons -->
+  <script
+    src="https://kit.fontawesome.com/your-fontawesome-key.js"
+    crossorigin="anonymous"
+  ></script>
 
-    <!-- SheetJS for parsing Excel files -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+  <!-- React and ReactDOM CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 
-    <!-- Babel for JSX support -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- SheetJS for parsing Excel files -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
 
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f0f0f0; }
-        .row { display: flex; flex-wrap: wrap; justify-content: space-between; padding: 10px; }
-        .row > div { flex: 1; min-width: 150px; padding: 5px; box-sizing: border-box; }
-        .row:hover { background-color: #e2e8f0; transition: background-color 0.3s ease; }
+  <!-- Babel for JSX support -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-        .quantity-input { max-width: 80px; }
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
 
-        .btn {
-            background-color: #3498db;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            text-align: center;
-        }
+    /* Notification styles */
+    .notification {
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+      display: none;
+    }
+    .notification.show {
+      display: block;
+      animation: fadeInOut 3s ease-in-out forwards;
+    }
+    @keyframes fadeInOut {
+      0% {
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+      }
+    }
 
-        .btn:hover {
-            background-color: #2980b9;
-        }
+    /* Cart item style */
+    .cart-item {
+      background-color: #f8f9fa;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
 
-        .cart-item {
-            background-color: #f8f9fa;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .notification {
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 10px;
-            display: none;
-        }
-
-        .notification.show {
-            display: block;
-            animation: fadeInOut 3s ease-in-out;
-        }
-
-        @keyframes fadeInOut {
-            0% { opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-
-        @media (max-width: 640px) {
-            .row > div {
-                min-width: 100%;
-            }
-        }
-
-        .delete-btn {
-            background-color: #e74c3c;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .delete-btn:hover {
-            background-color: #c0392b;
-        }
-    </style>
+    /* Delete button */
+    .delete-btn {
+      background-color: #e74c3c;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .delete-btn:hover {
+      background-color: #c0392b;
+    }
+  </style>
 </head>
+
 <body>
+  <div id="root"></div>
 
-<div id="root"></div>
-
-<script type="text/babel">
+  <script type="text/babel">
     const { useState, useEffect } = React;
 
-    const PriceLookupTool = () => {
-        const [csvData, setCsvData] = useState([]);
-        const [searchTerm, setSearchTerm] = useState('');
-        const [lastUpdated, setLastUpdated] = useState('');
-        const [selection, setSelection] = useState([]);
-        const [totalAmount, setTotalAmount] = useState(0);
-        const [totalItems, setTotalItems] = useState(0);
-        const [notification, setNotification] = useState({ show: false, message: '', isError: false });
+    /*******************************************
+     * Announcements Data
+     *******************************************/
+    const announcements = [
+      {
+        id: 1,
+        date: "1/1/25",
+        message: "Flowmeters are no longer discounted when ordering with EDIEs",
+        type: "important" // can be 'important', 'warning', or 'info'
+      },
+      {
+        id: 2,
+        date: "12/15/24",
+        message: "New M12 cables are now 3 meters long from the control box on all EDIE builds",
+        type: "info"
+      }
+      {
+        id: 3,
+        date: "1/3/24",
+        message: "Orders may be delayed until complete ERP changeover which is scheduled to complete 1/13/2025",
+        type: "warning"
+      }
+    ];
 
-        // Fetch the Excel file from the same directory
-        const fetchExcelFile = async () => {
-            try {
-                const fileUrl = "Source.xlsx"; // Excel file in the same directory
-                
-                const response = await fetch(fileUrl);
-                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+    /*******************************************
+     * Announcements Component
+     *******************************************/
+    const Announcements = () => {
+      const [isOpen, setIsOpen] = useState(true);
 
-                const fileBlob = await response.blob();
-                const lastModified = response.headers.get('last-modified');
-                setLastUpdated(new Date(lastModified).toLocaleString());
-                parseExcelFile(fileBlob);
-            } catch (error) {
-                console.error('Error fetching the Excel file:', error);
-                showNotification('Error fetching the Excel file', true);
-            }
-        };
+      if (!announcements.length || !isOpen) return null;
 
-        // Parse the Excel file using SheetJS
-        const parseExcelFile = (fileBlob) => {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-                const filteredData = rawData.filter(row => {
-                    const m3PartNumber = row[1]; 
-                    return m3PartNumber && m3PartNumber.startsWith("Q");
-                }).map(row => ({
-                    bciNumber: row[0],
-                    description: row[2],
-                    uom: row[3],
-                    distPrice: formatPrice(row[4]), // Convert price to currency format
-                }));
-
-                setCsvData(filteredData);
-            };
-            reader.readAsArrayBuffer(fileBlob);
-        };
-
-        // Helper function to safely format price as a number and then convert to currency
-        const formatPrice = (price) => {
-            const numericPrice = parseFloat(price) || 0.00;
-            return numericPrice.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-        };
-
-        // Fetch the Excel file on mount
-        useEffect(() => {
-            fetchExcelFile();
-        }, []);
-
-        // Search filter
-        const handleSearch = (event) => setSearchTerm(event.target.value.toLowerCase());
-
-        const filteredData = csvData.filter((row) => {
-            const bciNumber = row.bciNumber ? String(row.bciNumber).toLowerCase() : '';
-            const description = row.description ? String(row.description).toLowerCase() : '';
-            
-            return (
-                bciNumber.includes(searchTerm) ||
-                description.includes(searchTerm)
-            );
-        });
-
-        // Add or update item in selection
-        const addToSelection = (item, quantity) => {
-            const updatedSelection = [...selection];
-            const existingItem = updatedSelection.find(i => i.bciNumber === item.bciNumber);
-            const priceTotal = parseFloat(item.distPrice.replace(/[^0-9.-]+/g, '')) * quantity;
-
-            if (quantity <= 0) {
-                // Remove item if quantity is 0 or negative
-                const index = updatedSelection.findIndex(i => i.bciNumber === item.bciNumber);
-                if (index !== -1) {
-                    updatedSelection.splice(index, 1);
-                }
-            } else if (existingItem) {
-                existingItem.quantity = quantity;
-                existingItem.total = priceTotal;
-            } else {
-                updatedSelection.push({ ...item, quantity, total: priceTotal });
-            }
-
-            setSelection(updatedSelection);
-            updateTotalAmount(updatedSelection);
-            updateTotalItems(updatedSelection);
-        };
-
-        // Delete item from selection
-        const deleteFromSelection = (bciNumber) => {
-            const updatedSelection = selection.filter(item => item.bciNumber !== bciNumber);
-            setSelection(updatedSelection);
-            updateTotalAmount(updatedSelection);
-            updateTotalItems(updatedSelection);
-        };
-
-        const updateTotalAmount = (updatedSelection) => {
-            const total = updatedSelection.reduce((sum, item) => sum + item.total, 0);
-            setTotalAmount(total.toFixed(2));
-        };
-
-        const updateTotalItems = (updatedSelection) => {
-            const totalItemsCount = updatedSelection.reduce((sum, item) => sum + item.quantity, 0);
-            setTotalItems(totalItemsCount);
-        };
-
-        const handleCopyCart = () => {
-            try {
-                const selectionText = selection.map(item => {
-                    const bciNumber = item.bciNumber ? String(item.bciNumber).toUpperCase() : 'N/A';
-                    const description = item.description ? String(item.description).toUpperCase() : 'N/A';
-                    const distPrice = item.distPrice ? String(item.distPrice).toUpperCase() : 'N/A';
-                    const uom = item.uom ? String(item.uom).toUpperCase() : 'N/A';
-                    
-                    return `${item.quantity}x (${bciNumber}) [${description}] @ ${distPrice} ${uom}`;
-                }).join('\n') + `\nUNIQUE ITEMS: ${selection.length}, TOTAL ITEMS: ${totalItems}, TOTAL: $${totalAmount}`;
-        
-                navigator.clipboard.writeText(selectionText).then(() => {
-                    showNotification('Selection copied to clipboard!');
-                }).catch((err) => {
-                    console.error('Failed to copy: ', err);
-                    showNotification('Failed to copy selection. Please try again.', true);
-                });
-            } catch (error) {
-                console.error('Error in handleCopyCart:', error);
-                showNotification('An error occurred while copying. Please try again.', true);
-            }
-        };
-
-        const showNotification = (message, isError = false) => {
-            setNotification({ show: true, message, isError });
-            setTimeout(() => setNotification({ show: false, message: '', isError: false }), 3000);
-        };
-
-        return (
-            <div className="p-4 sm:p-6 md:p-8 mx-200 bg-white shadow-lg rounded-lg">
-                <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-center text-gray-800">Price Guide</h1>
-
-                <div className="text-right text-sm text-gray-500">
-                    Last updated: {lastUpdated || 'No file uploaded'}
+      return (
+        <div className="mb-6 bg-gray-100 border border-gray-300 rounded-lg shadow-sm overflow-hidden">
+          <div className="bg-red-600 text-white px-4 py-2 flex justify-between items-center">
+            <span className="font-semibold">
+              <i className="fa-solid fa-bullhorn mr-2"></i>
+              Announcements
+            </span>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="text-white hover:text-gray-200"
+            >
+              <i className="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <div className="p-4 space-y-3">
+            {announcements.map((announcement) => (
+              <div key={announcement.id} className="flex items-start gap-2">
+                <i
+                  className={`fa-solid fa-circle-info mt-1 ${
+                    announcement.type === "important"
+                      ? "text-red-500"
+                      : announcement.type === "warning"
+                      ? "text-yellow-500"
+                      : "text-blue-500"
+                  }`}
+                ></i>
+                <div>
+                  <span className="font-semibold">{announcement.date}:</span>
+                  <span className="ml-2">{announcement.message}</span>
                 </div>
-
-                {/* Search input */}
-                <input
-                    type="text"
-                    className={`mt-4 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${searchTerm && 'input-focused'}`}
-                    placeholder="Search by BCI # or Description"
-                    value={searchTerm}
-                    onChange={handleSearch}
-                />
-
-                {!searchTerm && (
-                    <p className="text-center text-gray-500 mt-4">Type a part number or description to start.</p>
-                )}
-
-                {searchTerm && (
-                    <div className="mt-6">
-                        {filteredData.length > 0 ? (
-                            filteredData.map((row, index) => (
-                                <div key={index} className={`row border-b ${index % 2 === 0 ? 'bg-gray-100' : 'bg-white'}`}>
-                                    <div className="bciNumber"><strong>{row.bciNumber}</strong></div>
-                                    <div className="description">{row.description}</div>
-                                    <div className="price">{row.distPrice}</div>
-                                    <div className="quantity">
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            placeholder="Qty"
-                                            className="border rounded px-2 py-1 quantity-input"
-                                            onChange={(e) => addToSelection(row, Number(e.target.value))}
-                                        />
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="text-center py-4">No data found</div>
-                        )}
-                    </div>
-                )}
-
-                {/* Selection Section */}
-                {selection.length > 0 && (
-                    <div className="mt-6">
-                        <h2 className="text-xl font-semibold mb-4">Selection</h2>
-                        {selection.map((item, index) => (
-                            <div key={index} className="cart-item flex justify-between items-center">
-                                <div>
-                                    <div><strong>{item.description}</strong> ({item.bciNumber})</div>
-                                    <div>Quantity: {item.quantity}</div>
-                                    <div>Total: ${item.total.toFixed(2)}</div>
-                                </div>
-                                <button 
-                                    onClick={() => deleteFromSelection(item.bciNumber)}
-                                    className="delete-btn"
-                                >
-                                    Delete
-                                </button>
-                            </div>
-                        ))}
-                        <div className="text-right text-xl font-semibold mt-4">Total: ${totalAmount}</div>
-                        <button className="btn mt-4" onClick={handleCopyCart}>
-                            Copy Selection
-                        </button>
-                        <div className={`notification ${notification.show ? 'show' : ''} ${notification.isError ? 'bg-red-500' : 'bg-green-500'}`}>
-                            {notification.message}
-                        </div>
-                    </div>
-                )}
-            </div>
-        );
+              </div>
+            ))}
+          </div>
+        </div>
+      );
     };
 
-    ReactDOM.createRoot(document.getElementById('root')).render(<PriceLookupTool />);
-</script>
+    /*******************************************
+     * PriceLookupTool (Main Component)
+     *******************************************/
+    const PriceLookupTool = () => {
+      const [csvData, setCsvData] = useState([]);
+      const [searchTerm, setSearchTerm] = useState("");
+      const [lastUpdated, setLastUpdated] = useState("");
+      const [selection, setSelection] = useState([]);
+      const [totalAmount, setTotalAmount] = useState(0);
+      const [totalItems, setTotalItems] = useState(0);
+      const [notification, setNotification] = useState({
+        show: false,
+        message: "",
+        isError: false
+      });
 
+      // Fetch the Excel file on mount
+      useEffect(() => {
+        fetchExcelFile();
+      }, []);
+
+      // Fetch the Excel file from the same directory
+      const fetchExcelFile = async () => {
+        try {
+          const fileUrl = "Source.xlsx"; // Adjust path if needed
+
+          const response = await fetch(fileUrl);
+          if (!response.ok)
+            throw new Error(`HTTP error! Status: ${response.status}`);
+
+          // Attempt to get last-modified header
+          const lastModified = response.headers.get("last-modified");
+          if (lastModified) {
+            setLastUpdated(new Date(lastModified).toLocaleString());
+          } else {
+            // Fallback if last-modified header is not available
+            setLastUpdated("Not provided");
+          }
+
+          const fileBlob = await response.blob();
+          parseExcelFile(fileBlob);
+        } catch (error) {
+          console.error("Error fetching the Excel file:", error);
+          showNotification("Error fetching the Excel file", true);
+        }
+      };
+
+      // Parse the Excel file using SheetJS
+      const parseExcelFile = (fileBlob) => {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: "array" });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rawData = XLSX.utils.sheet_to_json(sheet, {
+              header: 1
+            });
+
+            const filteredData = rawData
+              .filter((row) => {
+                // row[1] is M3PartNumber. Keep only items that start with 'Q'
+                const m3PartNumber = row[1];
+                return m3PartNumber && m3PartNumber.toString().startsWith("Q");
+              })
+              .map((row) => ({
+                bciNumber: row[0],
+                description: row[2],
+                uom: row[3],
+                distPrice: formatPrice(row[4]) // Convert price to currency format
+              }));
+
+            setCsvData(filteredData);
+          } catch (err) {
+            console.error("Error parsing the Excel file:", err);
+            showNotification("Error parsing the Excel file", true);
+          }
+        };
+        reader.readAsArrayBuffer(fileBlob);
+      };
+
+      // Helper to format the price as currency
+      const formatPrice = (price) => {
+        const numericPrice = parseFloat(price) || 0.0;
+        return numericPrice.toLocaleString("en-US", {
+          style: "currency",
+          currency: "USD"
+        });
+      };
+
+      // Handle search input change
+      const handleSearch = (event) => {
+        setSearchTerm(event.target.value.toLowerCase());
+      };
+
+      // Filter data based on search term
+      const filteredData = csvData.filter((row) => {
+        const bciNumber = row.bciNumber
+          ? String(row.bciNumber).toLowerCase()
+          : "";
+        const description = row.description
+          ? String(row.description).toLowerCase()
+          : "";
+
+        return (
+          bciNumber.includes(searchTerm) || description.includes(searchTerm)
+        );
+      });
+
+      // Add or update item in selection
+      const addToSelection = (item, quantity) => {
+        const updatedSelection = [...selection];
+        const existingItem = updatedSelection.find(
+          (i) => i.bciNumber === item.bciNumber
+        );
+        const itemPrice = parseFloat(
+          item.distPrice.replace(/[^0-9.-]+/g, "")
+        );
+        const priceTotal = itemPrice * quantity;
+
+        if (quantity <= 0) {
+          // Remove item if quantity is 0 or negative
+          const index = updatedSelection.findIndex(
+            (i) => i.bciNumber === item.bciNumber
+          );
+          if (index !== -1) {
+            updatedSelection.splice(index, 1);
+          }
+        } else if (existingItem) {
+          existingItem.quantity = quantity;
+          existingItem.total = priceTotal;
+        } else {
+          updatedSelection.push({ ...item, quantity, total: priceTotal });
+        }
+
+        setSelection(updatedSelection);
+        updateTotals(updatedSelection);
+      };
+
+      // Delete item from selection
+      const deleteFromSelection = (bciNumber) => {
+        const updatedSelection = selection.filter(
+          (item) => item.bciNumber !== bciNumber
+        );
+        setSelection(updatedSelection);
+        updateTotals(updatedSelection);
+      };
+
+      // Update the total price and total items
+      const updateTotals = (updatedSelection) => {
+        const total = updatedSelection.reduce((sum, item) => sum + item.total, 0);
+        const totalItemsCount = updatedSelection.reduce(
+          (sum, item) => sum + item.quantity,
+          0
+        );
+        setTotalAmount(total.toFixed(2));
+        setTotalItems(totalItemsCount);
+      };
+
+      // Copy selection details to clipboard
+      const handleCopyCart = () => {
+        try {
+          const selectionText =
+            selection
+              .map((item) => {
+                const bciNumber = item.bciNumber
+                  ? String(item.bciNumber).toUpperCase()
+                  : "N/A";
+                const description = item.description
+                  ? String(item.description).toUpperCase()
+                  : "N/A";
+                const distPrice = item.distPrice
+                  ? String(item.distPrice).toUpperCase()
+                  : "N/A";
+                const uom = item.uom ? String(item.uom).toUpperCase() : "N/A";
+
+                return `${item.quantity}x (${bciNumber}) [${description}] @ ${distPrice} ${uom}`;
+              })
+              .join("\n") +
+            `\nUNIQUE ITEMS: ${selection.length}, TOTAL ITEMS: ${totalItems}, TOTAL: $${totalAmount}`;
+
+          navigator.clipboard
+            .writeText(selectionText)
+            .then(() => {
+              showNotification("Selection copied to clipboard!");
+            })
+            .catch((err) => {
+              console.error("Failed to copy: ", err);
+              showNotification("Failed to copy selection. Please try again.", true);
+            });
+        } catch (error) {
+          console.error("Error in handleCopyCart:", error);
+          showNotification("An error occurred while copying. Please try again.", true);
+        }
+      };
+
+      // Displays an on-screen message (success/error)
+      const showNotification = (message, isError = false) => {
+        setNotification({ show: true, message, isError });
+        setTimeout(
+          () => setNotification({ show: false, message: "", isError: false }),
+          3000
+        );
+      };
+
+      return (
+        <div className="min-h-screen p-4 sm:p-6 md:p-8 bg-white shadow-lg rounded-lg max-w-4xl mx-auto">
+          <Announcements />
+          
+          <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-center text-gray-800">
+            Price Guide
+          </h1>
+
+          <div className="text-right text-sm text-gray-500 mb-2">
+            <i className="fa-solid fa-clock mr-1"></i>
+            Last updated:{" "}
+            <span className="font-semibold">
+              {lastUpdated || "No file uploaded"}
+            </span>
+          </div>
+
+          {/* Search input */}
+          <div className="flex flex-col items-center gap-2">
+            <input
+              type="text"
+              className="p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Search by BCI # or Description..."
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+            {!searchTerm && (
+              <p className="text-center text-gray-500">
+                Type a part number or description to begin.
+              </p>
+            )}
+          </div>
+
+          {/* Search results */}
+          {searchTerm && (
+            <div className="mt-6 border-t border-gray-200 pt-4">
+              {filteredData.length > 0 ? (
+                filteredData.map((row, index) => (
+                  <div
+                    key={index}
+                    className={`flex flex-wrap items-center justify-between p-3 mb-1 rounded hover:bg-gray-50 transition-colors ${
+                      index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                    }`}
+                  >
+                    <div className="w-full sm:w-1/4 font-medium text-gray-700">
+                      {row.bciNumber}
+                    </div>
+                    <div className="w-full sm:w-1/2 text-gray-600">
+                      {row.description}
+                    </div>
+                    <div className="w-full sm:w-auto font-semibold text-blue-600">
+                      {row.distPrice}
+                    </div>
+                    <div className="w-full sm:w-auto mt-2 sm:mt-0">
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder="Qty"
+                        className="border rounded px-2 py-1 w-20"
+                        onChange={(e) =>
+                          addToSelection(row, Number(e.target.value))
+                        }
+                      />
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4">No matching records found.</div>
+              )}
+            </div>
+          )}
+
+          {/* Selection Section */}
+          {selection.length > 0 && (
+            <div className="mt-8">
+              <h2 className="text-xl font-semibold mb-4">Selection</h2>
+              {selection.map((item, index) => (
+                <div key={index} className="cart-item flex justify-between items-center">
+                  <div>
+                    <div>
+                      <strong>{item.description}</strong> ({item.bciNumber})
+                    </div>
+                    <div>Quantity: {item.quantity}</div>
+                    <div>Total: ${item.total.toFixed(2)}</div>
+                  </div>
+                  <button
+                    onClick={() => deleteFromSelection(item.bciNumber)}
+                    className="delete-btn"
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))}
+              <div className="text-right text-xl font-semibold mt-4">
+                Total: ${totalAmount}
+              </div>
+              <button
+                className="bg-blue-500 text-white px-4 py-2 mt-4 rounded shadow hover:bg-blue-600 transition-colors"
+                onClick={handleCopyCart}
+              >
+                <i className="fa-solid fa-copy mr-2"></i> Copy Selection
+              </button>
+              <div
+                className={`notification ${
+                  notification.show ? "show" : ""
+                } ${notification.isError ? "bg-red-500" : "bg-green-500"}`}
+              >
+                {notification.message}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // Render the main component
+    ReactDOM.createRoot(document.getElementById("root")).render(<PriceLookupTool />);
+  </script>
 </body>
 </html>
