@@ -512,86 +512,66 @@
       }
 
       // Refresh data
-      async function refreshData() {
-          showLoading();
-          try {
-              // Use simpler request without cache busting and abort controller
-              const response = await fetch(`${API_ENDPOINT}/devices`, {
-                  headers: {
-                      'X-API-KEY': apiKey
-                  }
-              });
+function renderDevices(devicesToRender) {
+    const devicesGrid = document.getElementById('devicesGrid');
+    devicesGrid.innerHTML = '';
 
-              if (response.ok) {
-                  const data = await response.json();
-                  if (Array.isArray(data)) {
-                      devices = data;
-                      renderDevices(devices);
-                      populateDeviceDropdown();
-                  } else {
-                      console.error('Invalid response format:', data);
-                      alert('Invalid data format received from server');
-                  }
-              } else {
-                  console.error('Server response error:', response.status);
-                  alert(`Failed to load devices: ${response.status}`);
-              }
-          } catch (error) {
-              console.error('Error fetching devices:', error);
-              alert('Error loading device data: ' + error.message);
-          } finally {
-              hideLoading();
-          }
-      }
+    if (devicesToRender.length === 0) {
+        devicesGrid.innerHTML = '<div class="col-12"><div class="alert alert-info">No devices found</div></div>';
+        return;
+    }
 
-      // Render devices grid
-      function renderDevices(devicesToRender) {
-          const devicesGrid = document.getElementById('devicesGrid');
-          devicesGrid.innerHTML = '';
+    devicesToRender.forEach(device => {
+        // Consistent timestamp handling - prefer timestamp in the data
+        let lastTimestamp;
+        if (device.latestData && device.latestData.timestamp) {
+            lastTimestamp = new Date(device.latestData.timestamp);
+        } else if (device.lastUpdated) {
+            lastTimestamp = new Date(device.lastUpdated);
+        } else {
+            lastTimestamp = null;
+        }
 
-          if (devicesToRender.length === 0) {
-              devicesGrid.innerHTML = '<div class="col-12"><div class="alert alert-info">No devices found</div></div>';
-              return;
-          }
+        // Debug logging
+        console.log(`Device ${device.deviceId}: timestamp=${lastTimestamp}, lastUpdated=${device.lastUpdated}`);
 
-          devicesToRender.forEach(device => {
-              // Get proper timestamp from the data
-              const lastUpdatedTime = device.lastUpdated ? new Date(device.lastUpdated) : null;
+        // Determine device status
+        let status = 'offline';
+        let statusClass = 'status-offline';
+        let errorCode = 'UNKNOWN';
+        let flowRate = 0;
+        let ppm = 0;
 
-              // Determine device status
-              let status = 'offline';
-              let statusClass = 'status-offline';
-              let errorCode = 'UNKNOWN';
-              let flowRate = 0;
-              let ppm = 0;
+        if (device.latestData) {
+            // Check if last update was more than 5 minutes ago
+            const now = new Date();
+            const timeDiff = lastTimestamp ? (now - lastTimestamp) / (1000 * 60) : 10; // difference in minutes
+            
+            console.log(`Device ${device.deviceId}: time difference = ${timeDiff.toFixed(2)} minutes`);
 
-              if (device.latestData) {
-                  // Check if last update was more than 5 minutes ago
-                  const now = new Date();
-                  const timeDiff = lastUpdatedTime ? (now - lastUpdatedTime) / (1000 * 60) : 10; // difference in minutes
+            if (timeDiff > 5) {
+                // Device is offline if data is too old
+                status = 'offline';
+                statusClass = 'status-offline';
+            } else {
+                // If recent data exists, determine status from error code
+                errorCode = device.latestData.errorCode || 'UNKNOWN';
+                flowRate = device.latestData.flow?.actual || 0;
+                ppm = device.latestData.ppm || 0;
 
-                  if (timeDiff > 5) {
-                      // Device is offline if data is too old
-                      status = 'offline';
-                      statusClass = 'status-offline';
-                  } else {
-                      // If recent data exists, determine status from error code
-                      errorCode = device.latestData.errorCode || 'UNKNOWN';
-                      flowRate = device.latestData.flow?.actual || 0;
-                      ppm = device.latestData.ppm || 0;
+                if (errorCode === 'NO_ERROR') {
+                    status = 'online';
+                    statusClass = 'status-online';
+                } else if (['LOW_FLOW', 'SYSTEM_PAUSED', 'MISWEIGHTED'].includes(errorCode)) {
+                    status = 'warning';
+                    statusClass = 'status-warning';
+                } else if (['NO_FLOW', 'PUMP_ALARM', 'PUMP_WARNING'].includes(errorCode)) {
+                    status = 'error';
+                    statusClass = 'status-error';
+                }
+            }
+        }
 
-                      if (errorCode === 'NO_ERROR') {
-                          status = 'online';
-                          statusClass = 'status-online';
-                      } else if (['LOW_FLOW', 'SYSTEM_PAUSED', 'MISWEIGHTED'].includes(errorCode)) {
-                          status = 'warning';
-                          statusClass = 'status-warning';
-                      } else if (['NO_FLOW', 'PUMP_ALARM', 'PUMP_WARNING'].includes(errorCode)) {
-                          status = 'error';
-                          statusClass = 'status-error';
-                      }
-                  }
-              }
 
               // Create the device card with the latest data
               const deviceCard = document.createElement('div');
