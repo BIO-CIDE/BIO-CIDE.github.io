@@ -414,6 +414,32 @@
           }, 30000); // 30 seconds
       }
 
+      // Refresh data
+      async function refreshData() {
+          showLoading();
+          try {
+              const response = await fetch(`${API_ENDPOINT}/devices`, {
+                  headers: {
+                      'X-API-KEY': apiKey
+                  }
+              });
+
+              if (response.ok) {
+                  const data = await response.json();
+                  if (data && Array.isArray(data.devices)) {
+                      devices = data.devices;
+                      renderDevices(devices);
+                  }
+              } else {
+                  console.error('Error refreshing data:', response.status);
+              }
+          } catch (error) {
+              console.error('Connection error during refresh:', error);
+          } finally {
+              hideLoading();
+          }
+      }
+
       // Handle login
       async function handleLogin() {
           const keyInput = document.getElementById('apiKey');
@@ -511,67 +537,66 @@
           }
       }
 
-      // Refresh data
-function renderDevices(devicesToRender) {
-    const devicesGrid = document.getElementById('devicesGrid');
-    devicesGrid.innerHTML = '';
+      // Render devices
+      function renderDevices(devicesToRender) {
+          const devicesGrid = document.getElementById('devicesGrid');
+          devicesGrid.innerHTML = '';
 
-    if (devicesToRender.length === 0) {
-        devicesGrid.innerHTML = '<div class="col-12"><div class="alert alert-info">No devices found</div></div>';
-        return;
-    }
+          if (devicesToRender.length === 0) {
+              devicesGrid.innerHTML = '<div class="col-12"><div class="alert alert-info">No devices found</div></div>';
+              return;
+          }
 
-    devicesToRender.forEach(device => {
-        // Consistent timestamp handling - prefer timestamp in the data
-        let lastTimestamp;
-        if (device.latestData && device.latestData.timestamp) {
-            lastTimestamp = new Date(device.latestData.timestamp);
-        } else if (device.lastUpdated) {
-            lastTimestamp = new Date(device.lastUpdated);
-        } else {
-            lastTimestamp = null;
-        }
+          devicesToRender.forEach(device => {
+              // Consistent timestamp handling - prefer timestamp in the data
+              let lastTimestamp;
+              if (device.latestData && device.latestData.timestamp) {
+                  lastTimestamp = new Date(device.latestData.timestamp);
+              } else if (device.lastUpdated) {
+                  lastTimestamp = new Date(device.lastUpdated);
+              } else {
+                  lastTimestamp = null;
+              }
 
-        // Debug logging
-        console.log(`Device ${device.deviceId}: timestamp=${lastTimestamp}, lastUpdated=${device.lastUpdated}`);
+              // Debug logging
+              console.log(`Device ${device.deviceId}: timestamp=${lastTimestamp}, lastUpdated=${device.lastUpdated}`);
 
-        // Determine device status
-        let status = 'offline';
-        let statusClass = 'status-offline';
-        let errorCode = 'UNKNOWN';
-        let flowRate = 0;
-        let ppm = 0;
+              // Determine device status
+              let status = 'offline';
+              let statusClass = 'status-offline';
+              let errorCode = 'UNKNOWN';
+              let flowRate = 0;
+              let ppm = 0;
 
-        if (device.latestData) {
-            // Check if last update was more than 5 minutes ago
-            const now = new Date();
-            const timeDiff = lastTimestamp ? (now - lastTimestamp) / (1000 * 60) : 10; // difference in minutes
-            
-            console.log(`Device ${device.deviceId}: time difference = ${timeDiff.toFixed(2)} minutes`);
+              if (device.latestData) {
+                  // Check if last update was more than 5 minutes ago
+                  const now = new Date();
+                  const timeDiff = lastTimestamp ? (now - lastTimestamp) / (1000 * 60) : 10; // difference in minutes
+                  
+                  console.log(`Device ${device.deviceId}: time difference = ${timeDiff.toFixed(2)} minutes`);
 
-            if (timeDiff > 5) {
-                // Device is offline if data is too old
-                status = 'offline';
-                statusClass = 'status-offline';
-            } else {
-                // If recent data exists, determine status from error code
-                errorCode = device.latestData.errorCode || 'UNKNOWN';
-                flowRate = device.latestData.flow?.actual || 0;
-                ppm = device.latestData.ppm || 0;
+                  if (timeDiff > 5) {
+                      // Device is offline if data is too old
+                      status = 'offline';
+                      statusClass = 'status-offline';
+                  } else {
+                      // If recent data exists, determine status from error code
+                      errorCode = device.latestData.errorCode || 'UNKNOWN';
+                      flowRate = device.latestData.flow?.actual || 0;
+                      ppm = device.latestData.ppm || 0;
 
-                if (errorCode === 'NO_ERROR') {
-                    status = 'online';
-                    statusClass = 'status-online';
-                } else if (['LOW_FLOW', 'SYSTEM_PAUSED', 'MISWEIGHTED'].includes(errorCode)) {
-                    status = 'warning';
-                    statusClass = 'status-warning';
-                } else if (['NO_FLOW', 'PUMP_ALARM', 'PUMP_WARNING'].includes(errorCode)) {
-                    status = 'error';
-                    statusClass = 'status-error';
-                }
-            }
-        }
-
+                      if (errorCode === 'NO_ERROR') {
+                          status = 'online';
+                          statusClass = 'status-online';
+                      } else if (['LOW_FLOW', 'SYSTEM_PAUSED', 'MISWEIGHTED'].includes(errorCode)) {
+                          status = 'warning';
+                          statusClass = 'status-warning';
+                      } else if (['NO_FLOW', 'PUMP_ALARM', 'PUMP_WARNING'].includes(errorCode)) {
+                          status = 'error';
+                          statusClass = 'status-error';
+                      }
+                  }
+              }
 
               // Create the device card with the latest data
               const deviceCard = document.createElement('div');
@@ -604,7 +629,7 @@ function renderDevices(devicesToRender) {
                                   <div class="metric-label">Last Updated</div>
                                   <div class="metric-value fs-6">${(device.latestData && device.latestData.timestamp) ? 
                                   formatDate(new Date(device.latestData.timestamp)) : 
-                                  (lastUpdatedTime ? formatDate(lastUpdatedTime) : 'Unknown')}</div>
+                                  (lastTimestamp ? formatDate(lastTimestamp) : 'Unknown')}</div>
                               </div>
                           </div>
                       </div>
@@ -803,8 +828,7 @@ function renderDevices(devicesToRender) {
                       tension: 0.4,
                       fill: true
                   }]
-              },
-              options: {
+options: {
                   responsive: true,
                   maintainAspectRatio: false,
                   plugins: {
@@ -1005,30 +1029,22 @@ function renderDevices(devicesToRender) {
      }
 
      // Get device status based on time and error code
-function getDeviceStatus(device) {
-    // Use same timestamp logic as in renderDevices
-    let lastTimestamp;
-    if (device.latestData && device.latestData.timestamp) {
-        lastTimestamp = new Date(device.latestData.timestamp);
-    } else if (device.lastUpdated) {
-        lastTimestamp = new Date(device.lastUpdated);
-    } else {
-        return 'offline';
-    }
+     function getDeviceStatus(device) {
+         // Use same timestamp logic as in renderDevices
+         let lastTimestamp;
+         if (device.latestData && device.latestData.timestamp) {
+             lastTimestamp = new Date(device.latestData.timestamp);
+         } else if (device.lastUpdated) {
+             lastTimestamp = new Date(device.lastUpdated);
+         } else {
+             return 'offline';
+         }
 
-    // Check if last update was more than 5 minutes ago (using same threshold)
-    const now = new Date();
-    const timeDiff = (now - lastTimestamp) / (1000 * 60); // difference in minutes
+         // Check if last update was more than 5 minutes ago (using same threshold)
+         const now = new Date();
+         const timeDiff = (now - lastTimestamp) / (1000 * 60); // difference in minutes
 
-    if (timeDiff > 5) return 'offline';
-
-    // If recent data exists, determine status from error code
-    const errorCode = device.latestData?.errorCode;
-    if (!errorCode) return 'offline';
-    if (errorCode === 'NO_ERROR') return 'online';
-    if (['LOW_FLOW', 'SYSTEM_PAUSED', 'MISWEIGHTED'].includes(errorCode)) return 'warning';
-    return 'error';
-}
+         if (timeDiff > 5) return 'offline';
 
          // If recent data exists, determine status from error code
          const errorCode = device.latestData?.errorCode;
