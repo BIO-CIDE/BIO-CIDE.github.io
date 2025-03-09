@@ -622,7 +622,9 @@
                           <div class="row mt-2">
                               <div class="col-12">
                                   <div class="metric-label">Last Updated</div>
-                                  <div class="metric-value fs-6">${lastUpdatedTime ? formatDate(lastUpdatedTime) : 'Unknown'}</div>
+                                  <div class="metric-value fs-6">${(device.latestData && device.latestData.timestamp) ? 
+                                  formatDate(new Date(device.latestData.timestamp)) : 
+                                  (lastUpdatedTime ? formatDate(lastUpdatedTime) : 'Unknown')}</div>
                               </div>
                           </div>
                       </div>
