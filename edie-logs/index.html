@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDIE Fleet Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <style>
+        :root {
+            --primary-color: #cb2026;
+            --background-color: #f5f5f5;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --success-color: #44cc44;
+            --warning-color: #ffcc44;
+            --error-color: #ff4444;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu;
+        }
+
+        .navbar {
+            background-color: var(--primary-color);
+        }
+
+        .navbar-brand {
+            color: white;
+            font-weight: 600;
+        }
+
+        .device-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+
+        .device-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-online {
+            background-color: var(--success-color);
+        }
+
+        .status-warning {
+            background-color: var(--warning-color);
+        }
+
+        .status-error {
+            background-color: var(--error-color);
+        }
+
+        .status-offline {
+            background-color: #999;
+        }
+
+        .chart-container {
+            height: 120px;
+            margin: 10px 0;
+        }
+
+        .metric-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .metric-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        #loadingIndicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+
+        .tab-content {
+            padding: 20px 0;
+        }
+
+        .auth-container {
+            max-width: 400px;
+            margin: 100px auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Authentication Screen -->
+    <div id="authScreen" class="container auth-container">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">EDIE Dashboard Login</h4>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="apiKey" class="form-label">API Key</label>
+                    <input type="password" class="form-control" id="apiKey" placeholder="Enter your API key">
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="rememberKey">
+                    <label class="form-check-label" for="rememberKey">
+                        Remember API key
+                    </label>
+                </div>
+                <button id="loginBtn" class="btn btn-primary w-100">Login</button>
+                <div id="authError" class="alert alert-danger mt-3 d-none"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="mainDashboard" class="d-none">
+        <!-- Navigation Bar -->
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">EDIE Fleet Dashboard</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" id="overviewLink">Overview</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="historyLink">History</a>
+                        </li>
+                    </ul>
+                    <div class="d-flex">
+                        <button id="refreshBtn" class="btn btn-outline-light me-2">Refresh Data</button>
+                        <button id="logoutBtn" class="btn btn-outline-light">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Overview Section -->
+        <div id="overviewSection" class="container mt-4">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" id="searchDevices" class="form-control" placeholder="Search devices...">
+                        <button class="btn btn-primary" type="button" id="searchBtn">Search</button>
+                    </div>
+                </div>
+                <div class="col-md-6 d-flex justify-content-end">
+                    <div class="btn-group">
+                        <button id="sortByName" class="btn btn-outline-primary">Sort by Name</button>
+                        <button id="sortByStatus" class="btn btn-outline-primary">Sort by Status</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" id="devicesGrid">
+                <!-- Devices will be inserted here -->
+            </div>
+        </div>
+
+        <!-- History Section -->
+        <div id="historySection" class="container mt-4 d-none">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Historical Data</h5>
+                    <button id="exportCSV" class="btn btn-sm btn-outline-primary">Export CSV</button>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <label for="deviceSelect" class="form-label">Device</label>
+                            <select id="deviceSelect" class="form-select">
+                                <option value="">Select Device</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="startDate" class="form-label">Start Date</label>
+                            <input type="date" id="startDate" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="endDate" class="form-label">End Date</label>
+                            <input type="date" id="endDate" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="entriesLimit" class="form-label">Entries Limit</label>
+                            <select id="entriesLimit" class="form-select">
+                                <option value="10">10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <button id="searchHistoryBtn" class="btn btn-primary">Search History</button>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <div class="chart-container" style="height: 300px;">
+                            <canvas id="historyChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive mt-4">
+                        <table class="table table-striped table-hover" id="historyTable">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Flow Rate (GPM)</th>
+                                    <th>PPM</th>
+                                    <th>Injection (G)</th>
+                                    <th>Acid (G)</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- History data will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Device Detail Modal -->
+        <div class="modal fade" id="deviceDetailModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deviceDetailTitle">Device Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <ul class="nav nav-tabs" id="deviceDetailTabs">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="overview-tab" data-bs-toggle="tab" href="#overviewTab">Overview</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="data-tab" data-bs-toggle="tab" href="#dataTab">Data</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="settings-tab" data-bs-toggle="tab" href="#settingsTab">Settings</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="deviceDetailTabContent">
+                            <div class="tab-pane fade show active" id="overviewTab">
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <div class="chart-container" style="height: 200px;">
+                                            <canvas id="flowChart"></canvas>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="chart-container" style="height: 200px;">
+                                            <canvas id="probeChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-3" id="deviceMetrics">
+                                    <!-- Metrics will be inserted here -->
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="dataTab">
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-sm table-striped" id="deviceDataTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Timestamp</th>
+                                                <th>Flow Rate</th>
+                                                <th>PPM</th>
+                                                <th>Injection</th>
+                                                <th>Error Code</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Device data will be inserted here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="settingsTab">
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-sm" id="deviceSettingsTable">
+                                        <tbody>
+                                            <!-- Device settings will be inserted here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // API Configuration
+        const API_ENDPOINT = 'https://jolly-queen-8e6f.larry-schrimpfff6544.workers.dev';
+        let apiKey = '';
+        let devices = [];
+        let deviceDetailModal;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp();
+        });
+
+        // Initialize the application
+        function initializeApp() {
+            // Load saved API key if available
+            const savedKey = localStorage.getItem('edieApiKey');
+            if (savedKey) {
+                document.getElementById('apiKey').value = savedKey;
+                document.getElementById('rememberKey').checked = true;
+            }
+
+            // Event listeners
+            document.getElementById('loginBtn').addEventListener('click', handleLogin);
+            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+            document.getElementById('refreshBtn').addEventListener('click', refreshData);
+            document.getElementById('overviewLink').addEventListener('click', showOverviewSection);
+            document.getElementById('historyLink').addEventListener('click', showHistorySection);
+            document.getElementById('searchBtn').addEventListener('click', searchDevices);
+            document.getElementById('sortByName').addEventListener('click', () => sortDevices('name'));
+            document.getElementById('sortByStatus').addEventListener('click', () => sortDevices('status'));
+            document.getElementById('searchHistoryBtn').addEventListener('click', fetchHistoricalData);
+            document.getElementById('exportCSV').addEventListener('click', exportHistoryToCSV);
+            document.getElementById('searchDevices').addEventListener('keyup', function(event) {
+                if (event.key === 'Enter') {
+                    searchDevices();
+                }
+            });
+
+            // Initialize Bootstrap modal
+            deviceDetailModal = new bootstrap.Modal(document.getElementById('deviceDetailModal'));
+
+            // Hide loading indicator
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+
+        // Handle login
+        async function handleLogin() {
+            const keyInput = document.getElementById('apiKey');
+            const rememberKeyCheckbox = document.getElementById('rememberKey');
+            const authError = document.getElementById('authError');
+            
+            apiKey = keyInput.value.trim();
+            if (!apiKey) {
+                showAuthError('Please enter your API key');
+                return;
+            }
+
+            showLoading();
+            try {
+                // Test connection with the provided API key
+                const response = await fetch(`${API_ENDPOINT}/ping`, {
+                    headers: {
+                        'X-API-KEY': apiKey
+                    }
+                });
+
+                if (response.ok) {
+                    // Save API key if "remember me" is checked
+                    if (rememberKeyCheckbox.checked) {
+                        localStorage.setItem('edieApiKey', apiKey);
+                    } else {
+                        localStorage.removeItem('edieApiKey');
+                    }
+
+                    // Switch to main dashboard
+                    document.getElementById('authScreen').classList.add('d-none');
+                    document.getElementById('mainDashboard').classList.remove('d-none');
+                    
+                    // Load initial data
+                    refreshData();
+                } else {
+                    showAuthError('Invalid API key or connection error');
+                }
+            } catch (error) {
+                showAuthError('Connection error: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Show authentication error
+        function showAuthError(message) {
+            const authError = document.getElementById('authError');
+            authError.textContent = message;
+            authError.classList.remove('d-none');
+        }
+
+        // Handle logout
+        function handleLogout() {
+            document.getElementById('mainDashboard').classList.add('d-none');
+            document.getElementById('authScreen').classList.remove('d-none');
+            document.getElementById('apiKey').value = '';
+            localStorage.removeItem('edieApiKey');
+            apiKey = '';
+        }
+
+        // Show overview section
+        function showOverviewSection(e) {
+            if (e) e.preventDefault();
+            document.getElementById('overviewLink').classList.add('active');
+            document.getElementById('historyLink').classList.remove('active');
+            document.getElementById('overviewSection').classList.remove('d-none');
+            document.getElementById('historySection').classList.add('d-none');
+        }
+
+        // Show history section
+        function showHistorySection(e) {
+            if (e) e.preventDefault();
+            document.getElementById('historyLink').classList.add('active');
+            document.getElementById('overviewLink').classList.remove('active');
+            document.getElementById('historySection').classList.remove('d-none');
+            document.getElementById('overviewSection').classList.add('d-none');
+            
+            // Populate device dropdown if not already populated
+            populateDeviceDropdown();
+        }
+
+        // Populate device dropdown in history section
+        function populateDeviceDropdown() {
+            const deviceSelect = document.getElementById('deviceSelect');
+            
+            // Only populate if not already done
+            if (deviceSelect.options.length <= 1 && devices.length > 0) {
+                devices.forEach(device => {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.textContent = device.deviceId;
+                    deviceSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Refresh data
+        async function refreshData() {
+            showLoading();
+            try {
+                const response = await fetch(`${API_ENDPOINT}/devices`, {
+                    headers: {
+                        'X-API-KEY': apiKey
+                    }
+                });
+
+                if (response.ok) {
+                    devices = await response.json();
+                    renderDevices(devices);
+                    populateDeviceDropdown();
+                } else {
+                    alert('Failed to load devices');
+                }
+            } catch (error) {
+                console.error('Error fetching devices:', error);
+                alert('Error loading device data');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Render devices grid
+        function renderDevices(devicesToRender) {
+            const devicesGrid = document.getElementById('devicesGrid');
+            devicesGrid.innerHTML = '';
+
+            if (devicesToRender.length === 0) {
+                devicesGrid.innerHTML = '<div class="col-12"><div class="alert alert-info">No devices found</div></div>';
+                return;
+            }
+
+            devicesToRender.forEach(device => {
+                // Determine device status
+                let status = 'offline';
+                let statusClass = 'status-offline';
+                let errorCode = '';
+                let flowRate = 0;
+                let ppm = 0;
+                
+                if (device.latestData) {
+                    errorCode = device.latestData.errorCode || '';
+                    flowRate = device.latestData.flow?.actual || 0;
+                    ppm = device.latestData.ppm || 0;
+                    
+                    if (errorCode === 'NO_ERROR') {
+                        status = 'online';
+                        statusClass = 'status-online';
+                    } else if (['LOW_FLOW', 'SYSTEM_PAUSED', 'MISWEIGHTED'].includes(errorCode)) {
+                        status = 'warning';
+                        statusClass = 'status-warning';
+                    } else if (['NO_FLOW', 'PUMP_ALARM', 'PUMP_WARNING'].includes(errorCode)) {
+                        status = 'error';
+                        statusClass = 'status-error';
+                    }
+                }
+                
+                const deviceCard = document.createElement('div');
+                deviceCard.className = 'col-md-4 col-lg-3 mb-4';
+                deviceCard.innerHTML = `
+                    <div class="card device-card">
+                        <div class="card-header">
+                            <div>
+                                <span class="status-indicator ${statusClass}"></span>
+                                <span>${device.deviceId}</span>
+                            </div>
+                            <span class="badge ${getStatusBadgeClass(status)}">${errorCode.replace(/_/g, ' ')}</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="chart-${device.deviceId}"></canvas>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-6">
+                                    <div class="metric-label">Flow Rate</div>
+                                    <div class="metric-value">${flowRate.toFixed(1)} GPM</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="metric-label">PPM</div>
+                                    <div class="metric-value">${ppm}</div>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-12">
+                                    <div class="metric-label">Last Updated</div>
+                                    <div class="metric-value fs-6">${formatDate(device.lastUpdated)}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-primary btn-sm w-100 view-details" data-device-id="${device.deviceId}">View Details</button>
+                        </div>
+                    </div>
+                `;
+                devicesGrid.appendChild(deviceCard);
+                
+                // Create mini chart if we have data
+                if (device.latestData && Array.isArray(device.latestData.history)) {
+                    createMiniChart(device.deviceId, device.latestData.history);
+                }
+                
+                // Add event listener to view details button
+                const viewButton = deviceCard.querySelector('.view-details');
+                viewButton.addEventListener('click', () => showDeviceDetails(device));
+            });
+        }
+
+        // Create mini chart for device card
+        function createMiniChart(deviceId, history) {
+            const chartId = `chart-${deviceId}`;
+            const canvas = document.getElementById(chartId);
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Extract data (if available)
+            let labels = [];
+            let data = [];
+            
+            if (Array.isArray(history) && history.length > 0) {
+                // Use the history data provided
+                history.slice(0, 6).reverse().forEach(entry => {
+                    labels.push(formatTime(entry.timestamp));
+                    data.push(entry.flowRate);
+                });
+            } else {
+                // No data, show empty chart
+                labels = ['', '', '', '', '', ''];
+                data = [0, 0, 0, 0, 0, 0];
+            }
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Flow Rate',
+                        data: data,
+                        borderColor: '#cb2026',
+                        backgroundColor: 'rgba(203, 32, 38, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { display: false },
+                        x: { display: false }
+                    }
+                }
+            });
+        }
+
+        // Show device details
+        async function showDeviceDetails(device) {
+            document.getElementById('deviceDetailTitle').textContent = `Device: ${device.deviceId}`;
+            
+            // Show the modal
+            deviceDetailModal.show();
+            
+            // If we don't have detailed data, fetch it
+            if (!device.data) {
+                showLoading();
+                try {
+                    const response = await fetch(`${API_ENDPOINT}/devices?deviceId=${device.deviceId}&limit=10`, {
+                        headers: {
+                            'X-API-KEY': apiKey
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const detailedData = await response.json();
+                        device.data = detailedData.data || [];
+                    }
+                } catch (error) {
+                    console.error('Error fetching device details:', error);
+                } finally {
+                    hideLoading();
+                }
+            }
+            
+            // Update the detail tabs
+            populateDeviceDetailTabs(device);
+        }
+
+        // Populate device detail tabs
+        function populateDeviceDetailTabs(device) {
+            const latestData = device.latestData || (device.data && device.data.length > 0 ? device.data[0] : null);
+            if (!latestData) return;
+            
+            // Populate metrics
+            populateDeviceMetrics(latestData);
+            
+            // Create charts
+            createDeviceCharts(device);
+            
+            // Populate data tab
+            populateDeviceDataTab(device);
+            
+            // Populate settings tab
+            populateDeviceSettingsTab(latestData);
+        }
+
+        // Populate device metrics
+        function populateDeviceMetrics(data) {
+            const metricsContainer = document.getElementById('deviceMetrics');
+            metricsContainer.innerHTML = '';
+            
+            // Extract metrics from the data
+            const metrics = [
+                { label: 'Flow Rate', value: `${(data.flow?.actual || 0).toFixed(1)} GPM` },
+                { label: 'PPM', value: data.ppm || 0 },
+                { label: 'Status', value: (data.errorCode || 'UNKNOWN').replace(/_/g, ' ') },
+                { label: 'Total Flow', value: `${(data.flow?.totalizer || 0).toFixed(1)} Gal` },
+                { label: 'Total Injection', value: `${(data.chemPump?.totalizer || 0).toFixed(4)} Gal` },
+                { label: 'Acid Injection', value: `${(data.acidPump?.totalizer || 0).toFixed(4)} Gal` }
+            ];
+            
+            // Add pH value if available
+            if (data.pH?.actual !== undefined) {
+                metrics.push({ label: 'pH', value: data.pH.actual.toFixed(1) });
+            }
+            
+            // Add ORP value if available
+            if (data.orp?.actual !== undefined) {
+                metrics.push({ label: 'ORP', value: `${data.orp.actual.toFixed(0)} mV` });
+            }
+            
+            // Render metrics
+            metrics.forEach(metric => {
+                const metricCol = document.createElement('div');
+                metricCol.className = 'col-md-4 col-sm-6 mb-3';
+                metricCol.innerHTML = `
+                    <div class="card h-100">
+                        <div class="card-body py-2">
+                            <div class="metric-label">${metric.label}</div>
+                            <div class="metric-value">${metric.value}</div>
+                        </div>
+                    </div>
+                `;
+                metricsContainer.appendChild(metricCol);
+            });
+        }
+
+        // Create device detail charts
+        function createDeviceCharts(device) {
+            const data = device.data || [];
+            if (data.length === 0) return;
+            
+            // Flow chart
+            createFlowChart(data);
+            
+            // Probe chart (pH/ORP)
+            createProbeChart(data);
+        }
+
+        // Create flow chart
+        function createFlowChart(data) {
+            const ctx = document.getElementById('flowChart').getContext('2d');
+            
+            // Clear any existing chart
+            if (window.flowDetailChart) {
+                window.flowDetailChart.destroy();
+            }
+            
+            // Extract data for chart
+            const labels = data.map(item => formatTime(item.timestamp)).reverse();
+            const flowData = data.map(item => item.flow?.actual || 0).reverse();
+            
+            window.flowDetailChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Flow Rate (GPM)',
+                        data: flowData,
+                        borderColor: '#cb2026',
+                        backgroundColor: 'rgba(203, 32, 38, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Flow Rate Over Time'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Create probe chart
+        function createProbeChart(data) {
+            const ctx = document.getElementById('probeChart').getContext('2d');
+            
+            // Clear any existing chart
+            if (window.probeDetailChart) {
+                window.probeDetailChart.destroy();
+            }
+            
+            // Check if we have pH or ORP data
+            const hasPH = data.some(item => item.pH?.actual !== undefined);
+            const hasORP = data.some(item => item.orp?.actual !== undefined);
+            
+            if (!hasPH && !hasORP) {
+                // Hide the chart if no probe data
+                document.getElementById('probeChart').parentElement.style.display = 'none';
+                return;
+            } else {
+                document.getElementById('probeChart').parentElement.style.display = 'block';
+            }
+            
+            // Extract data for chart
+            const labels = data.map(item => formatTime(item.timestamp)).reverse();
+            const datasets = [];
+            
+            if (hasPH) {
+                datasets.push({
+                    label: 'pH',
+                    data: data.map(item => item.pH?.actual || null).reverse(),
+                    borderColor: '#4287f5',
+                    backgroundColor: 'rgba(66, 135, 245, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    yAxisID: 'y'
+                });
+            }
+            
+            if (hasORP) {
+                datasets.push({
+                   label: 'ORP (mV)',
+                   data: data.map(item => item.orp?.actual || null).reverse(),
+                   borderColor: '#42f584',
+                   backgroundColor: 'rgba(66, 245, 132, 0.1)',
+                   tension: 0.4,
+                   fill: true,
+                   yAxisID: 'y1'
+               });
+           }
+           
+           window.probeDetailChart = new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: datasets
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   plugins: {
+                       title: {
+                           display: true,
+                           text: 'Probe Readings'
+                       }
+                   },
+                   scales: {
+                       y: {
+                           type: 'linear',
+                           display: hasPH,
+                           position: 'left',
+                           title: {
+                               display: hasPH,
+                               text: 'pH'
+                           }
+                       },
+                       y1: {
+                           type: 'linear',
+                           display: hasORP,
+                           position: 'right',
+                           title: {
+                               display: hasORP,
+                               text: 'ORP (mV)'
+                           },
+                           grid: {
+                               drawOnChartArea: false
+                           }
+                       }
+                   }
+               }
+           });
+       }
+
+       // Populate device data tab
+       function populateDeviceDataTab(device) {
+           const tableBody = document.getElementById('deviceDataTable').querySelector('tbody');
+           tableBody.innerHTML = '';
+           
+           const data = device.data || [];
+           if (data.length === 0) {
+               tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No data available</td></tr>';
+               return;
+           }
+           
+           data.forEach(entry => {
+               const row = document.createElement('tr');
+               row.innerHTML = `
+                   <td>${formatDateTime(entry.timestamp)}</td>
+                   <td>${(entry.flow?.actual || 0).toFixed(1)} GPM</td>
+                   <td>${entry.ppm || 0}</td>
+                   <td>${(entry.chemPump?.totalizer || 0).toFixed(4)} G</td>
+                   <td>${(entry.errorCode || 'UNKNOWN').replace(/_/g, ' ')}</td>
+               `;
+               tableBody.appendChild(row);
+           });
+       }
+
+       // Populate device settings tab
+       function populateDeviceSettingsTab(data) {
+           const tableBody = document.getElementById('deviceSettingsTable').querySelector('tbody');
+           tableBody.innerHTML = '';
+           
+           // We don't have specific settings data in our JSON structure
+           // This is just a placeholder that could be enhanced with actual settings
+           const settings = [
+               { name: 'Device ID', value: data.deviceId || 'Unknown' },
+               { name: 'File Name', value: data.fileName || 'Unknown' },
+               { name: 'Upload Time', value: formatDateTime(data.uploaded) || 'Unknown' },
+               { name: 'Current PPM', value: data.ppm || 'Unknown' }
+           ];
+           
+           settings.forEach(setting => {
+               const row = document.createElement('tr');
+               row.innerHTML = `
+                   <td><strong>${setting.name}</strong></td>
+                   <td>${setting.value}</td>
+               `;
+               tableBody.appendChild(row);
+           });
+       }
+
+       // Search devices
+       function searchDevices() {
+           const searchTerm = document.getElementById('searchDevices').value.toLowerCase();
+           
+           if (!searchTerm) {
+               renderDevices(devices);
+               return;
+           }
+           
+           const filteredDevices = devices.filter(device => {
+               return device.deviceId.toLowerCase().includes(searchTerm);
+           });
+           
+           renderDevices(filteredDevices);
+       }
+
+       // Sort devices
+       function sortDevices(criteria) {
+           if (!devices || devices.length === 0) return;
+           
+           let sortedDevices = [...devices];
+           
+           if (criteria === 'name') {
+               sortedDevices.sort((a, b) => a.deviceId.localeCompare(b.deviceId));
+           } else if (criteria === 'status') {
+               const statusPriority = {
+                   'error': 0,
+                   'warning': 1,
+                   'online': 2,
+                   'offline': 3
+               };
+               
+               sortedDevices.sort((a, b) => {
+                   const statusA = getDeviceStatus(a.latestData?.errorCode);
+                   const statusB = getDeviceStatus(b.latestData?.errorCode);
+                   return statusPriority[statusA] - statusPriority[statusB];
+               });
+           }
+           
+           renderDevices(sortedDevices);
+       }
+
+       // Get device status from error code
+       function getDeviceStatus(errorCode) {
+           if (!errorCode) return 'offline';
+           if (errorCode === 'NO_ERROR') return 'online';
+           if (['LOW_FLOW', 'SYSTEM_PAUSED', 'MISWEIGHTED'].includes(errorCode)) return 'warning';
+           return 'error';
+       }
+
+       // Get status badge class
+       function getStatusBadgeClass(status) {
+           switch (status) {
+               case 'online': return 'bg-success';
+               case 'warning': return 'bg-warning text-dark';
+               case 'error': return 'bg-danger';
+               default: return 'bg-secondary';
+           }
+       }
+
+       // Fetch historical data
+       async function fetchHistoricalData() {
+           const deviceId = document.getElementById('deviceSelect').value;
+           const startDate = document.getElementById('startDate').value;
+           const endDate = document.getElementById('endDate').value;
+           const limit = document.getElementById('entriesLimit').value;
+           
+           if (!deviceId) {
+               alert('Please select a device');
+               return;
+           }
+           
+           showLoading();
+           try {
+               let url = `${API_ENDPOINT}/devices?deviceId=${deviceId}&limit=${limit}`;
+               if (startDate) url += `&startDate=${startDate}`;
+               if (endDate) url += `&endDate=${endDate}`;
+               
+               const response = await fetch(url, {
+                   headers: {
+                       'X-API-KEY': apiKey
+                   }
+               });
+               
+               if (response.ok) {
+                   const data = await response.json();
+                   if (data.data && Array.isArray(data.data)) {
+                       renderHistoricalData(data.data);
+                   } else {
+                       alert('No data found for the selected criteria');
+                   }
+               } else {
+                   alert('Failed to fetch historical data');
+               }
+           } catch (error) {
+               console.error('Error fetching historical data:', error);
+               alert('Error loading historical data');
+           } finally {
+               hideLoading();
+           }
+       }
+
+       // Render historical data
+       function renderHistoricalData(data) {
+           // Populate table
+           const tableBody = document.getElementById('historyTable').querySelector('tbody');
+           tableBody.innerHTML = '';
+           
+           if (data.length === 0) {
+               tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No data available</td></tr>';
+               return;
+           }
+           
+           data.forEach(entry => {
+               const row = document.createElement('tr');
+               row.innerHTML = `
+                   <td>${formatDateTime(entry.timestamp)}</td>
+                   <td>${(entry.flow?.actual || 0).toFixed(1)}</td>
+                   <td>${entry.ppm || 0}</td>
+                   <td>${(entry.chemPump?.totalizer || 0).toFixed(4)}</td>
+                   <td>${(entry.acidPump?.totalizer || 0).toFixed(4)}</td>
+                   <td>${(entry.errorCode || 'UNKNOWN').replace(/_/g, ' ')}</td>
+               `;
+               tableBody.appendChild(row);
+           });
+           
+           // Create history chart
+           createHistoryChart(data);
+       }
+
+       // Create history chart
+       function createHistoryChart(data) {
+           const ctx = document.getElementById('historyChart').getContext('2d');
+           
+           // Clear any existing chart
+           if (window.historyChart) {
+               window.historyChart.destroy();
+           }
+           
+           // Extract data for chart
+           const labels = data.map(item => formatDateTime(item.timestamp)).reverse();
+           const flowData = data.map(item => item.flow?.actual || 0).reverse();
+           const ppmData = data.map(item => item.ppm || 0).reverse();
+           
+           window.historyChart = new Chart(ctx, {
+               type: 'line',
+               data: {
+                   labels: labels,
+                   datasets: [
+                       {
+                           label: 'Flow Rate (GPM)',
+                           data: flowData,
+                           borderColor: '#cb2026',
+                           backgroundColor: 'rgba(203, 32, 38, 0.1)',
+                           tension: 0.4,
+                           fill: true,
+                           yAxisID: 'y'
+                       },
+                       {
+                           label: 'PPM',
+                           data: ppmData,
+                           borderColor: '#4287f5',
+                           backgroundColor: 'rgba(66, 135, 245, 0.1)',
+                           tension: 0.4,
+                           fill: true,
+                           yAxisID: 'y1'
+                       }
+                   ]
+               },
+               options: {
+                   responsive: true,
+                   maintainAspectRatio: false,
+                   plugins: {
+                       title: {
+                           display: true,
+                           text: 'Historical Data'
+                       }
+                   },
+                   scales: {
+                       y: {
+                           type: 'linear',
+                           display: true,
+                           position: 'left',
+                           title: {
+                               display: true,
+                               text: 'Flow Rate (GPM)'
+                           }
+                       },
+                       y1: {
+                           type: 'linear',
+                           display: true,
+                           position: 'right',
+                           title: {
+                               display: true,
+                               text: 'PPM'
+                           },
+                           grid: {
+                               drawOnChartArea: false
+                           }
+                       }
+                   }
+               }
+           });
+       }
+
+       // Export history data to CSV
+       function exportHistoryToCSV() {
+           const table = document.getElementById('historyTable');
+           if (!table) return;
+           
+           let csv = [];
+           
+           // Get headers
+           const headers = [];
+           const headerRow = table.querySelector('thead tr');
+           if (headerRow) {
+               headerRow.querySelectorAll('th').forEach(th => {
+                   headers.push(th.textContent);
+               });
+               csv.push(headers.join(','));
+           }
+           
+           // Get data rows
+           table.querySelectorAll('tbody tr').forEach(row => {
+               const rowData = [];
+               row.querySelectorAll('td').forEach(cell => {
+                   // Escape commas and quotes
+                   let cellData = cell.textContent.replace(/"/g, '""');
+                   if (cellData.includes(',')) {
+                       cellData = `"${cellData}"`;
+                   }
+                   rowData.push(cellData);
+               });
+               csv.push(rowData.join(','));
+           });
+           
+           // Create download link
+           if (csv.length > 0) {
+               const deviceId = document.getElementById('deviceSelect').value;
+               const filename = `EDIE_${deviceId}_${formatDateForFilename(new Date())}.csv`;
+               const csvContent = csv.join('\n');
+               const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+               const url = URL.createObjectURL(blob);
+               
+               const link = document.createElement('a');
+               link.setAttribute('href', url);
+               link.setAttribute('download', filename);
+               link.style.visibility = 'hidden';
+               document.body.appendChild(link);
+               link.click();
+               document.body.removeChild(link);
+           }
+       }
+
+       // Utility functions
+       function formatDateTime(dateString) {
+           if (!dateString) return '';
+           const date = new Date(dateString);
+           return date.toLocaleString();
+       }
+
+       function formatDate(dateString) {
+           if (!dateString) return '';
+           const date = new Date(dateString);
+           return date.toLocaleDateString();
+       }
+
+       function formatTime(dateString) {
+           if (!dateString) return '';
+           const date = new Date(dateString);
+           return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+       }
+
+       function formatDateForFilename(date) {
+           return date.toISOString().split('T')[0];
+       }
+
+       function showLoading() {
+           document.getElementById('loadingIndicator').style.display = 'flex';
+       }
+
+       function hideLoading() {
+           document.getElementById('loadingIndicator').style.display = 'none';
+       }
+   </script>
+</body>
+</html>
