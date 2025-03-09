@@ -1005,17 +1005,30 @@ function renderDevices(devicesToRender) {
      }
 
      // Get device status based on time and error code
-     function getDeviceStatus(device) {
-         // Check if last update was more than 10 minutes ago
-         if (device.lastUpdated) {
-             const lastUpdated = new Date(device.lastUpdated);
-             const now = new Date();
-             const timeDiff = (now - lastUpdated) / (1000 * 60); // difference in minutes
+function getDeviceStatus(device) {
+    // Use same timestamp logic as in renderDevices
+    let lastTimestamp;
+    if (device.latestData && device.latestData.timestamp) {
+        lastTimestamp = new Date(device.latestData.timestamp);
+    } else if (device.lastUpdated) {
+        lastTimestamp = new Date(device.lastUpdated);
+    } else {
+        return 'offline';
+    }
 
-             if (timeDiff > 10) return 'offline';
-         } else {
-             return 'offline';
-         }
+    // Check if last update was more than 5 minutes ago (using same threshold)
+    const now = new Date();
+    const timeDiff = (now - lastTimestamp) / (1000 * 60); // difference in minutes
+
+    if (timeDiff > 5) return 'offline';
+
+    // If recent data exists, determine status from error code
+    const errorCode = device.latestData?.errorCode;
+    if (!errorCode) return 'offline';
+    if (errorCode === 'NO_ERROR') return 'online';
+    if (['LOW_FLOW', 'SYSTEM_PAUSED', 'MISWEIGHTED'].includes(errorCode)) return 'warning';
+    return 'error';
+}
 
          // If recent data exists, determine status from error code
          const errorCode = device.latestData?.errorCode;
