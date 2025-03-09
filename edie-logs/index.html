@@ -812,38 +812,39 @@
               window.flowDetailChart.destroy();
           }
 
-          // Extract data for chart
-          const labels = data.map(item => formatTime(item.timestamp)).reverse();
-          const flowData = data.map(item => item.flow?.actual || 0).reverse();
-
-          window.flowDetailChart = new Chart(ctx, {
-              type: 'line',
-              data: {
-                  labels: labels,
-                  datasets: [{
-                      label: 'Flow Rate (GPM)',
-                      data: flowData,
-                      borderColor: '#cb2026',
-                      backgroundColor: 'rgba(203, 32, 38, 0.1)',
-                      tension: 0.4,
-                      fill: true
-                  }],
+      // Extract data for chart
+        const labels = data.map(item => formatTime(item.timestamp)).reverse();
+        const flowData = data.map(item => item.flow?.actual || 0).reverse();
+      
+        window.flowDetailChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Flow Rate (GPM)',
+                    data: flowData,
+                    borderColor: '#cb2026',
+                    backgroundColor: 'rgba(203, 32, 38, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
             options: {
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                      title: {
-                          display: true,
-                          text: 'Flow Rate Over Time'
-                      }
-                  },
-                  scales: {
-                      y: {
-                          beginAtZero: true
-                      }
-                  }
-              }
-          });
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Flow Rate Over Time'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
       }
 
       // Create probe chart
