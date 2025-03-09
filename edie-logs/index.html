@@ -511,51 +511,37 @@ function startAutoRefresh() {
            }
        }
 
-       // Refresh data
-      async function refreshData() {
-          showLoading();
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+       // Refresh dataasync function refreshData() {
+    showLoading();
+    try {
+        // Use simpler request without cache busting and abort controller
+        const response = await fetch(`${API_ENDPOINT}/devices`, {
+            headers: {
+                'X-API-KEY': apiKey
+            }
+        });
 
-          try {
-              const cacheBuster = new Date().getTime();
-              const response = await fetch(`${API_ENDPOINT}/devices?_cb=${cacheBuster}`, {
-                  headers: {
-                      'X-API-KEY': apiKey,
-                      'Cache-Control': 'no-cache'
-                  },
-                  signal: controller.signal
-              });
-              clearTimeout(timeoutId);
-
-              if (response.ok) {
-                  const data = await response.json();
-                  if (Array.isArray(data)) {
-                      devices = data;
-                      renderDevices(devices);
-                      populateDeviceDropdown();
-                  } else {
-                      console.error('Invalid response format:', data);
-                      alert('Invalid data format received from server');
-                  }
-              } else {
-                  const errorText = await response.text();
-                  console.error('Server response error:', response.status, response.statusText, errorText);
-                  alert(`Failed to load devices: ${response.status} - ${errorText || response.statusText}`);
-              }
-          } catch (error) {
-              clearTimeout(timeoutId);
-              console.error('Error fetching devices:', error);
-
-              if (error.name === 'AbortError') {
-                  alert('Request timed out. Please check your connection and try again.');
-              } else {
-                  alert(`Error loading device data: ${error.message}`);
-              }
-          } finally {
-              hideLoading();
-          }
-      }
+        if (response.ok) {
+            const data = await response.json();
+            if (Array.isArray(data)) {
+                devices = data;
+                renderDevices(devices);
+                populateDeviceDropdown();
+            } else {
+                console.error('Invalid response format:', data);
+                alert('Invalid data format received from server');
+            }
+        } else {
+            console.error('Server response error:', response.status);
+            alert(`Failed to load devices: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('Error fetching devices:', error);
+        alert('Error loading device data: ' + error.message);
+    } finally {
+        hideLoading();
+    }
+}
       function startAutoRefresh() {
           // Clear any existing interval
           if (window.autoRefreshInterval) {
