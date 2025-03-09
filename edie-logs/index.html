@@ -347,37 +347,72 @@
        });
 
        // Initialize the application
-       function initializeApp() {
-           // Load saved API key if available
-           const savedKey = localStorage.getItem('edieApiKey');
-           if (savedKey) {
-               document.getElementById('apiKey').value = savedKey;
-               document.getElementById('rememberKey').checked = true;
-           }
+function initializeApp() {
+   // Load saved API key if available
+   const savedKey = localStorage.getItem('edieApiKey');
+   if (savedKey) {
+       document.getElementById('apiKey').value = savedKey;
+       document.getElementById('rememberKey').checked = true;
+   }
 
-           // Event listeners
-           document.getElementById('loginBtn').addEventListener('click', handleLogin);
-           document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-           document.getElementById('refreshBtn').addEventListener('click', refreshData);
-           document.getElementById('overviewLink').addEventListener('click', showOverviewSection);
-           document.getElementById('historyLink').addEventListener('click', showHistorySection);
-           document.getElementById('searchBtn').addEventListener('click', searchDevices);
-           document.getElementById('sortByName').addEventListener('click', () => sortDevices('name'));
-           document.getElementById('sortByStatus').addEventListener('click', () => sortDevices('status'));
-           document.getElementById('searchHistoryBtn').addEventListener('click', fetchHistoricalData);
-           document.getElementById('exportCSV').addEventListener('click', exportHistoryToCSV);
-           document.getElementById('searchDevices').addEventListener('keyup', function(event) {
-               if (event.key === 'Enter') {
-                   searchDevices();
-               }
-           });
-
-           // Initialize Bootstrap modal
-           deviceDetailModal = new bootstrap.Modal(document.getElementById('deviceDetailModal'));
-
-           // Hide loading indicator
-           document.getElementById('loadingIndicator').style.display = 'none';
+   // Event listeners
+   document.getElementById('loginBtn').addEventListener('click', handleLogin);
+   document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+   document.getElementById('refreshBtn').addEventListener('click', refreshData);
+   document.getElementById('overviewLink').addEventListener('click', showOverviewSection);
+   document.getElementById('historyLink').addEventListener('click', showHistorySection);
+   document.getElementById('searchBtn').addEventListener('click', searchDevices);
+   document.getElementById('sortByName').addEventListener('click', () => sortDevices('name'));
+   document.getElementById('sortByStatus').addEventListener('click', () => sortDevices('status'));
+   document.getElementById('searchHistoryBtn').addEventListener('click', fetchHistoricalData);
+   document.getElementById('exportCSV').addEventListener('click', exportHistoryToCSV);
+   document.getElementById('searchDevices').addEventListener('keyup', function(event) {
+       if (event.key === 'Enter') {
+           searchDevices();
        }
+   });
+
+   // Initialize Bootstrap modal
+   deviceDetailModal = new bootstrap.Modal(document.getElementById('deviceDetailModal'));
+   
+   // Start auto-refresh
+   startAutoRefresh();
+   
+   // Handle visibility changes
+   document.addEventListener('visibilitychange', () => {
+       if (document.visibilityState === 'hidden') {
+           if (window.autoRefreshInterval) {
+               clearInterval(window.autoRefreshInterval);
+           }
+       } else {
+           startAutoRefresh();
+           // Refresh immediately when tab becomes active again
+           refreshData();
+       }
+   });
+
+   // Hide loading indicator
+   document.getElementById('loadingIndicator').style.display = 'none';
+}
+
+// Auto-refresh data every 30 seconds
+function startAutoRefresh() {
+   // Clear any existing interval
+   if (window.autoRefreshInterval) {
+       clearInterval(window.autoRefreshInterval);
+   }
+   
+   // Set new interval
+   window.autoRefreshInterval = setInterval(() => {
+       if (document.getElementById('mainDashboard').classList.contains('d-none')) {
+           // Don't refresh if we're not on the dashboard
+           return;
+       }
+       
+       console.log("Auto-refreshing data...");
+       refreshData();
+   }, 30000); // 30 seconds
+}
 
        // Handle login
        async function handleLogin() {
@@ -477,126 +512,147 @@
        }
 
        // Refresh data
-       async function refreshData() {
-           showLoading();
-           try {
-               const response = await fetch(`${API_ENDPOINT}/devices`, {
-                   headers: {
-                       'X-API-KEY': apiKey
-                   }
-               });
-
-               if (response.ok) {
-                   devices = await response.json();
-                   renderDevices(devices);
-                   populateDeviceDropdown();
-               } else {
-                   alert('Failed to load devices');
-               }
-           } catch (error) {
-               console.error('Error fetching devices:', error);
-               alert('Error loading device data');
-           } finally {
-               hideLoading();
-           }
-       }
+      async function refreshData() {
+          showLoading();
+          try {
+              // Clear any cached data to ensure fresh fetch
+              const cacheBuster = new Date().getTime();
+              const response = await fetch(`${API_ENDPOINT}/devices?_cb=${cacheBuster}`, {
+                  headers: {
+                      'X-API-KEY': apiKey,
+                      'Cache-Control': 'no-cache'
+                  }
+              });
+      
+              if (response.ok) {
+                  devices = await response.json();
+                  renderDevices(devices);
+                  populateDeviceDropdown();
+              } else {
+                  alert('Failed to load devices');
+              }
+          } catch (error) {
+              console.error('Error fetching devices:', error);
+              alert('Error loading device data');
+          } finally {
+              hideLoading();
+          }
+      }
+      function startAutoRefresh() {
+          // Clear any existing interval
+          if (window.autoRefreshInterval) {
+              clearInterval(window.autoRefreshInterval);
+          }
+          
+          // Set new interval
+          window.autoRefreshInterval = setInterval(() => {
+              if (document.getElementById('mainDashboard').classList.contains('d-none')) {
+                  // Don't refresh if we're not on the dashboard
+                  return;
+              }
+              
+              console.log("Auto-refreshing data...");
+              refreshData();
+          }, 30000); // 30 seconds
+      }
 
        // Render devices grid
-       function renderDevices(devicesToRender) {
-           const devicesGrid = document.getElementById('devicesGrid');
-           devicesGrid.innerHTML = '';
-
-           if (devicesToRender.length === 0) {
-               devicesGrid.innerHTML = '<div class="col-12"><div class="alert alert-info">No devices found</div></div>';
-               return;
-           }
-
-           devicesToRender.forEach(device => {
-               // Determine device status
-               let status = 'offline';
-               let statusClass = 'status-offline';
-               let errorCode = '';
-               let flowRate = 0;
-               let ppm = 0;
-               
-               if (device.latestData) {
-                   // Check if last update was more than 10 minutes ago
-                   const lastUpdated = new Date(device.lastUpdated);
-                   const now = new Date();
-                   const timeDiff = (now - lastUpdated) / (1000 * 60); // difference in minutes
-                   
-                   if (timeDiff > 10) {
-                       // Device is offline if data is too old
-                       status = 'offline';
-                       statusClass = 'status-offline';
-                   } else {
-                       // If recent data exists, determine status from error code
-                       errorCode = device.latestData.errorCode || '';
-                       flowRate = device.latestData.flow?.actual || 0;
-                       ppm = device.latestData.ppm || 0;
-                       
-                       if (errorCode === 'NO_ERROR') {
-                           status = 'online';
-                           statusClass = 'status-online';
-                       } else if (['LOW_FLOW', 'SYSTEM_PAUSED', 'MISWEIGHTED'].includes(errorCode)) {
-                           status = 'warning';
-                           statusClass = 'status-warning';
-                       } else if (['NO_FLOW', 'PUMP_ALARM', 'PUMP_WARNING'].includes(errorCode)) {
-                           status = 'error';
-                           statusClass = 'status-error';
-                       }
-                   }
-               }
-               
-               const deviceCard = document.createElement('div');
-               deviceCard.className = 'col-md-4 col-lg-3 mb-4';
-               deviceCard.innerHTML = `
-                   <div class="card device-card">
-                       <div class="card-header">
-                           <div>
-                               <span class="status-indicator ${statusClass}"></span>
-                               <span>${device.deviceId}</span>
-                           </div>
-                           <span class="badge ${getStatusBadgeClass(status)}">${errorCode.replace(/_/g, ' ')}</span>
-                       </div>
-                       <div class="card-body">
-                           <div class="chart-container">
-                               <canvas id="chart-${device.deviceId}"></canvas>
-                           </div>
-                           <div class="row mt-3">
-                               <div class="col-6">
-                                   <div class="metric-label">Flow Rate</div>
-                                   <div class="metric-value">${flowRate.toFixed(1)} GPM</div>
-                               </div>
-                               <div class="col-6">
-                                   <div class="metric-label">PPM</div>
-                                   <div class="metric-value">${ppm}</div>
-                               </div>
-                           </div>
-                           <div class="row mt-2">
-                               <div class="col-12">
-                                   <div class="metric-label">Last Updated</div>
-                                   <div class="metric-value fs-6">${formatDate(device.lastUpdated)}</div>
-                               </div>
-                           </div>
-                       </div>
-                       <div class="card-footer">
-                           <button class="btn btn-primary btn-sm w-100 view-details" data-device-id="${device.deviceId}">View Details</button>
-                       </div>
-                   </div>
-               `;
-               devicesGrid.appendChild(deviceCard);
-               
-               // Create mini chart if we have data
-               if (device.latestData && Array.isArray(device.latestData.history)) {
-                   createMiniChart(device.deviceId, device.latestData.history);
-               }
-               
-               // Add event listener to view details button
-               const viewButton = deviceCard.querySelector('.view-details');
-               viewButton.addEventListener('click', () => showDeviceDetails(device));
-           });
-       }
+      function renderDevices(devicesToRender) {
+          const devicesGrid = document.getElementById('devicesGrid');
+          devicesGrid.innerHTML = '';
+      
+          if (devicesToRender.length === 0) {
+              devicesGrid.innerHTML = '<div class="col-12"><div class="alert alert-info">No devices found</div></div>';
+              return;
+          }
+      
+          devicesToRender.forEach(device => {
+              // Get proper timestamp from the data
+              const lastUpdatedTime = device.lastUpdated ? new Date(device.lastUpdated) : null;
+              
+              // Determine device status
+              let status = 'offline';
+              let statusClass = 'status-offline';
+              let errorCode = 'UNKNOWN';
+              let flowRate = 0;
+              let ppm = 0;
+              
+              if (device.latestData) {
+                  // Check if last update was more than 5 minutes ago
+                  const now = new Date();
+                  const timeDiff = lastUpdatedTime ? (now - lastUpdatedTime) / (1000 * 60) : 10; // difference in minutes
+                  
+                  if (timeDiff > 5) {
+                      // Device is offline if data is too old
+                      status = 'offline';
+                      statusClass = 'status-offline';
+                  } else {
+                      // If recent data exists, determine status from error code
+                      errorCode = device.latestData.errorCode || 'UNKNOWN';
+                      flowRate = device.latestData.flow?.actual || 0;
+                      ppm = device.latestData.ppm || 0;
+                      
+                      if (errorCode === 'NO_ERROR') {
+                          status = 'online';
+                          statusClass = 'status-online';
+                      } else if (['LOW_FLOW', 'SYSTEM_PAUSED', 'MISWEIGHTED'].includes(errorCode)) {
+                          status = 'warning';
+                          statusClass = 'status-warning';
+                      } else if (['NO_FLOW', 'PUMP_ALARM', 'PUMP_WARNING'].includes(errorCode)) {
+                          status = 'error';
+                          statusClass = 'status-error';
+                      }
+                  }
+              }
+              
+              // Create the device card with the latest data
+              const deviceCard = document.createElement('div');
+              deviceCard.className = 'col-md-4 col-lg-3 mb-4';
+              deviceCard.innerHTML = `
+                  <div class="card device-card">
+                      <div class="card-header">
+                          <div>
+                              <span class="status-indicator ${statusClass}"></span>
+                              <span>${device.deviceId}</span>
+                          </div>
+                          <span class="badge ${getStatusBadgeClass(status)}">${errorCode.replace(/_/g, ' ')}</span>
+                      </div>
+                      <div class="card-body">
+                          <div class="chart-container">
+                              <canvas id="chart-${device.deviceId}"></canvas>
+                          </div>
+                          <div class="row mt-3">
+                              <div class="col-6">
+                                  <div class="metric-label">Flow Rate</div>
+                                  <div class="metric-value">${flowRate.toFixed(1)} GPM</div>
+                              </div>
+                              <div class="col-6">
+                                  <div class="metric-label">PPM</div>
+                                  <div class="metric-value">${ppm}</div>
+                              </div>
+                          </div>
+                          <div class="row mt-2">
+                              <div class="col-12">
+                                  <div class="metric-label">Last Updated</div>
+                                  <div class="metric-value fs-6">${lastUpdatedTime ? formatDate(lastUpdatedTime) : 'Unknown'}</div>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="card-footer">
+                          <button class="btn btn-primary btn-sm w-100 view-details" data-device-id="${device.deviceId}">View Details</button>
+                      </div>
+                  </div>
+              `;
+              devicesGrid.appendChild(deviceCard);
+              
+              // Always create mini chart if we have a canvas, even if empty
+              createMiniChart(device.deviceId, device.latestData?.history || []);
+              
+              // Add event listener to view details button
+              const viewButton = deviceCard.querySelector('.view-details');
+              viewButton.addEventListener('click', () => showDeviceDetails(device));
+          });
+      }
 
        // Create mini chart for device card
        function createMiniChart(deviceId, history) {
