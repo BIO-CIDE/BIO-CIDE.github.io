@@ -966,13 +966,20 @@
        }
 
        // Get device status from error code
-       function getDeviceStatus(errorCode) {
-           if (!errorCode) return 'offline';
-           if (errorCode === 'NO_ERROR') return 'online';
-           if (['LOW_FLOW', 'SYSTEM_PAUSED', 'MISWEIGHTED'].includes(errorCode)) return 'warning';
-           return 'error';
-       }
-
+        function getDeviceStatus(device) {
+            // Consider devices offline if last update was more than 10 minutes ago
+            const lastUpdated = new Date(device.lastUpdated);
+            const now = new Date();
+            const timeDiff = (now - lastUpdated) / (1000 * 60); // difference in minutes
+            
+            if (timeDiff > 10) return 'offline';
+            
+            // If device is online (recently updated), check error code
+            const errorCode = device.latestData?.errorCode;
+            if (errorCode === 'NO_ERROR') return 'online';
+            if (['LOW_FLOW', 'SYSTEM_PAUSED', 'MISWEIGHTED'].includes(errorCode)) return 'warning';
+            return 'error';
+        }
        // Get status badge class
        function getStatusBadgeClass(status) {
            switch (status) {
