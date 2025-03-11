@@ -541,12 +541,12 @@
       function renderDevices(devicesToRender) {
           const devicesGrid = document.getElementById('devicesGrid');
           devicesGrid.innerHTML = '';
-
+      
           if (devicesToRender.length === 0) {
               devicesGrid.innerHTML = '<div class="col-12"><div class="alert alert-info">No devices found</div></div>';
               return;
           }
-
+      
           devicesToRender.forEach(device => {
               // Consistent timestamp handling - prefer timestamp in the data
               let lastTimestamp;
@@ -557,34 +557,42 @@
               } else {
                   lastTimestamp = null;
               }
-
+      
               // Debug logging
               console.log(`Device ${device.deviceId}: timestamp=${lastTimestamp}, lastUpdated=${device.lastUpdated}`);
-
+      
               // Determine device status
               let status = 'offline';
               let statusClass = 'status-offline';
               let errorCode = 'UNKNOWN';
               let flowRate = 0;
               let ppm = 0;
-
+      
               if (device.latestData) {
+                  // Get the error code first
+                  errorCode = device.latestData.errorCode || 'UNKNOWN';
+                  flowRate = device.latestData.flow?.actual || 0;
+                  ppm = device.latestData.ppm || 0;
+                  
                   // Check if last update was more than 5 minutes ago
                   const now = new Date();
                   const timeDiff = lastTimestamp ? (now - lastTimestamp) / (1000 * 60) : 10; // difference in minutes
                   
                   console.log(`Device ${device.deviceId}: time difference = ${timeDiff.toFixed(2)} minutes`);
-
+      
                   if (timeDiff > 5) {
-                      // Device is offline if data is too old
-                      status = 'offline';
-                      statusClass = 'status-offline';
+                      // Important change: If system is paused, keep it as paused even if data is old
+                      if (errorCode === 'SYSTEM_PAUSED') {
+                          status = 'warning';
+                          statusClass = 'status-warning';
+                          // Keep paused message in UI
+                      } else {
+                          // Device is offline if data is too old (and not paused)
+                          status = 'offline';
+                          statusClass = 'status-offline';
+                      }
                   } else {
-                      // If recent data exists, determine status from error code
-                      errorCode = device.latestData.errorCode || 'UNKNOWN';
-                      flowRate = device.latestData.flow?.actual || 0;
-                      ppm = device.latestData.ppm || 0;
-
+                      // Recent data exists, determine status from error code
                       if (errorCode === 'NO_ERROR') {
                           status = 'online';
                           statusClass = 'status-online';
@@ -597,7 +605,7 @@
                       }
                   }
               }
-
+      
               // Create the device card with the latest data
               const deviceCard = document.createElement('div');
               deviceCard.className = 'col-md-4 col-lg-3 mb-4';
@@ -639,10 +647,10 @@
                   </div>
               `;
               devicesGrid.appendChild(deviceCard);
-
+      
               // Always create mini chart if we have a canvas, even if empty
               createMiniChart(device.deviceId, device.latestData?.history || []);
-
+      
               // Add event listener to view details button
               const viewButton = deviceCard.querySelector('.view-details');
               viewButton.addEventListener('click', () => showDeviceDetails(device));
@@ -1029,31 +1037,39 @@
          renderDevices(sortedDevices);
      }
 
-     // Get device status based on time and error code
-     function getDeviceStatus(device) {
-         // Use same timestamp logic as in renderDevices
-         let lastTimestamp;
-         if (device.latestData && device.latestData.timestamp) {
-             lastTimestamp = new Date(device.latestData.timestamp);
-         } else if (device.lastUpdated) {
-             lastTimestamp = new Date(device.lastUpdated);
-         } else {
-             return 'offline';
-         }
-
-         // Check if last update was more than 5 minutes ago (using same threshold)
-         const now = new Date();
-         const timeDiff = (now - lastTimestamp) / (1000 * 60); // difference in minutes
-
-         if (timeDiff > 5) return 'offline';
-
-         // If recent data exists, determine status from error code
-         const errorCode = device.latestData?.errorCode;
-         if (!errorCode) return 'offline';
-         if (errorCode === 'NO_ERROR') return 'online';
-         if (['LOW_FLOW', 'SYSTEM_PAUSED', 'MISWEIGHTED'].includes(errorCode)) return 'warning';
-         return 'error';
-     }
+      // Get device status based on time and error code
+      function getDeviceStatus(device) {
+          // Use same timestamp logic as in renderDevices
+          let lastTimestamp;
+          if (device.latestData && device.latestData.timestamp) {
+              lastTimestamp = new Date(device.latestData.timestamp);
+          } else if (device.lastUpdated) {
+              lastTimestamp = new Date(device.lastUpdated);
+          } else {
+              return 'offline';
+          }
+      
+          // Get the error code first
+          const errorCode = device.latestData?.errorCode;
+      
+          // Check if last update was more than 5 minutes ago (using same threshold)
+          const now = new Date();
+          const timeDiff = (now - lastTimestamp) / (1000 * 60); // difference in minutes
+      
+          if (timeDiff > 5) {
+              // Special case for paused systems
+              if (errorCode === 'SYSTEM_PAUSED') {
+                  return 'warning'; // Keep it as warning/paused, not offline
+              }
+              return 'offline';
+          }
+      
+          // If recent data exists, determine status from error code
+          if (!errorCode) return 'offline';
+          if (errorCode === 'NO_ERROR') return 'online';
+          if (['LOW_FLOW', 'SYSTEM_PAUSED', 'MISWEIGHTED'].includes(errorCode)) return 'warning';
+          return 'error';
+      }
 
      // Get status badge class
      function getStatusBadgeClass(status) {
