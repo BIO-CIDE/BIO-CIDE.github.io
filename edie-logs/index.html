@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EDIE Fleet Dashboard</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
   <style>
       :root {
           --primary-color: #cb2026;
@@ -112,6 +113,15 @@
           max-width: 400px;
           margin: 100px auto;
       }
+      
+      .timezone-info {
+          font-size: 0.85rem;
+          padding: 0.5rem;
+          border-radius: 0.25rem;
+          background-color: rgba(0, 123, 255, 0.1);
+          border-left: 3px solid var(--primary-color);
+          margin-bottom: 1rem;
+      }
   </style>
 </head>
 <body>
@@ -173,6 +183,11 @@
 
       <!-- Overview Section -->
       <div id="overviewSection" class="container mt-4">
+          <div class="timezone-info" id="overviewTimezoneInfo">
+              <i class="bi bi-clock"></i> All times are shown in your local timezone: 
+              <strong id="userTimezone"></strong>
+          </div>
+          
           <div class="row mb-4">
               <div class="col-md-6">
                   <div class="input-group">
@@ -195,6 +210,11 @@
 
       <!-- History Section -->
       <div id="historySection" class="container mt-4 d-none">
+          <div class="timezone-info" id="historyTimezoneInfo">
+              <i class="bi bi-clock"></i> All times are shown in your local timezone: 
+              <strong id="historyUserTimezone"></strong>
+          </div>
+          
           <div class="card">
               <div class="card-header d-flex justify-content-between align-items-center">
                   <h5 class="mb-0">Historical Data</h5>
@@ -348,6 +368,9 @@
 
       // Initialize the application
       function initializeApp() {
+          // Initialize timezone handling
+          initializeTimezoneHandling();
+          
           // Load saved API key if available
           const savedKey = localStorage.getItem('edieApiKey');
           if (savedKey) {
@@ -393,6 +416,107 @@
 
           // Hide loading indicator
           document.getElementById('loadingIndicator').style.display = 'none';
+      }
+      
+      // Initialize timezone handling
+      function initializeTimezoneHandling() {
+          const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          
+          // Set timezone in both places
+          document.getElementById('userTimezone').textContent = userTimezone;
+          document.getElementById('historyUserTimezone').textContent = userTimezone;
+      }
+      
+      // Format date/time functions with improved error handling
+      function formatDateTime(dateString) {
+          if (!dateString) return 'No timestamp';
+          try {
+              const date = new Date(dateString);
+              if (isNaN(date.getTime())) return 'Invalid date';
+              return date.toLocaleString(undefined, {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit'
+              });
+          } catch (e) {
+              console.error("Error formatting date:", dateString, e);
+              return 'Date error';
+          }
+      }
+
+      function formatDate(dateString) {
+          if (!dateString) return '';
+          try {
+              const date = new Date(dateString);
+              if (isNaN(date.getTime())) return 'Invalid date';
+              return date.toLocaleDateString();
+          } catch (e) {
+              console.error("Error formatting date:", dateString, e);
+              return 'Date error';
+          }
+      }
+
+      function formatTime(dateString) {
+          if (!dateString) return '';
+          try {
+              const date = new Date(dateString);
+              if (isNaN(date.getTime())) return 'Invalid time';
+              return date.toLocaleTimeString(undefined, { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+              });
+          } catch (e) {
+              console.error("Error formatting time:", dateString, e);
+              return 'Time error';
+          }
+      }
+      
+      // Get time difference in minutes
+      function getTimeDifference(timestamp) {
+          if (!timestamp) return Infinity;
+          try {
+              const date = new Date(timestamp);
+              if (isNaN(date.getTime())) return Infinity;
+              const now = new Date();
+              // Return difference in minutes
+              return (now - date) / (1000 * 60);
+          } catch (e) {
+              console.error("Error calculating time difference:", timestamp, e);
+              return Infinity;
+          }
+      }
+      
+      // Get relative time string (e.g., "5 minutes ago")
+      function getRelativeTimeString(dateString) {
+          if (!dateString) return 'unknown time';
+          try {
+              const date = new Date(dateString);
+              if (isNaN(date.getTime())) return 'invalid date';
+              
+              const now = new Date();
+              const diffMs = now - date;
+              const diffSec = Math.floor(diffMs / 1000);
+              const diffMin = Math.floor(diffSec / 60);
+              const diffHour = Math.floor(diffMin / 60);
+              const diffDay = Math.floor(diffHour / 24);
+              
+              if (diffMin < 1) return 'just now';
+              if (diffMin < 60) return `${diffMin} minute${diffMin > 1 ? 's' : ''} ago`;
+              if (diffHour < 24) return `${diffHour} hour${diffHour > 1 ? 's' : ''} ago`;
+              if (diffDay < 7) return `${diffDay} day${diffDay > 1 ? 's' : ''} ago`;
+              return formatDate(dateString);
+          } catch (e) {
+              console.error("Error formatting relative time:", dateString, e);
+              return 'time error';
+          }
+      }
+
+      // Format date for filename
+      function formatDateForFilename(date) {
+          return date.toISOString().split('T')[0];
       }
 
       // Auto-refresh data every 30 seconds
@@ -551,60 +675,19 @@
               // Consistent timestamp handling - prefer timestamp in the data
               let lastTimestamp;
               if (device.latestData && device.latestData.timestamp) {
-                  lastTimestamp = new Date(device.latestData.timestamp);
+                  lastTimestamp = device.latestData.timestamp;
               } else if (device.lastUpdated) {
-                  lastTimestamp = new Date(device.lastUpdated);
+                  lastTimestamp = device.lastUpdated;
               } else {
                   lastTimestamp = null;
               }
       
-              // Debug logging
-              console.log(`Device ${device.deviceId}: timestamp=${lastTimestamp}, lastUpdated=${device.lastUpdated}`);
-      
               // Determine device status
-              let status = 'offline';
-              let statusClass = 'status-offline';
-              let errorCode = 'UNKNOWN';
-              let flowRate = 0;
-              let ppm = 0;
-      
-              if (device.latestData) {
-                  // Get the error code first
-                  errorCode = device.latestData.errorCode || 'UNKNOWN';
-                  flowRate = device.latestData.flow?.actual || 0;
-                  ppm = device.latestData.ppm || 0;
-                  
-                  // Check if last update was more than 5 minutes ago
-                  const now = new Date();
-                  const timeDiff = lastTimestamp ? (now - lastTimestamp) / (1000 * 60) : 10; // difference in minutes
-                  
-                  console.log(`Device ${device.deviceId}: time difference = ${timeDiff.toFixed(2)} minutes`);
-      
-                  if (timeDiff > 5) {
-                      // Important change: If system is paused, keep it as paused even if data is old
-                      if (errorCode === 'SYSTEM_PAUSED') {
-                          status = 'warning';
-                          statusClass = 'status-warning';
-                          // Keep paused message in UI
-                      } else {
-                          // Device is offline if data is too old (and not paused)
-                          status = 'offline';
-                          statusClass = 'status-offline';
-                      }
-                  } else {
-                      // Recent data exists, determine status from error code
-                      if (errorCode === 'NO_ERROR') {
-                          status = 'online';
-                          statusClass = 'status-online';
-                      } else if (['LOW_FLOW', 'SYSTEM_PAUSED', 'MISWEIGHTED'].includes(errorCode)) {
-                          status = 'warning';
-                          statusClass = 'status-warning';
-                      } else if (['NO_FLOW', 'PUMP_ALARM', 'PUMP_WARNING'].includes(errorCode)) {
-                          status = 'error';
-                          statusClass = 'status-error';
-                      }
-                  }
-              }
+              let status = getDeviceStatus(device);
+              let statusClass = 'status-' + status;
+              let errorCode = device.latestData?.errorCode || 'UNKNOWN';
+              let flowRate = device.latestData?.flow?.actual || 0;
+              let ppm = device.latestData?.ppm || 0;
       
               // Create the device card with the latest data
               const deviceCard = document.createElement('div');
@@ -635,9 +718,8 @@
                           <div class="row mt-2">
                               <div class="col-12">
                                   <div class="metric-label">Last Updated</div>
-                                  <div class="metric-value fs-6">${(device.latestData && device.latestData.timestamp) ? 
-                                  formatDate(new Date(device.latestData.timestamp)) : 
-                                  (lastTimestamp ? formatDate(lastTimestamp) : 'Unknown')}</div>
+                                  <div class="metric-value fs-6">${lastTimestamp ? 
+                                  getRelativeTimeString(lastTimestamp) : 'Unknown'}</div>
                               </div>
                           </div>
                       </div>
@@ -655,6 +737,37 @@
               const viewButton = deviceCard.querySelector('.view-details');
               viewButton.addEventListener('click', () => showDeviceDetails(device));
           });
+      }
+
+      // Get device status
+      function getDeviceStatus(device) {
+          // Get timestamp from device data
+          let timestamp = null;
+          if (device.latestData && device.latestData.timestamp) {
+              timestamp = device.latestData.timestamp;
+          } else if (device.lastUpdated) {
+              timestamp = device.lastUpdated;
+          }
+          
+          // Get the error code
+          const errorCode = device.latestData?.errorCode;
+          
+          // Check if last update was more than 5 minutes ago
+          const timeDiff = getTimeDifference(timestamp);
+          
+          if (timeDiff > 5) {
+              // Special case for paused systems
+              if (errorCode === 'SYSTEM_PAUSED') {
+                  return 'warning'; // Keep it as warning/paused, not offline
+              }
+              return 'offline';
+          }
+          
+          // If recent data exists, determine status from error code
+          if (!errorCode) return 'offline';
+          if (errorCode === 'NO_ERROR') return 'online';
+          if (['LOW_FLOW', 'SYSTEM_PAUSED', 'MISWEIGHTED'].includes(errorCode)) return 'warning';
+          return 'error';
       }
 
       // Create mini chart for device card
@@ -708,7 +821,7 @@
           });
       }
 
-      // Show device details
+// Show device details
       async function showDeviceDetails(device) {
           document.getElementById('deviceDetailTitle').textContent = `Device: ${device.deviceId}`;
 
@@ -820,39 +933,39 @@
               window.flowDetailChart.destroy();
           }
 
-      // Extract data for chart
-        const labels = data.map(item => formatTime(item.timestamp)).reverse();
-        const flowData = data.map(item => item.flow?.actual || 0).reverse();
+          // Extract data for chart
+          const labels = data.map(item => formatTime(item.timestamp)).reverse();
+          const flowData = data.map(item => item.flow?.actual || 0).reverse();
       
-        window.flowDetailChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Flow Rate (GPM)',
-                    data: flowData,
-                    borderColor: '#cb2026',
-                    backgroundColor: 'rgba(203, 32, 38, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Flow Rate Over Time'
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
+          window.flowDetailChart = new Chart(ctx, {
+              type: 'line',
+              data: {
+                  labels: labels,
+                  datasets: [{
+                      label: 'Flow Rate (GPM)',
+                      data: flowData,
+                      borderColor: '#cb2026',
+                      backgroundColor: 'rgba(203, 32, 38, 0.1)',
+                      tension: 0.4,
+                      fill: true
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                      title: {
+                          display: true,
+                          text: 'Flow Rate Over Time'
+                      }
+                  },
+                  scales: {
+                      y: {
+                          beginAtZero: true
+                      }
+                  }
+              }
+          });
       }
 
       // Create probe chart
@@ -1036,40 +1149,6 @@
 
          renderDevices(sortedDevices);
      }
-
-      // Get device status based on time and error code
-      function getDeviceStatus(device) {
-          // Use same timestamp logic as in renderDevices
-          let lastTimestamp;
-          if (device.latestData && device.latestData.timestamp) {
-              lastTimestamp = new Date(device.latestData.timestamp);
-          } else if (device.lastUpdated) {
-              lastTimestamp = new Date(device.lastUpdated);
-          } else {
-              return 'offline';
-          }
-      
-          // Get the error code first
-          const errorCode = device.latestData?.errorCode;
-      
-          // Check if last update was more than 5 minutes ago (using same threshold)
-          const now = new Date();
-          const timeDiff = (now - lastTimestamp) / (1000 * 60); // difference in minutes
-      
-          if (timeDiff > 5) {
-              // Special case for paused systems
-              if (errorCode === 'SYSTEM_PAUSED') {
-                  return 'warning'; // Keep it as warning/paused, not offline
-              }
-              return 'offline';
-          }
-      
-          // If recent data exists, determine status from error code
-          if (!errorCode) return 'offline';
-          if (errorCode === 'NO_ERROR') return 'online';
-          if (['LOW_FLOW', 'SYSTEM_PAUSED', 'MISWEIGHTED'].includes(errorCode)) return 'warning';
-          return 'error';
-      }
 
      // Get status badge class
      function getStatusBadgeClass(status) {
@@ -1275,33 +1354,12 @@
          }
      }
 
-     // Utility functions
-     function formatDateTime(dateString) {
-         if (!dateString) return '';
-         const date = new Date(dateString);
-         return date.toLocaleString();
-     }
-
-     function formatDate(dateString) {
-         if (!dateString) return '';
-         const date = new Date(dateString);
-         return date.toLocaleDateString();
-     }
-
-     function formatTime(dateString) {
-         if (!dateString) return '';
-         const date = new Date(dateString);
-         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-     }
-
-     function formatDateForFilename(date) {
-         return date.toISOString().split('T')[0];
-     }
-
+     // Show loading indicator
      function showLoading() {
          document.getElementById('loadingIndicator').style.display = 'flex';
      }
 
+     // Hide loading indicator
      function hideLoading() {
          document.getElementById('loadingIndicator').style.display = 'none';
      }
