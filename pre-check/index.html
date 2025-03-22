@@ -29,7 +29,7 @@
 
     body {
       font-family: Arial, sans-serif;
-      margin: 0; 
+      margin: 0;
       padding: 20px;
       background-color: #f0f0f0;
     }
@@ -43,7 +43,7 @@
     }
 
     /* Hide spin buttons in numeric inputs (some browsers) */
-    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-inner-spin-button,
     input[type=number]::-webkit-outer-spin-button {
       -webkit-appearance: none;
       margin: 0;
@@ -865,7 +865,7 @@ const FlowLayoutCanvas = () => {
               }}
               title="Delete Component"
             >
-              &times;
+              ×
             </button>
             {/* SVG Shape */}
             <ShapeSVG shapeClass={it.shapeClass} />
@@ -985,7 +985,7 @@ const EDIEChecklist = () => {
     'Respirator (required only for open/leaking chamber)'
   ];
   const optionalItems = [
-    'PRO-OXINE/OXINE Droplet Test Kit (for validation/training)',
+    'PRO-OXINE®/OXINE® Droplet Test Kit (for validation/training)',
     'Zip ties (for cable management)',
     'Chemical spill kit with sodium thiosulfate (for high-traffic/volume sites)'
   ];
@@ -1138,9 +1138,7 @@ const EDIEChecklist = () => {
           alt="Kemin Logo"
           className="h-12"
         />
-        <h1 className="text-2xl font-bold text-red-600">
-          EDIE Pre-Installation Checklist
-        </h1>
+        <h1 className="text-2xl font-bold text-red-600">EDIE™ Pre-Installation Checklist</h1>
       </div>
 
       {/* Basic Info Section */}
@@ -1238,7 +1236,7 @@ const EDIEChecklist = () => {
         {(openSection==='space'||openSection==='all') && (
           <div className="p-4 space-y-2">
             <CheckboxItem
-              label="Wall space: 3ft × 2ft minimum for EDIE mounting"
+              label="Wall space: 3ft × 2ft minimum for EDIE™ mounting"
               subtext="Must be on a sturdy wall capable of supporting unit weight"
               required
               checked={formData.wallSpace}
@@ -1257,7 +1255,7 @@ const EDIEChecklist = () => {
               onChange={(e)=> setFormData({...formData, floorSpace:e.target.checked})}
             />
             <CheckboxItem
-              label="Chemical containers must be positioned below EDIE unit"
+              label="Chemical containers must be positioned below EDIE™ unit"
               required
               checked={formData.containerPosition}
               onChange={(e)=> setFormData({...formData, containerPosition:e.target.checked})}
@@ -1277,7 +1275,7 @@ const EDIEChecklist = () => {
         {(openSection==='power'||openSection==='all') && (
           <div className="p-4 space-y-2">
             <CheckboxItem
-              label="110V power outlet within 6ft of EDIE mounting location"
+              label="110V power outlet within 6ft of EDIE™ mounting location"
               subtext="If beyond 6ft, specify distance below"
               required
               checked={formData.powerOutlet}
@@ -1286,7 +1284,7 @@ const EDIEChecklist = () => {
             {!formData.powerOutlet && (
               <div className="ml-6">
                 <label className="block text-sm font-semibold">
-                  Distance from EDIE to Power Outlet (ft):
+                  Distance from EDIE™ to Power Outlet (ft):
                 </label>
                 <input
                   type="number"
@@ -1433,7 +1431,7 @@ const EDIEChecklist = () => {
         {(openSection==='alternative'||openSection==='all') && (
           <div className="p-4 space-y-4">
             <CheckboxItem
-              label="No wall space: EDIE stand required"
+              label="No wall space: EDIE™ stand required"
               checked={arrangements.needsStand}
               onChange={(e)=> setArrangements({...arrangements, needsStand:e.target.checked})}
             />
@@ -1547,7 +1545,7 @@ const EDIEChecklist = () => {
               Required Documents (Listed)
             </h3>
             <ul className="list-disc ml-5 space-y-1 text-sm">
-              <li>Installation manual (in EDIE)</li>
+              <li>Installation manual (in EDIE™)</li>
               <li>Pre-installation checklist</li>
               <li>Chemical SDS sheets</li>
             </ul>
@@ -1569,7 +1567,7 @@ const EDIEChecklist = () => {
                 }
               />
               <CheckboxItem
-                label="Water testing using droplet kit"
+                label="Water testing using PRO-OXINE®/OXINE® droplet kit"
                 checked={docsEndUserTraining.dropletKit}
                 onChange={()=>
                   setDocsEndUserTraining(prev=>({
@@ -1611,7 +1609,7 @@ const EDIEChecklist = () => {
         {(openSection==='flowLayout'||openSection==='all') && (
           <div className="p-4 space-y-4">
             <p className="text-sm text-gray-600">
-              Provide pictures or map out the flow layout (or both). 
+              Provide pictures or map out the flow layout (or both).
               Drag, rotate, and resize components in the canvas below.
             </p>
 
@@ -1688,7 +1686,7 @@ const EDIEChecklist = () => {
             <CheckboxItem
               label="Specify Demand in PPM"
               checked={waterParams.specifyDemand}
-              onChange={()=> 
+              onChange={()=>
                 setWaterParams(prev=>({
                   ...prev,
                   specifyDemand:!prev.specifyDemand
@@ -1862,6 +1860,10 @@ const EDIEChecklist = () => {
           <i className="fa-solid fa-print"></i>
           Save as PDF
         </button>
+      </div>
+
+      <div className="text-center text-sm text-gray-500 mt-4">
+        © Kemin Industries, Inc. and its group of companies 2025 All rights reserved. ® ™ Trademarks of Kemin Industries, Inc., USA
       </div>
     </div>
   );
