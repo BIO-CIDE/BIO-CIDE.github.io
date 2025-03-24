@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EDIE Controller Setup Instructions</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!-- React and ReactDOM -->
+    <script
+      src="https://unpkg.com/react@17/umd/react.development.js"
+      crossorigin
+    ></script>
+    <script
+      src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"
+      crossorigin
+    ></script>
+    <!-- Babel for JSX compilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Your React code wrapped in a script tag -->
+    <script type="text/babel">
+      const { useState } = React;
+
+      const EdieControllerInstructions = () => {
+        const [activeSection, setActiveSection] = useState('initial');
+
+        const sections = [
+          { id: 'initial', title: 'Initial Connection' },
+          { id: 'setup', title: 'Basic Setup' },
+          { id: 'calibration', title: 'Calibration' },
+          { id: 'serialId', title: 'Changing Serial ID' },
+          { id: 'data', title: 'Data Management' },
+          { id: 'hardware', title: 'Hardware Connections' },
+          { id: 'operation', title: 'Operation Notes' },
+          { id: 'troubleshooting', title: 'Troubleshooting' },
+          { id: 'known', title: 'Known Issues' }
+        ];
+
+        return (
+          <div className="bg-gray-100 min-h-screen">
+            <header className="bg-blue-700 text-white p-6 shadow-lg">
+              <h1 className="text-3xl font-bold">EDIE Controller Setup Instructions</h1>
+              <p className="mt-2 text-blue-100">Comprehensive guide for setup, calibration, and troubleshooting</p>
+            </header>
+
+            <div className="container mx-auto p-4">
+              <div className="flex flex-col lg:flex-row gap-6">
+                {/* Navigation Sidebar */}
+                <nav className="lg:w-1/4">
+                  <div className="bg-white rounded-lg shadow-md p-4 sticky top-4">
+                    <h2 className="text-xl font-bold mb-4 text-blue-700 border-b pb-2">Contents</h2>
+                    <ul>
+                      {sections.map(section => (
+                        <li key={section.id} className="mb-2">
+                          <button
+                            onClick={() => setActiveSection(section.id)}
+                            className={`w-full text-left p-2 rounded hover:bg-blue-50 transition ${
+                              activeSection === section.id ? 'bg-blue-100 font-semibold text-blue-700' : ''
+                            }`}
+                          >
+                            {section.title}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </nav>
+
+                {/* Main Content */}
+                <main className="lg:w-3/4">
+                  <div className="bg-white rounded-lg shadow-md p-6">
+                    {activeSection === 'initial' && (
+                      <section>
+                        <h2 className="text-2xl font-bold text-blue-700 mb-4">Initial Connection</h2>
+                        
+                        <div className="space-y-4">
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">1. Power up the device</h3>
+                            <p className="mt-2 text-gray-700">
+                              When first powered on, the EDIE Controller will display "EDIE Controller" on the LCD screen followed by its Serial ID and "Initializing..."
+                            </p>
+                          </div>
+
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">2. Connect to the device's Wi-Fi network</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>By default, the controller operates in Access Point (AP) mode</li>
+                              <li>Look for a Wi-Fi network with the same name as the device's Serial ID (default is "EM1001")</li>
+                              <li>Connect using the default password: "PASSWORD"</li>
+                            </ul>
+                          </div>
+
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">3. Access the web interface</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>Once connected to the device's Wi-Fi, open a web browser</li>
+                              <li>Navigate to <code className="bg-gray-100 px-1 rounded">http://192.168.4.1</code></li>
+                              <li>Alternatively, you can use the mDNS address: <code className="bg-gray-100 px-1 rounded">http://[serialid].local</code> (e.g., http://EM1001.local)</li>
+                              <li>The EDIE Controller dashboard should load</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-blue-50 p-4 rounded-lg">
+                            <h4 className="font-semibold text-blue-700">Default Credentials</h4>
+                            <ul className="mt-1 space-y-1 text-gray-700">
+                              <li><strong>User level:</strong> userpass</li>
+                              <li><strong>Tech level:</strong> techpass</li>
+                              <li><strong>Master level:</strong> masterpass</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </section>
+                    )}
+
+                    {activeSection === 'setup' && (
+                      <section>
+                        <h2 className="text-2xl font-bold text-blue-700 mb-4">Basic Setup</h2>
+                        
+                        <div className="space-y-6">
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">1. Parameters (requires user-level access)</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>Navigate to the Parameters tab</li>
+                              <li>Enter the default user password: "userpass"</li>
+                              <li>Set the following parameters:</li>
+                            </ul>
+                            
+                            <div className="mt-3 ml-6 overflow-x-auto">
+                              <table className="min-w-full border border-gray-300">
+                                <thead>
+                                  <tr className="bg-gray-100">
+                                    <th className="px-4 py-2 border text-left">Parameter</th>
+                                    <th className="px-4 py-2 border text-left">Description</th>
+                                    <th className="px-4 py-2 border text-left">Range</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td className="px-4 py-2 border font-medium">Desired PPM</td>
+                                    <td className="px-4 py-2 border">Target PPM value</td>
+                                    <td className="px-4 py-2 border">3-500</td>
+                                  </tr>
+                                  <tr className="bg-gray-50">
+                                    <td className="px-4 py-2 border font-medium">Max Flow Rate</td>
+                                    <td className="px-4 py-2 border">Maximum expected flow in GPM</td>
+                                    <td className="px-4 py-2 border">15-165</td>
+                                  </tr>
+                                  <tr>
+                                    <td className="px-4 py-2 border font-medium">Product Selection</td>
+                                    <td className="px-4 py-2 border">Chemical product type</td>
+                                    <td className="px-4 py-2 border">PRO-OXINE, OXINE, KEEPER PRO, KEEPER</td>
+                                  </tr>
+                                  <tr className="bg-gray-50">
+                                    <td className="px-4 py-2 border font-medium">Product Acid Ratio</td>
+                                    <td className="px-4 py-2 border">Ratio for acid dosing</td>
+                                    <td className="px-4 py-2 border">1-20</td>
+                                  </tr>
+                                  <tr>
+                                    <td className="px-4 py-2 border font-medium">Pump Weight</td>
+                                    <td className="px-4 py-2 border">Pump capacity in GPH</td>
+                                    <td className="px-4 py-2 border">0.10-4.50</td>
+                                  </tr>
+                                  <tr className="bg-gray-50">
+                                    <td className="px-4 py-2 border font-medium">Acid Stroke Volume</td>
+                                    <td className="px-4 py-2 border">Dosage per pulse in mL</td>
+                                    <td className="px-4 py-2 border">0.02-14.9</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">2. Network Configuration (requires tech-level access)</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>Navigate to the Settings tab</li>
+                              <li>Enter the tech password: "techpass"</li>
+                              <li>To keep using AP mode:
+                                <ul className="ml-6 list-disc list-inside space-y-1">
+                                  <li>Select "Access Point" as WiFi Mode</li>
+                                  <li>The SSID is locked to the device's Serial ID</li>
+                                  <li>Change the password if desired (default is "PASSWORD")</li>
+                                </ul>
+                              </li>
+                              <li>To connect to an existing network:
+                                <ul className="ml-6 list-disc list-inside space-y-1">
+                                  <li>Select "Station" as WiFi Mode</li>
+                                  <li>Enter the SSID and password of your network</li>
+                                </ul>
+                              </li>
+                              <li>Click "Save Network Settings"</li>
+                              <li>The device will restart to apply changes</li>
+                            </ul>
+                          </div>
+
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">3. Security Settings</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>On the Settings tab, you can change:
+                                <ul className="ml-6 list-disc list-inside space-y-1">
+                                  <li>User Password (default: "userpass")</li>
+                                  <li>Tech Password (default: "techpass")</li>
+                                  <li>Master Password (default: "masterpass")</li>
+                                </ul>
+                              </li>
+                              <li>Enter the current master password to save changes</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-yellow-50 p-4 rounded-lg">
+                            <h4 className="font-semibold text-yellow-700">Important</h4>
+                            <p className="mt-1 text-gray-700">
+                              After changing network settings, you may need to reconnect to the device using the new configuration. 
+                              If using Station mode, the device will attempt to connect to your network, and you'll need to access it 
+                              at its assigned IP address or using the mDNS address.
+                            </p>
+                          </div>
+                        </div>
+                      </section>
+                    )}
+
+                    {activeSection === 'calibration' && (
+                      <section>
+                        <h2 className="text-2xl font-bold text-blue-700 mb-4">Calibration</h2>
+                        
+                        <div className="space-y-6">
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">1. Access Calibration (requires tech-level access)</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>Navigate to the Calibration tab</li>
+                              <li>Enter the tech password: "techpass"</li>
+                            </ul>
+                          </div>
+
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">2. Flow Calibration</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>Select "Flow" from the Calibration Type dropdown</li>
+                              <li>Set Max Flow Rate (GPM): Maximum expected flow</li>
+                              <li>Set Min Calibrate Flow (Raw): The raw ADC value at minimum flow</li>
+                              <li>Set Max Calibrate Flow (Raw): The raw ADC value at maximum flow</li>
+                              <li>Click "Save Flow Calibration"</li>
+                            </ul>
+                          </div>
+
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">3. Pump Calibration</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>Select "Pump" from the Calibration Type dropdown</li>
+                              <li>Adjust DAC 4mA Output: The DAC value for 4mA signal</li>
+                              <li>Adjust DAC 20mA Output: The DAC value for 20mA signal</li>
+                              <li>Use "Test 4mA" and "Test 20mA" buttons to verify pump response</li>
+                              <li>Click "Stop Test" when finished testing</li>
+                              <li>Click "Save Pump Calibration"</li>
+                            </ul>
+                          </div>
+
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">4. Probe Calibration (for each probe)</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>Select "Probe One" or "Probe Two" from the Calibration Type dropdown</li>
+                              <li>Select Probe Type (CLO2, pH, ORP, or Other)</li>
+                              <li>Set Calibration Low (Raw): The raw ADC value at minimum reading</li>
+                              <li>Set Calibration High (Raw): The raw ADC value at maximum reading</li>
+                              <li>Set Analog Low: The actual measurement value corresponding to the low calibration</li>
+                              <li>Set Analog High: The actual measurement value corresponding to the high calibration</li>
+                              <li>Click "Save Probe Calibration"</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-blue-50 p-4 rounded-lg">
+                            <h4 className="font-semibold text-blue-700">Calibration Tips</h4>
+                            <ul className="mt-1 space-y-1 text-gray-700 list-disc list-inside">
+                              <li>For flow calibration, use a reference meter or known flow rates to correlate raw ADC values</li>
+                              <li>For pump calibration, ensure the pump is properly connected to the 4-20mA output circuit</li>
+                              <li>For probe calibration, use standard solutions of known values</li>
+                              <li>Document all calibration values for future reference</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </section>
+                    )}
+
+                    {activeSection === 'serialId' && (
+                      <section>
+                        <h2 className="text-2xl font-bold text-blue-700 mb-4">Changing Serial ID</h2>
+                        
+                        <div className="space-y-4">
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">1. Access Serial ID Settings (requires master-level access)</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>Navigate to the Settings tab</li>
+                              <li>Enter the master password: "masterpass"</li>
+                              <li>Scroll down to "Device Serial ID" section</li>
+                            </ul>
+                          </div>
+
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">2. Update Serial ID</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>The current Serial ID is displayed (read-only)</li>
+                              <li>Enter a new Serial ID (3-16 alphanumeric characters, hyphens, and underscores)</li>
+                              <li>Enter verification PIN: "1123"</li>
+                              <li>Enter the master password</li>
+                              <li>Click "Update Serial ID"</li>
+                            </ul>
+                          </div>
+
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">3. Important notes</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>This will restart the device</li>
+                              <li>If in AP mode, the Wi-Fi SSID will change to match the new Serial ID</li>
+                              <li>You'll need to reconnect to the new network after restart</li>
+                              <li>The mDNS address will also change to match the new Serial ID</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-yellow-50 p-4 rounded-lg">
+                            <h4 className="font-semibold text-yellow-700">Warning</h4>
+                            <p className="mt-1 text-gray-700">
+                              Changing the Serial ID will affect all aspects of device identification, including log files, WiFi SSID (in AP mode), 
+                              and mDNS addresses. Make sure to document the new Serial ID and update any references to the device in your 
+                              documentation.
+                            </p>
+                          </div>
+                        </div>
+                      </section>
+                    )}
+
+                    {activeSection === 'data' && (
+                      <section>
+                        <h2 className="text-2xl font-bold text-blue-700 mb-4">Data Management</h2>
+                        
+                        <div className="space-y-6">
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">1. Access History (requires user-level access)</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>Navigate to the History tab</li>
+                              <li>Enter the user password: "userpass"</li>
+                            </ul>
+                          </div>
+
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">2. Download Data</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>Click "Download CSV" to download logging data</li>
+                              <li>Data includes timestamps, flow rates, probe readings, and system status</li>
+                            </ul>
+                          </div>
+
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">3. Data Management</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>Tech-level users can delete CSV data by clicking "Delete CSV"</li>
+                              <li>This will remove all logged data from storage</li>
+                            </ul>
+                          </div>
+
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">4. Storage Information</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>Logs are stored every minute by default</li>
+                              <li>Data is stored on SD card if available, otherwise internal SPIFFS memory</li>
+                              <li>SD card logs rotate at 5MB to prevent running out of space</li>
+                              <li>SPIFFS storage is limited to approximately 100 most recent entries</li>
+                              <li>The system maintains a circular buffer of recent logs in memory</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-blue-50 p-4 rounded-lg">
+                            <h4 className="font-semibold text-blue-700">Data Fields Logged</h4>
+                            <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                              <div className="p-2 bg-white rounded border border-gray-200">
+                                <span className="font-medium">Timestamp</span>: Date and time of log
+                              </div>
+                              <div className="p-2 bg-white rounded border border-gray-200">
+                                <span className="font-medium">Device ID</span>: Serial ID of device
+                              </div>
+                              <div className="p-2 bg-white rounded border border-gray-200">
+                                <span className="font-medium">Flow Rate</span>: Current flow in GPM
+                              </div>
+                              <div className="p-2 bg-white rounded border border-gray-200">
+                                <span className="font-medium">Probe Values</span>: Current readings
+                              </div>
+                              <div className="p-2 bg-white rounded border border-gray-200">
+                                <span className="font-medium">PPM</span>: Current PPM setting
+                              </div>
+                              <div className="p-2 bg-white rounded border border-gray-200">
+                                <span className="font-medium">Injection Data</span>: Chemical dosing info
+                              </div>
+                              <div className="p-2 bg-white rounded border border-gray-200">
+                                <span className="font-medium">Error Code</span>: Current system status
+                              </div>
+                              <div className="p-2 bg-white rounded border border-gray-200">
+                                <span className="font-medium">Totalizers</span>: Accumulated values
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </section>
+                    )}
+
+                    {activeSection === 'hardware' && (
+                      <section>
+                        <h2 className="text-2xl font-bold text-blue-700 mb-4">Hardware Connections</h2>
+                        
+                        <div className="space-y-6">
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">1. I2C Devices</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>The controller uses multiple I2C devices connected through a multiplexer (address 0x74)</li>
+                              <li>LCD Display: Connected at I2C address 0x27</li>
+                              <li>MCP23X17 I/O Expander: For digital inputs/outputs</li>
+                              <li>ADS1115 ADC: For analog sensor readings at address 0x49</li>
+                              <li>GP8302 DAC: For 4-20mA output control at address 0x58</li>
+                            </ul>
+                          </div>
+
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">2. Input/Output Pins</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>Flow meter: Connected to ADC pin 1</li>
+                              <li>Probe One: Connected to ADC pin 0</li>
+                              <li>Probe Two: Connected to ADC pin 2</li>
+                              <li>Probe Three: Connected to ADC pin 3</li>
+                              <li>Various relay outputs for pump control</li>
+                              <li>SD card connected to SPI interface (CS pin 5)</li>
+                            </ul>
+                          </div>
+
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">3. Pump Control Outputs</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>4-20mA output for primary chemical pump control</li>
+                              <li>Digital output for acid pump control (pulse-based)</li>
+                              <li>Pause control signals for both pumps</li>
+                              <li>Digital inputs for pump alarm and warning monitoring</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-blue-50 p-4 rounded-lg">
+                            <h4 className="font-semibold text-blue-700">Hardware Specifications</h4>
+                            <div className="mt-2 overflow-x-auto">
+                              <table className="min-w-full border border-gray-300">
+                                <thead>
+                                  <tr className="bg-gray-100">
+                                    <th className="px-4 py-2 border text-left">Component</th>
+                                    <th className="px-4 py-2 border text-left">Specification</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td className="px-4 py-2 border font-medium">Controller</td>
+                                    <td className="px-4 py-2 border">ESP32 microcontroller</td>
+                                  </tr>
+                                  <tr className="bg-gray-50">
+                                    <td className="px-4 py-2 border font-medium">Display</td>
+                                    <td className="px-4 py-2 border">20x4 LCD display (I2C)</td>
+                                  </tr>
+                                  <tr>
+                                    <td className="px-4 py-2 border font-medium">ADC Resolution</td>
+                                    <td className="px-4 py-2 border">16-bit (ADS1115)</td>
+                                  </tr>
+                                  <tr className="bg-gray-50">
+                                    <td className="px-4 py-2 border font-medium">DAC Resolution</td>
+                                    <td className="px-4 py-2 border">12-bit (GP8302)</td>
+                                  </tr>
+                                  <tr>
+                                    <td className="px-4 py-2 border font-medium">Storage</td>
+                                    <td className="px-4 py-2 border">SD Card (primary) / SPIFFS (backup)</td>
+                                  </tr>
+                                  <tr className="bg-gray-50">
+                                    <td className="px-4 py-2 border font-medium">Connectivity</td>
+                                    <td className="px-4 py-2 border">WiFi 802.11 b/g/n</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </section>
+                    )}
+
+                    {activeSection === 'operation' && (
+                      <section>
+                        <h2 className="text-2xl font-bold text-blue-700 mb-4">Operation Notes</h2>
+                        
+                        <div className="space-y-6">
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">1. Flow States</h3>
+                            <p className="mt-2 text-gray-700">
+                              The system tracks three flow states:
+                            </p>
+                            <ul className="mt-1 text-gray-700 list-disc list-inside space-y-1">
+                              <li><strong>No Flow (State 0):</strong> Below 0.04 GPM</li>
+                              <li><strong>Low Flow (State 1):</strong> Between 0.04 and 0.33 GPM</li>
+                              <li><strong>Normal Flow (State 2):</strong> Above 0.33 GPM</li>
+                            </ul>
+                            <p className="mt-1 text-gray-700">
+                              State transitions have a delay (2.5 seconds) to prevent oscillation
+                            </p>
+                          </div>
+
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">2. Error Handling</h3>
+                            <p className="mt-2 text-gray-700">
+                              The system automatically pauses pump operation during errors:
+                            </p>
+                            <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2">
+                              <div className="p-2 bg-red-50 rounded">
+                                <span className="font-medium text-red-700">NO_FLOW:</span> Flow rate below threshold
+                              </div>
+                              <div className="p-2 bg-red-50 rounded">
+                                <span className="font-medium text-red-700">PUMP_ALARM:</span> Pump hardware alarm detected
+                              </div>
+                              <div className="p-2 bg-yellow-50 rounded">
+                                <span className="font-medium text-yellow-700">SYSTEM_PAUSED:</span> Manual pause switch engaged
+                              </div>
+                              <div className="p-2 bg-yellow-50 rounded">
+                                <span className="font-medium text-yellow-700">MISWEIGHTED:</span> Flow rate exceeds pump capacity
+                              </div>
+                              <div className="p-2 bg-yellow-50 rounded">
+                                <span className="font-medium text-yellow-700">LOW_FLOW:</span> Flow rate in low range
+                              </div>
+                              <div className="p-2 bg-yellow-50 rounded">
+                                <span className="font-medium text-yellow-700">PUMP_WARNING:</span> Pump hardware warning detected
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">3. LCD Display Information</h3>
+                            <p className="mt-2 text-gray-700">
+                              The LCD shows current status information including:
+                            </p>
+                            <ul className="mt-1 text-gray-700 list-disc list-inside space-y-1">
+                              <li>Flow rate in GPM</li>
+                              <li>Serial ID</li>
+                              <li>PPM setting</li>
+                              <li>Probe readings (if configured)</li>
+                              <li>Totalized flow and injection values</li>
+                              <li>Error states</li>
+                            </ul>
+                          </div>
+
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">4. Chemical Dosing</h3>
+                            <p className="mt-2 text-gray-700">
+                              The system calculates chemical dosing based on:
+                            </p>
+                            <ul className="mt-1 text-gray-700 list-disc list-inside space-y-1">
+                              <li>Current flow rate (GPM)</li>
+                              <li>Target PPM setting</li>
+                              <li>Selected product concentration</li>
+                              <li>Product to acid ratio (for acid dosing)</li>
+                            </ul>
+                            <p className="mt-2 text-gray-700">
+                              The 4-20mA output controls the main chemical pump, with the signal proportional to the 
+                              required dosage rate. The acid pump is controlled by digital pulses at a frequency 
+                              proportional to the required acid dosage.
+                            </p>
+                          </div>
+                          
+                          <div className="bg-blue-50 p-4 rounded-lg">
+                            <h4 className="font-semibold text-blue-700">Key Operation Features</h4>
+                            <ul className="mt-1 space-y-1 text-gray-700 list-disc list-inside">
+                              <li>Automatic pause during no-flow conditions to prevent chemical waste</li>
+                              <li>Pulse-based acid pump control for precise dosing</li>
+                              <li>Continuous monitoring of pump alarms and warnings</li>
+                              <li>Automatic totalization of flow and chemical injection</li>
+                              <li>Monitoring of probe values for water quality</li>
+                              <li>Manual pause switch for maintenance or shutdown</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </section>
+                    )}
+
+                    {activeSection === 'troubleshooting' && (
+                      <section>
+                        <h2 className="text-2xl font-bold text-blue-700 mb-4">Troubleshooting</h2>
+                        
+                        <div className="space-y-6">
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">1. Connection Issues</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>If unable to connect to the web interface, check that you're connected to the correct Wi-Fi network</li>
+                              <li>Try accessing the device via IP address (192.168.4.1 in AP mode)</li>
+                              <li>Try the mDNS address ([serialid].local)</li>
+                              <li>After 3 failed connection attempts, the device will show a fallback UI with reconnection options</li>
+                              <li>Reset the device if necessary</li>
+                            </ul>
+                          </div>
+
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">2. System Reset</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>Navigate to Settings tab (requires master password)</li>
+                              <li>Scroll to "System Reset" section</li>
+                              <li>Enter master password and click "Reset System"</li>
+                              <li>This will restore all settings to factory defaults</li>
+                            </ul>
+                          </div>
+
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">3. Debugging</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>Press Ctrl+Shift+D in the web interface to show the debug console</li>
+                              <li>Check WiFi and connection status in diagnostic info</li>
+                              <li>Visit the /diag endpoint for system information</li>
+                              <li>Check the LCD display for error messages</li>
+                            </ul>
+                          </div>
+
+                          <div className="border-l-4 border-blue-500 pl-4">
+                            <h3 className="text-xl font-semibold">4. Automatic Fallback</h3>
+                            <ul className="mt-2 text-gray-700 list-disc list-inside space-y-1">
+                              <li>If the device fails to connect to a configured WiFi network after 3 attempts, it will automatically revert to AP mode</li>
+                              <li>It will reset the password to "PASSWORD" for safety</li>
+                              <li>You'll need to reconnect to the AP and reconfigure network settings</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-yellow-50 p-4 rounded-lg">
+                            <h4 className="font-semibold text-yellow-700">Common Issues and Solutions</h4>
+                            <div className="mt-2 space-y-3">
+                              <div>
+                                <p className="font-medium">Issue: Device shows "NO_FLOW" error when flow is present</p>
+                                <p className="text-gray-700 ml-4">Solution: Calibrate the flow sensor using accurate reference values</p>
+                              </div>
+                              <div>
+                                <p className="font-medium">Issue: Unable to connect to web interface</p>
+                                <p className="text-gray-700 ml-4">Solution: Check WiFi connection, try IP address directly, or restart device</p>
+                              </div>
+                              <div>
+                                <p className="font-medium">Issue: Pump not dosing properly</p>
+                                <p className="text-gray-700 ml-4">Solution: Verify 4-20mA calibration, check pump alarms, and ensure proper flow state</p>
+                              </div>
+                              <div>
+                                <p className="font-medium">Issue: Probe readings inaccurate</p>
+                                <p className="text-gray-700 ml-4">Solution: Recalibrate probes with known standard solutions</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </section>
+                    )}
+
+                    {activeSection === 'known' && (
+                      <section>
+                        <h2 className="text-2xl font-bold text-blue-700 mb-4">Known Issues</h2>
+                        
+                        <div className="space-y-4">
+                          <div className="border-l-4 border-red-500 pl-4">
+                            <h3 className="text-xl font-semibold text-red-700">1. Firmware Updates</h3>
+                            <p className="mt-2 text-gray-700">
+                              While there is a firmware update interface in the Settings tab, it may not function reliably.
+                            </p>
+                            <ul className="mt-1 text-gray-700 list-disc list-inside space-y-1">
+                              <li>The OTA (Over-The-Air) update function has issues and may cause the device to become unresponsive</li>
+                              <li>It's recommended to avoid using this feature unless directed by technical support</li>
+                            </ul>
+                          </div>
+
+                          <div className="border-l-4 border-red-500 pl-4">
+                            <h3 className="text-xl font-semibold text-red-700">2. Email Notifications</h3>
+                            <p className="mt-2 text-gray-700">
+                              The email notification system via Cloudflare requires specific API credentials that may not be properly configured.
+                            </p>
+                            <ul className="mt-1 text-gray-700 list-disc list-inside space-y-1">
+                              <li>The Cloudflare Worker endpoint and authentication may not work as expected</li>
+                              <li>This feature should be considered experimental and may not function reliably</li>
+                            </ul>
+                          </div>
+
+                          <div className="border-l-4 border-red-500 pl-4">
+                            <h3 className="text-xl font-semibold text-red-700">3. Cloudflare Integration</h3>
+                            <p className="mt-2 text-gray-700">
+                              Remote data storage using Cloudflare R2 is implemented but may not function correctly.
+                            </p>
+                            <ul className="mt-1 text-gray-700 list-disc list-inside space-y-1">
+                              <li>API credentials and endpoints need proper configuration</li>
+                              <li>Testing of connections is recommended before relying on this feature</li>
+                            </ul>
+                          </div>
+
+                          <div className="border-l-4 border-red-500 pl-4">
+                            <h3 className="text-xl font-semibold text-red-700">4. WiFi Connectivity</h3>
+                            <p className="mt-2 text-gray-700">
+                              The WiFi connection in Station mode may sometimes be unstable.
+                            </p>
+                            <ul className="mt-1 text-gray-700 list-disc list-inside space-y-1">
+                              <li>After 3 failed connection attempts, the device will revert to AP mode</li>
+                              <li>This is a safety feature but may require reconfiguration</li>
+                            </ul>
+                          </div>
+                          
+                          <div className="bg-red-50 p-4 rounded-lg mt-6">
+                            <h4 className="font-semibold text-red-700">Important Notice</h4>
+                            <p className="mt-1 text-gray-700">
+                              This controller is designed for chemical injection systems and should be configured and calibrated 
+                              properly to ensure accurate dosing for your specific application. Improper configuration 
+                              can lead to inadequate water treatment or excessive chemical usage. Always verify operation 
+                              after setup with independent testing methods.
+                            </p>
+                          </div>
+                        </div>
+                      </section>
+                    )}
+                    
+                    <div className="mt-8 pt-6 border-t border-gray-200">
+                      <p className="text-sm text-gray-600">
+                        These instructions are based on firmware version 1.0. For the latest information or technical support,
+                        please contact the device manufacturer.
+                      </p>
+                    </div>
+                  </div>
+                </main>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      ReactDOM.render(<EdieControllerInstructions />, document.getElementById('root'));
+    </script>
+  </body>
+</html>
