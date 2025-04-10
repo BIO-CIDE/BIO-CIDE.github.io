@@ -4,50 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EDIE Fleet Dashboard</title>
+    <!-- Bootstrap 5.3 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         :root {
             --primary-color: #cb2026;
-            --background-color: #f8f9fa; /* Slightly lighter */
+            --background-color: #f8f9fa;
             --card-bg: #ffffff;
-            --text-color: #212529; /* Bootstrap default */
-            --success-color: #198754; /* Bootstrap success */
-            --warning-color: #ffc107; /* Bootstrap warning */
-            --error-color: #dc3545;   /* Bootstrap danger */
-            --offline-color: #6c757d; /* Bootstrap secondary */
+            --text-color: #212529;
+            --success-color: #198754;
+            --warning-color: #ffc107;
+            --error-color: #dc3545;
+            --offline-color: #6c757d;
         }
 
         body {
             background-color: var(--background-color);
             color: var(--text-color);
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            padding-top: 56px; /* Account for fixed navbar */
         }
 
         .navbar {
             background-color: var(--primary-color);
         }
-        .navbar-brand, .nav-link, .navbar-toggler-icon {
-            color: white !important; /* Ensure contrast */
+        .navbar-brand, .nav-link, .navbar-toggler-icon, .navbar-text {
+            color: white !important;
         }
         .btn-outline-light:hover {
             background-color: rgba(255,255,255,0.2);
             color: white;
         }
-
-        /* Make primary buttons use the theme color */
         .btn-primary {
           --bs-btn-bg: var(--primary-color);
           --bs-btn-border-color: var(--primary-color);
-          --bs-btn-hover-bg: #a31a20; /* Darker shade */
+          --bs-btn-hover-bg: #a31a20;
           --bs-btn-hover-border-color: #96181d;
           --bs-btn-active-bg: #96181d;
           --bs-btn-active-border-color: #8a161a;
           --bs-btn-disabled-bg: var(--primary-color);
           --bs-btn-disabled-border-color: var(--primary-color);
         }
-
-        /* Make outline-primary buttons use the theme color */
         .btn-outline-primary {
           --bs-btn-color: var(--primary-color);
           --bs-btn-border-color: var(--primary-color);
@@ -59,11 +58,12 @@
           --bs-btn-active-color: white;
         }
 
-        .auth-container {
+        .login-container {
             max-width: 450px;
             margin: 5rem auto;
+            padding-top: 50px;
         }
-        .auth-container .card-header {
+        .login-container .card-header {
             background-color: var(--primary-color);
             color: white;
         }
@@ -71,8 +71,8 @@
         .device-card {
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
             border: 1px solid #dee2e6;
-            border-left-width: 4px; /* Add space for status border */
-            border-left-color: transparent; /* Default */
+            border-left-width: 4px;
+            border-left-color: transparent;
         }
         .device-card:hover {
             transform: translateY(-4px);
@@ -84,7 +84,7 @@
         .device-card.status-offline { border-left-color: var(--offline-color); }
 
         .card-header { display: flex; justify-content: space-between; align-items: center; }
-        .device-id { font-weight: 600; word-break: break-all; /* Prevent overflow */ }
+        .device-id { font-weight: 600; word-break: break-all; }
         .status-badge { font-size: 0.8em; }
 
         .mini-chart-container { height: 80px; margin-bottom: 1rem; }
@@ -102,7 +102,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1060; /* Higher than modals */
+            z-index: 1060;
             color: white;
             flex-direction: column;
             gap: 1rem;
@@ -123,19 +123,18 @@
         .device-select-item { display: block; padding: 0.25rem 0; }
 
         .detail-chart-container { height: 280px; }
-
-        /* Improve table readability */
         .table th { font-weight: 600; }
         .table-hover tbody tr:hover { background-color: rgba(0,0,0,0.05); }
         .table-sm td, .table-sm th { padding: 0.4rem; }
 
-        /* Style for error/info messages */
         .message-area { padding: 1rem; text-align: center; }
         .error-message { color: var(--error-color); font-weight: 500; }
         .info-message { color: #555; }
+        .toast-container { z-index: 1100; }
 
-         /* Toast for non-blocking errors */
-        .toast-container { z-index: 1100; } /* Ensure toasts are above other elements */
+        #mainDashboard {
+             padding-top: 1rem;
+        }
 
     </style>
 </head>
@@ -162,25 +161,23 @@
       </div>
     </div>
 
-    <!-- Authentication Screen -->
-    <div id="authScreen" class="container auth-container">
+    <!-- Login Screen -->
+    <div id="loginScreen" class="container login-container">
         <div class="card shadow-sm">
             <div class="card-header">
                 <h4 class="mb-0"><i class="bi bi-shield-lock-fill me-2"></i>EDIE Dashboard Login</h4>
             </div>
             <div class="card-body p-4">
                 <div class="mb-3">
-                    <label for="apiKeyInput" class="form-label">API Key</label>
-                    <input type="password" class="form-control" id="apiKeyInput" placeholder="Enter your API key" value="k32BWMByEJrCihED0YEmhs0AaUJCeontFUC_qbeB" required>
+                    <label for="usernameInput" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="usernameInput" placeholder="Enter your username" required autocomplete="username">
                 </div>
-                <div class="form-check mb-3">
-                    <input class="form-check-input" type="checkbox" id="rememberKeyCheckbox">
-                    <label class="form-check-label" for="rememberKeyCheckbox">
-                        Remember API key
-                    </label>
+                 <div class="mb-3">
+                    <label for="passwordInput" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="passwordInput" placeholder="Enter your password" required autocomplete="current-password">
                 </div>
                 <button id="loginBtn" class="btn btn-primary w-100">Login</button>
-                <div id="authError" class="alert alert-danger mt-3 p-2 text-center d-none"></div>
+                <div id="loginError" class="alert alert-danger mt-3 p-2 text-center d-none"></div>
             </div>
         </div>
     </div>
@@ -188,7 +185,7 @@
     <!-- Main Dashboard Area -->
     <div id="mainDashboard" class="d-none">
         <!-- Navigation Bar -->
-        <nav class="navbar navbar-expand-lg navbar-dark mb-4 shadow-sm">
+        <nav class="navbar navbar-expand-lg navbar-dark fixed-top shadow-sm">
             <div class="container-fluid">
                 <a class="navbar-brand" href="#">
                     <i class="bi bi-speedometer2 me-1"></i> EDIE Fleet Dashboard
@@ -205,6 +202,7 @@
                             <a class="nav-link" href="#" id="navHistoryLink"><i class="bi bi-clock-history me-1"></i>History</a>
                         </li>
                     </ul>
+                    <span class="navbar-text me-3" id="userInfo"></span>
                     <div class="d-flex align-items-center">
                         <button id="selectDevicesBtn" class="btn btn-sm btn-outline-light me-2" title="Select Devices to Display">
                             <i class="bi bi-list-check me-1"></i> Devices
@@ -258,7 +256,7 @@
 
             <!-- History Section -->
             <div id="historySection" class="d-none">
-                <div class="timezone-info" id="historyTimezoneInfo">
+                 <div class="timezone-info" id="historyTimezoneInfo">
                      <i class="bi bi-clock"></i> All times shown in local timezone: <strong id="userTimezoneHistory"></strong>
                 </div>
                  <div class="card shadow-sm">
@@ -273,7 +271,7 @@
                             <div class="col-md-4 col-lg-3">
                                 <label for="historyDeviceSelect" class="form-label">Device</label>
                                 <select id="historyDeviceSelect" class="form-select form-select-sm">
-                                    <option value="" selected>Select a device...</option>
+                                    <option value="" selected>Select your device...</option>
                                 </select>
                             </div>
                             <div class="col-md-3 col-lg-2">
@@ -312,58 +310,55 @@
                                         <th>Timestamp</th>
                                         <th>Flow (GPM)</th>
                                         <th>PPM</th>
-                                        <th>Chem Inj (Gal)</th> <!-- Assuming Gallons from worker -->
-                                        <th>Acid Inj (Gal)</th> <!-- Assuming Gallons -->
+                                        <th>Chem Inj (Gal)</th>
+                                        <th>Acid Inj (Gal)</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <!-- History data rows -->
-                                </tbody>
+                                <tbody></tbody>
                             </table>
                         </div>
                         <div class="col-12 message-area" id="historyMessageArea">
-                            <p id="historyMessageText" class="info-message">Select criteria and search to view history.</p>
+                            <p id="historyMessageText" class="info-message">Select a device and search to view history.</p>
                         </div>
                     </div>
                  </div>
             </div>
 
-        </div> <!-- End Container Fluid -->
+        </div>
 
-    </div> <!-- End Main Dashboard -->
-
+    </div>
 
     <!-- Device Detail Modal -->
     <div class="modal fade" id="deviceDetailModal" tabindex="-1" aria-labelledby="deviceDetailTitle" aria-hidden="true">
-        <div class="modal-dialog modal-xl"> <!-- Use modal-xl for more space -->
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="deviceDetailTitle">Device Details</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-0"> <!-- Remove padding to allow tabs to fill -->
+                <div class="modal-body p-0">
                     <ul class="nav nav-tabs nav-fill" id="deviceDetailTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="detail-overview-tab" data-bs-toggle="tab" data-bs-target="#detailOverviewPane" type="button" role="tab" aria-controls="detailOverviewPane" aria-selected="true">
+                            <button class="nav-link active" id="detail-overview-tab" data-bs-toggle="tab" data-bs-target="#detailOverviewPane" type="button" role="tabpanel" aria-controls="detailOverviewPane" aria-selected="true">
                                 <i class="bi bi-bar-chart-line-fill me-1"></i>Overview
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="detail-data-tab" data-bs-toggle="tab" data-bs-target="#detailDataPane" type="button" role="tab" aria-controls="detailDataPane" aria-selected="false">
+                            <button class="nav-link" id="detail-data-tab" data-bs-toggle="tab" data-bs-target="#detailDataPane" type="button" role="tabpanel" aria-controls="detailDataPane" aria-selected="false">
                                 <i class="bi bi-table me-1"></i>Data Log
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="detail-info-tab" data-bs-toggle="tab" data-bs-target="#detailInfoPane" type="button" role="tab" aria-controls="detailInfoPane" aria-selected="false">
+                            <button class="nav-link" id="detail-info-tab" data-bs-toggle="tab" data-bs-target="#detailInfoPane" type="button" role="tabpanel" aria-controls="detailInfoPane" aria-selected="false">
                                 <i class="bi bi-info-circle-fill me-1"></i>Info
                             </button>
                         </li>
                     </ul>
-                    <div class="tab-content p-4" id="deviceDetailTabContent"> <!-- Add padding back here -->
+                    <div class="tab-content p-4" id="deviceDetailTabContent">
                         <!-- Overview Tab Pane -->
                         <div class="tab-pane fade show active" id="detailOverviewPane" role="tabpanel" aria-labelledby="detail-overview-tab" tabindex="0">
-                            <div class="row mb-4">
+                             <div class="row mb-4">
                                 <div class="col-md-6">
                                     <div class="detail-chart-container">
                                         <canvas id="detailFlowChart"></canvas>
@@ -377,9 +372,7 @@
                             </div>
                             <h6>Latest Metrics</h6>
                             <div class="row g-3" id="detailMetricsContainer">
-                                <div class="col-12 message-area">
-                                    <p class="info-message">Loading metrics...</p>
-                                </div>
+                                <div class="col-12 message-area"><p class="info-message">Loading metrics...</p></div>
                             </div>
                         </div>
                         <!-- Data Log Tab Pane -->
@@ -388,19 +381,9 @@
                              <div class="table-responsive mt-2">
                                 <table class="table table-sm table-striped table-hover" id="detailDataTable">
                                     <thead>
-                                        <tr>
-                                            <th>Timestamp</th>
-                                            <th>Flow</th>
-                                            <th>PPM</th>
-                                            <th>Chem Inj</th>
-                                            <th>Acid Inj</th>
-                                            <th>Error Code</th>
-                                            <th>Uploaded</th>
-                                        </tr>
+                                        <tr><th>Timestamp</th><th>Flow</th><th>PPM</th><th>Chem Inj</th><th>Acid Inj</th><th>Error Code</th><th>Uploaded</th></tr>
                                     </thead>
-                                    <tbody>
-                                         <tr><td colspan="7" class="text-center text-muted p-3">Loading data...</td></tr>
-                                    </tbody>
+                                    <tbody><tr><td colspan="7" class="text-center text-muted p-3">Loading data...</td></tr></tbody>
                                 </table>
                              </div>
                         </div>
@@ -409,9 +392,7 @@
                             <h6>Device Information</h6>
                              <div class="table-responsive mt-2">
                                 <table class="table table-sm table-striped" id="detailInfoTable">
-                                    <tbody>
-                                        <tr><td colspan="2" class="text-center text-muted p-3">Loading info...</td></tr>
-                                    </tbody>
+                                    <tbody><tr><td colspan="2" class="text-center text-muted p-3">Loading info...</td></tr></tbody>
                                 </table>
                             </div>
                         </div>
@@ -426,7 +407,7 @@
 
     <!-- Device Selection Modal -->
     <div class="modal fade" id="deviceSelectModal" tabindex="-1" aria-labelledby="deviceSelectModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable"> <!-- Allow scrolling -->
+        <div class="modal-dialog modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="deviceSelectModalLabel">Select Devices to Display</h5>
@@ -439,9 +420,7 @@
                     </div>
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="checkbox" value="" id="selectAllDevicesCheckbox">
-                        <label class="form-check-label fw-bold" for="selectAllDevicesCheckbox">
-                            Select/Deselect All
-                        </label>
+                        <label class="form-check-label fw-bold" for="selectAllDevicesCheckbox">Select/Deselect All</label>
                     </div>
                     <div id="deviceSelectList" class="device-select-list">
                         <p class="text-center text-muted p-3">Loading available devices...</p>
@@ -457,48 +436,52 @@
 
 
     <!-- Scripts -->
+    <!-- Bootstrap 5.3 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <!-- Chart.js 4.4 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
     <script>
         // --- Configuration ---
-        const API_ENDPOINT = 'https://jolly-queen-8e6f.larry-schrimpfff6544.workers.dev'; // Ensure this is correct
-        const API_KEY_STORAGE_KEY = 'edieApiKey';
+        const API_ENDPOINT = 'https://jolly-queen-8e6f.larry-schrimpfff6544.workers.dev'; // CHANGE TO YOUR WORKER URL
+        const JWT_STORAGE_KEY = 'edieAuthToken';
         const SELECTED_DEVICES_STORAGE_KEY = 'edieSelectedDevices';
-        const DEFAULT_API_KEY = "k32BWMByEJrCihED0YEmhs0AaUJCeontFUC_qbeB"; // Pre-fill for convenience
         const AUTO_REFRESH_INTERVAL = 60000; // 60 seconds
-        const OFFLINE_THRESHOLD_MINUTES = 15; // Device considered offline after this many minutes
+        const OFFLINE_THRESHOLD_MINUTES = 15; // Threshold for offline status
 
         // --- State Variables ---
-        let apiKey = '';
-        let allDevices = []; // Holds the raw data for ALL devices fetched from API
-        let displayedDevices = []; // Holds the devices currently being displayed (filtered/sorted subset of allDevices)
-        let selectedDeviceIDs = null; // Array of IDs to show, or null to show all
-        let currentSortCriteria = 'name'; // Default sort
+        let jwtToken = null;
+        let loggedInUser = null; // Decoded JWT payload
+        let allDevices = [];
+        let displayedDevices = [];
+        let selectedDeviceIDs = null;
+        let currentSortCriteria = 'name';
         let currentSearchTerm = '';
         let autoRefreshTimer = null;
         let isTabVisible = true;
 
         // Chart instances
-        let chartInstances = {}; // Store mini charts by deviceId
+        let chartInstances = {};
         let detailFlowChart = null;
         let detailProbeChart = null;
         let historyChart = null;
 
-        // Modal instances
+        // Modal/Toast instances
         let deviceDetailModal = null;
         let deviceSelectModal = null;
         let errorToast = null;
 
-        // --- DOM Elements (Cache common ones) ---
+        // --- DOM Elements ---
         const DOMElements = {
             loadingIndicator: document.getElementById('loadingIndicator'),
             loadingMessage: document.getElementById('loadingMessage'),
-            authScreen: document.getElementById('authScreen'),
+            loginScreen: document.getElementById('loginScreen'),
             mainDashboard: document.getElementById('mainDashboard'),
-            apiKeyInput: document.getElementById('apiKeyInput'),
-            rememberKeyCheckbox: document.getElementById('rememberKeyCheckbox'),
+            usernameInput: document.getElementById('usernameInput'),
+            passwordInput: document.getElementById('passwordInput'),
             loginBtn: document.getElementById('loginBtn'),
-            authError: document.getElementById('authError'),
+            loginError: document.getElementById('loginError'),
+            userInfo: document.getElementById('userInfo'),
             logoutBtn: document.getElementById('logoutBtn'),
             navOverviewLink: document.getElementById('navOverviewLink'),
             navHistoryLink: document.getElementById('navHistoryLink'),
@@ -544,383 +527,348 @@
         document.addEventListener('DOMContentLoaded', initializeApp);
 
         function initializeApp() {
-            console.log("Initializing EDIE Dashboard v2...");
-            setThemeColor(); // Apply CSS variables from primary color
+            console.log("Initializing EDIE Dashboard (JWT Auth)...");
             initializeTimezone();
-            initializeModalsAndToast();
+            initializeBootstrapComponents();
             setupEventListeners();
-            loadStateFromStorage();
-
-            if (apiKey) {
-                console.log("API key found in storage. Attempting auto-login.");
-                DOMElements.apiKeyInput.value = apiKey;
-                DOMElements.rememberKeyCheckbox.checked = true;
-                showMainDashboard();
-                startAutoRefresh(); // Start refresh cycle
-                refreshDeviceList(); // Initial data load
-            } else {
-                console.log("No API key in storage. Showing login screen.");
-                DOMElements.apiKeyInput.value = DEFAULT_API_KEY; // Pre-fill default key
-                showAuthScreen();
-            }
-
-             document.addEventListener('visibilitychange', handleVisibilityChange);
+            loadSelectedDevices();
+            checkLoginState();
+            document.addEventListener('visibilitychange', handleVisibilityChange);
         }
 
-        function setThemeColor() {
-            // Optional: If you want to dynamically set theme colors based on --primary-color
-            // Example: document.documentElement.style.setProperty('--bs-primary', getComputedStyle(document.documentElement).getPropertyValue('--primary-color'));
-        }
-
+        // Initialize user timezone display
         function initializeTimezone() {
             try {
-                const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                DOMElements.userTimezoneOverview.textContent = userTimezone;
-                DOMElements.userTimezoneHistory.textContent = userTimezone;
-            } catch (e) {
-                console.error("Could not determine timezone:", e);
-                DOMElements.userTimezoneOverview.textContent = "Unknown";
-                DOMElements.userTimezoneHistory.textContent = "Unknown";
-            }
+                const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                DOMElements.userTimezoneOverview.textContent = tz;
+                DOMElements.userTimezoneHistory.textContent = tz;
+            } catch (e) { console.error("Timezone Error:", e); }
         }
 
-        function initializeModalsAndToast() {
+        // Setup Bootstrap modals and toast
+        function initializeBootstrapComponents() {
             try {
                 deviceDetailModal = new bootstrap.Modal(DOMElements.deviceDetailModalElement);
                 deviceSelectModal = new bootstrap.Modal(DOMElements.deviceSelectModalElement);
                 errorToast = new bootstrap.Toast(DOMElements.toastElement);
-            } catch(e) {
-                console.error("Error initializing Bootstrap components:", e);
-                // Consider disabling features that rely on modals if init fails
-            }
+                DOMElements.deviceDetailModalElement.addEventListener('hidden.bs.modal', () => {
+                    destroyChart(detailFlowChart); detailFlowChart = null;
+                    destroyChart(detailProbeChart); detailProbeChart = null;
+                });
+            } catch(e) { console.error("Bootstrap Init Error:", e); }
         }
 
+        // Attach event listeners to UI controls
         function setupEventListeners() {
             DOMElements.loginBtn.addEventListener('click', handleLogin);
-            DOMElements.apiKeyInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
+            DOMElements.passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
             DOMElements.logoutBtn.addEventListener('click', handleLogout);
-            DOMElements.refreshBtn.addEventListener('click', () => refreshDeviceList(true)); // Force refresh
+            DOMElements.refreshBtn.addEventListener('click', () => refreshDeviceList(true));
             DOMElements.selectDevicesBtn.addEventListener('click', openDeviceSelectionModal);
             DOMElements.navOverviewLink.addEventListener('click', showOverviewSection);
             DOMElements.navHistoryLink.addEventListener('click', showHistorySection);
-
-            // Overview Search & Sort
             DOMElements.searchDevicesInput.addEventListener('input', handleSearchInput);
             document.querySelectorAll('input[name="sortOptions"]').forEach(radio => {
                 radio.addEventListener('change', handleSortChange);
             });
-
-            // History Controls
             DOMElements.searchHistoryBtn.addEventListener('click', fetchHistoricalData);
             DOMElements.exportCsvBtn.addEventListener('click', exportHistoryToCSV);
-
-            // Device Selection Modal
             DOMElements.saveDeviceSelectionBtn.addEventListener('click', saveDeviceSelection);
             DOMElements.selectAllDevicesCheckbox.addEventListener('change', handleSelectAllToggle);
             DOMElements.filterDeviceSelectInput.addEventListener('input', filterDeviceSelectionList);
-
-            // Device Detail Modal - Reset charts on close
-            DOMElements.deviceDetailModalElement.addEventListener('hidden.bs.modal', () => {
-                 destroyChart(detailFlowChart); detailFlowChart = null;
-                 destroyChart(detailProbeChart); detailProbeChart = null;
-                 console.log("Detail modal closed, charts destroyed.");
-            });
         }
 
-        function loadStateFromStorage() {
-            const savedKey = localStorage.getItem(API_KEY_STORAGE_KEY);
-            if (savedKey) {
-                apiKey = savedKey;
-            }
-
+        // Load persisted device selection preference
+        function loadSelectedDevices() {
             const savedSelection = localStorage.getItem(SELECTED_DEVICES_STORAGE_KEY);
             if (savedSelection) {
                 try {
                     selectedDeviceIDs = JSON.parse(savedSelection);
-                    if (!Array.isArray(selectedDeviceIDs)) {
-                        console.warn("Invalid device selection in localStorage, resetting to show all.");
-                        selectedDeviceIDs = null;
-                        localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY);
-                    }
-                } catch (e) {
-                    console.error("Error parsing saved device selection:", e);
-                    selectedDeviceIDs = null;
-                    localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY);
-                }
-            } else {
-                selectedDeviceIDs = null; // Default: show all
-            }
-             console.log("Initial selected devices state:", selectedDeviceIDs === null ? "Show All" : selectedDeviceIDs);
+                    if (!Array.isArray(selectedDeviceIDs)) { selectedDeviceIDs = null; localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY); }
+                } catch (e) { selectedDeviceIDs = null; localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY); }
+            } else { selectedDeviceIDs = null; }
+            console.log("Initial selected devices state:", selectedDeviceIDs === null ? "Show All Accessible" : selectedDeviceIDs);
         }
 
-        // --- Authentication ---
-        async function handleLogin() {
-            const inputKey = DOMElements.apiKeyInput.value.trim();
-            const remember = DOMElements.rememberKeyCheckbox.checked;
-            DOMElements.authError.classList.add('d-none');
+        // Check for existing JWT token and validate
+        function checkLoginState() {
+            jwtToken = localStorage.getItem(JWT_STORAGE_KEY);
+            if (jwtToken) {
+                loggedInUser = parseJwt(jwtToken);
+                if (loggedInUser && loggedInUser.exp * 1000 > Date.now()) {
+                    console.log("Existing valid token found for user:", loggedInUser.userId, "Role:", loggedInUser.role);
+                    showMainDashboard();
+                    startAutoRefresh();
+                    refreshDeviceList();
+                } else {
+                    console.log("Token found but invalid or expired.");
+                    handleLogout();
+                }
+            } else {
+                console.log("No token found. Showing login screen.");
+                showLoginScreen();
+            }
+        }
 
-            if (!inputKey) {
-                showAuthError("Please enter your API key.");
+        // Handle user login via JWT
+        async function handleLogin() {
+            const username = DOMElements.usernameInput.value.trim();
+            const password = DOMElements.passwordInput.value;
+            DOMElements.loginError.classList.add('d-none');
+
+            if (!username || !password) {
+                showLoginError("Username and password are required.");
                 return;
             }
 
-            showLoading("Authenticating...");
+            showLoading("Logging in...");
             try {
-                // Test API key by fetching minimal data
-                const response = await fetchWithAuth(`${API_ENDPOINT}/devices?limit=1`);
+                const response = await fetch(`${API_ENDPOINT}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
 
-                if (response.ok) {
-                    apiKey = inputKey;
-                    if (remember) {
-                        localStorage.setItem(API_KEY_STORAGE_KEY, apiKey);
-                        console.log("API Key saved.");
-                    } else {
-                        localStorage.removeItem(API_KEY_STORAGE_KEY);
-                        console.log("API Key not saved.");
-                    }
+                const data = await response.json();
+
+                if (response.ok && data.success && data.token) {
+                    jwtToken = data.token;
+                    localStorage.setItem(JWT_STORAGE_KEY, jwtToken);
+                    loggedInUser = parseJwt(jwtToken);
+                    console.log("Login successful:", loggedInUser);
                     showMainDashboard();
                     startAutoRefresh();
-                    await refreshDeviceList(); // Fetch initial data after login
-
-                } else if (response.status === 401) {
-                    showAuthError("Invalid API Key. Please check and try again.");
+                    await refreshDeviceList();
                 } else {
-                    const errorData = await response.json().catch(() => ({ message: response.statusText }));
-                    showAuthError(`Login failed: ${errorData.message || response.statusText} (Status: ${response.status})`);
+                    showLoginError(data.message || `Login failed (${response.status})`);
                 }
             } catch (error) {
                 console.error("Login network error:", error);
-                showAuthError("Connection error. Could not reach the server.");
+                showLoginError("Connection error. Could not reach the server.");
             } finally {
                 hideLoading();
             }
         }
 
+        // Logout and clear session data
         function handleLogout() {
             console.log("Logging out...");
-            apiKey = '';
+            jwtToken = null;
+            loggedInUser = null;
             allDevices = [];
             displayedDevices = [];
-            selectedDeviceIDs = null; // Reset selection state
-            localStorage.removeItem(API_KEY_STORAGE_KEY);
-            localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY); // Clear selection on logout
-            DOMElements.apiKeyInput.value = DEFAULT_API_KEY; // Reset to default
-            DOMElements.rememberKeyCheckbox.checked = false;
+            localStorage.removeItem(JWT_STORAGE_KEY);
             stopAutoRefresh();
             clearAllCharts();
-            showAuthScreen();
-             // Reset history section
-            DOMElements.historyDeviceSelect.innerHTML = '<option value="" selected>Select a device...</option>';
+            showLoginScreen();
+            DOMElements.usernameInput.value = '';
+            DOMElements.passwordInput.value = '';
+            DOMElements.devicesGrid.innerHTML = '';
+            DOMElements.historyDeviceSelect.innerHTML = '<option value="" selected>Select your device...</option>';
             resetHistoryView();
-
-            console.log("Logout complete.");
         }
 
-        function showAuthError(message) {
-            DOMElements.authError.textContent = message;
-            DOMElements.authError.classList.remove('d-none');
-        }
-
-        // --- UI Navigation & State ---
-        function showAuthScreen() {
-            DOMElements.authScreen.classList.remove('d-none');
+        // Show login screen UI
+        function showLoginScreen() {
+            DOMElements.loginScreen.classList.remove('d-none');
             DOMElements.mainDashboard.classList.add('d-none');
-             document.body.style.overflow = 'auto'; // Restore scroll if needed
+            DOMElements.userInfo.textContent = '';
         }
 
+        // Show main dashboard UI
         function showMainDashboard() {
-            DOMElements.authScreen.classList.add('d-none');
+            DOMElements.loginScreen.classList.add('d-none');
             DOMElements.mainDashboard.classList.remove('d-none');
-            showOverviewSection(); // Default to overview
-        }
-
-        function showOverviewSection(e) {
-            if (e) e.preventDefault();
-            DOMElements.overviewSection.classList.remove('d-none');
-            DOMElements.historySection.classList.add('d-none');
-            DOMElements.navOverviewLink.classList.add('active');
-            DOMElements.navHistoryLink.classList.remove('active');
-            DOMElements.navOverviewLink.setAttribute('aria-current', 'page');
-            DOMElements.navHistoryLink.removeAttribute('aria-current');
-            console.log("Switched to Overview section.");
-            // Re-apply filtering/sorting if needed when switching back
-            // applyFiltersAndSort();
-            // renderDeviceCards();
-        }
-
-        function showHistorySection(e) {
-            if (e) e.preventDefault();
-            DOMElements.overviewSection.classList.add('d-none');
-            DOMElements.historySection.classList.remove('d-none');
-            DOMElements.navOverviewLink.classList.remove('active');
-            DOMElements.navHistoryLink.classList.add('active');
-            DOMElements.navHistoryLink.setAttribute('aria-current', 'page');
-            DOMElements.navOverviewLink.removeAttribute('aria-current');
-            console.log("Switched to History section.");
-            populateHistoryDeviceDropdown(); // Ensure dropdown is populated
-        }
-
-        // --- API Interaction ---
-        async function fetchWithAuth(url, options = {}) {
-            if (!apiKey) {
-                console.error("Attempted fetch without API key.");
-                handleLogout(); // Force logout if key is missing
-                throw new Error("Authentication required.");
+            if (loggedInUser && loggedInUser.username) {
+                DOMElements.userInfo.textContent = `User: ${loggedInUser.username} (${loggedInUser.role})`;
+            } else if (loggedInUser) {
+                DOMElements.userInfo.textContent = `User ID: ${loggedInUser.userId} (${loggedInUser.role})`;
             }
+            showOverviewSection();
+        }
+
+        // Display login error message
+        function showLoginError(message) {
+            DOMElements.loginError.textContent = message;
+            DOMElements.loginError.classList.remove('d-none');
+        }
+
+        // Decode JWT payload without verification
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                console.error("Error decoding JWT:", e);
+                return null;
+            }
+        }
+
+        // Fetch helper with JWT authorization and error handling
+        async function fetchWithAuth(url, options = {}) {
+            if (!jwtToken) {
+                console.warn("No JWT token found, logging out.");
+                handleLogout();
+                throw new Error("Not authenticated");
+            }
+
+            const decoded = parseJwt(jwtToken);
+            if (!decoded || decoded.exp * 1000 < Date.now()) {
+                console.warn("JWT token expired locally, logging out.");
+                handleLogout();
+                throw new Error("Token expired");
+            }
+
             const headers = {
                 ...options.headers,
-                'X-API-KEY': apiKey, // Primarily use X-API-KEY based on worker code
-                // 'Authorization': `Bearer ${apiKey}` // Could add as fallback if needed
+                'Authorization': `Bearer ${jwtToken}`,
+                'Content-Type': options.body ? 'application/json' : undefined
             };
-            return fetch(url, { ...options, headers });
+
+            try {
+                const response = await fetch(url, { ...options, headers });
+
+                if (response.status === 401 || response.status === 403) {
+                    console.error(`Authentication/Authorization error (${response.status}) fetching ${url}. Logging out.`);
+                    handleLogout();
+                    throw new Error(`Unauthorized (${response.status})`);
+                }
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: response.statusText }));
+                    throw new Error(errorData.message || `HTTP error ${response.status}`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return await response.json();
+                } else {
+                    return await response.text();
+                }
+
+            } catch (error) {
+                console.error(`Fetch error for ${url}:`, error);
+                showToastError(`Network error: ${error.message || 'Failed to fetch data.'}`);
+                throw error;
+            }
         }
 
         // --- Overview Page Logic ---
         async function refreshDeviceList(force = false) {
-            if (!apiKey) return; // Don't refresh if not logged in
-            console.log("Refreshing device list...");
+            console.log("Refreshing device list (calling worker)...");
             showLoading("Fetching devices...");
             try {
-                const response = await fetchWithAuth(`${API_ENDPOINT}/devices`);
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        showToastError("Authentication failed. Please log in again.");
-                        handleLogout();
-                    } else {
-                        throw new Error(`Failed to fetch devices: ${response.status}`);
-                    }
-                    return; // Stop processing on error
-                }
+                const data = await fetchWithAuth(`${API_ENDPOINT}/devices`);
 
-                const data = await response.json();
-                if (data.success && Array.isArray(data.devices)) {
-                    console.log(`Fetched ${data.devices.length} devices.`);
+                if (data && data.success && Array.isArray(data.devices)) {
+                    console.log(`Worker returned ${data.devices.length} accessible devices.`);
                     allDevices = data.devices;
-                    // Determine latest data point for each device (from customMetadata or newest file)
-                    // This part is tricky because worker returns list summary, not detailed last entry.
-                    // We'll use 'lastUpdated' from the worker for now. Need worker change for better summary.
-                     allDevices.forEach(dev => {
-                         dev._status = getDeviceStatus(dev); // Pre-calculate status
-                         dev._lastUpdateTimestamp = dev.lastUpdated; // Use this for sorting/display
-                     });
 
-                    applyFiltersAndSort(); // Filter based on search/selection, then sort
-                    renderDeviceCards(); // Render the filtered/sorted list
-                    populateHistoryDeviceDropdown(); // Update history dropdown
+                    allDevices.forEach(dev => {
+                        dev._status = getDeviceStatus(dev);
+                        dev._lastUpdateTimestamp = dev.lastUpdated;
+                    });
+
+                    applyFiltersAndSort();
+                    renderDeviceCards();
+                    populateHistoryDeviceDropdown();
+
                 } else {
-                    throw new Error("Invalid data structure received from server.");
+                    throw new Error(data.message || "Invalid data structure received.");
                 }
             } catch (error) {
-                console.error("Error refreshing device list:", error);
-                showToastError(`Error fetching devices: ${error.message}`);
-                allDevices = []; // Clear data on error
+                console.error("Error during refreshDeviceList:", error);
+                allDevices = [];
                 applyFiltersAndSort();
-                renderDeviceCards(); // Render empty state
+                renderDeviceCards();
             } finally {
                 hideLoading();
             }
         }
 
-         function handleSearchInput(event) {
-            currentSearchTerm = event.target.value.toLowerCase().trim();
-            applyFiltersAndSort();
-            renderDeviceCards();
-        }
-
-        function handleSortChange(event) {
-            currentSortCriteria = event.target.dataset.sort;
-            console.log("Sort criteria changed to:", currentSortCriteria);
-            applyFiltersAndSort();
-            renderDeviceCards();
-        }
-
+        // Filter and sort devices
         function applyFiltersAndSort() {
             let filtered = [...allDevices];
 
-            // 1. Filter by Selection (if applicable)
             if (selectedDeviceIDs !== null && Array.isArray(selectedDeviceIDs)) {
-                 filtered = filtered.filter(device => selectedDeviceIDs.includes(device.deviceId));
-                 console.log(`Filtered by selection: ${filtered.length} devices remaining.`);
+                filtered = filtered.filter(device => selectedDeviceIDs.includes(device.deviceId));
             }
 
-            // 2. Filter by Search Term
             if (currentSearchTerm) {
                 filtered = filtered.filter(device =>
                     device.deviceId.toLowerCase().includes(currentSearchTerm)
                 );
-                console.log(`Filtered by search '${currentSearchTerm}': ${filtered.length} devices remaining.`);
             }
 
-            // 3. Sort
             const statusPriority = { 'error': 0, 'warning': 1, 'online': 2, 'offline': 3 };
             filtered.sort((a, b) => {
                 switch (currentSortCriteria) {
                     case 'status':
-                         const priorityA = statusPriority[a._status] ?? 99;
-                         const priorityB = statusPriority[b._status] ?? 99;
-                         if (priorityA !== priorityB) return priorityA - priorityB;
-                         return a.deviceId.localeCompare(b.deviceId); // Secondary sort by name
+                        const priorityA = statusPriority[a._status] ?? 99;
+                        const priorityB = statusPriority[b._status] ?? 99;
+                        return priorityA !== priorityB ? priorityA - priorityB : a.deviceId.localeCompare(b.deviceId);
                     case 'lastUpdate':
-                        // Newest first (descending order)
-                        const dateA = a._lastUpdateTimestamp ? new Date(a._lastUpdateTimestamp) : new Date(0);
-                        const dateB = b._lastUpdateTimestamp ? new Date(b._lastUpdateTimestamp) : new Date(0);
-                        if (isNaN(dateA) || isNaN(dateB)) return 0; // Handle invalid dates
+                        const dateA = a._lastUpdateTimestamp ? new Date(a._lastUpdateTimestamp).getTime() : 0;
+                        const dateB = b._lastUpdateTimestamp ? new Date(b._lastUpdateTimestamp).getTime() : 0;
                         return dateB - dateA;
-                    case 'name':
-                    default:
+                    case 'name': default:
                         return a.deviceId.localeCompare(b.deviceId);
                 }
             });
-             console.log(`Sorted by ${currentSortCriteria}. Final count: ${filtered.length}`);
-
             displayedDevices = filtered;
         }
 
+        // Render device cards on overview
         function renderDeviceCards() {
-            DOMElements.devicesGrid.innerHTML = ''; // Clear previous cards
-            destroyAllMiniCharts(); // Clear old charts
+            DOMElements.devicesGrid.innerHTML = '';
+            destroyAllMiniCharts();
 
             if (displayedDevices.length === 0) {
                 let message = "No devices found.";
-                if (allDevices.length > 0) {
-                    message = "No devices match your current search or selection. Try adjusting filters or use the 'Devices' button.";
-                } else if (apiKey) {
-                     message = "No devices associated with this API key, or fetching failed.";
-                } else {
-                     message = "Please log in to view devices."; // Should not happen if logged out
-                }
+                if (allDevices.length > 0) message = "No devices match your current search or selection.";
+                else if (loggedInUser) message = "You don't seem to have any devices assigned.";
                 showOverviewMessage(message);
                 return;
             }
 
             hideOverviewMessage();
             displayedDevices.forEach(device => {
-                // Note: Worker currently doesn't provide live metrics (flow, ppm) in the summary.
-                // We can only show ID, Status, Last Update.
-                // To show Flow/PPM, the worker's /devices endpoint needs enhancement
-                // or we need to make N+1 calls (inefficient).
+                const latestData = device.latestData || {};
+                const flowRate = latestData.flow?.actual ?? 0;
+                const ppm = latestData.ppm ?? 'N/A';
+                const errorCode = latestData.errorCode || 'N/A';
 
                 const card = document.createElement('div');
-                card.className = `col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-4`; // Responsive grid
+                card.className = `col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-4`;
                 card.innerHTML = `
                     <div class="card device-card h-100 shadow-sm status-${device._status}">
                         <div class="card-header bg-light">
                             <span class="device-id text-truncate" title="${device.deviceId}">${device.deviceId}</span>
-                            <span class="badge rounded-pill status-badge text-uppercase ${getStatusBadgeClass(device._status)}">${device._status}</span>
+                            <span class="badge rounded-pill status-badge text-uppercase ${getStatusBadgeClass(device._status)}">${errorCode !== 'N/A' ? errorCode.replace(/_/g,' ') : device._status}</span>
                         </div>
                         <div class="card-body d-flex flex-column">
-                             <!-- Placeholder for Mini Chart - Needs Data -->
                             <div class="mini-chart-container mb-3" id="mini-chart-container-${device.deviceId}">
                                 <canvas id="mini-chart-${device.deviceId}"></canvas>
-                                <!-- <small class="text-muted d-block text-center">Live data unavailable in summary</small> -->
                             </div>
-
-                            <div class="mt-auto text-center"> <!-- Push to bottom -->
+                            <div class="row text-center">
+                               <div class="col-6">
+                                   <div class="metric-label">Flow</div>
+                                   <div class="metric-value">${typeof flowRate === 'number' ? flowRate.toFixed(1) : 'N/A'} <small>GPM</small></div>
+                               </div>
+                               <div class="col-6">
+                                   <div class="metric-label">PPM</div>
+                                   <div class="metric-value">${ppm}</div>
+                               </div>
+                           </div>
+                           <div class="mt-auto pt-2 text-center">
                                 <div class="metric-label">Last Seen</div>
                                 <div class="last-update-time" title="${formatDateTime(device._lastUpdateTimestamp)}">
                                     ${getRelativeTimeString(device._lastUpdateTimestamp)}
                                 </div>
-                            </div>
+                           </div>
                         </div>
                         <div class="card-footer bg-white border-top-0 pt-0 pb-2">
                             <button class="btn btn-sm btn-outline-secondary w-100 view-details-btn" data-device-id="${device.deviceId}">
@@ -930,165 +878,126 @@
                     </div>
                 `;
                 DOMElements.devicesGrid.appendChild(card);
-
-                // Attempt to add mini chart (if data becomes available in future)
-                // createMiniChart(device.deviceId, device.recentHistory || []);
-
-                // Add listener for the details button
-                 card.querySelector('.view-details-btn').addEventListener('click', (e) => {
-                     const clickedDeviceId = e.currentTarget.dataset.deviceId;
-                     showDeviceDetails(clickedDeviceId);
-                 });
+                createMiniChart(device.deviceId, latestData.history || []);
+                card.querySelector('.view-details-btn').addEventListener('click', (e) => {
+                    showDeviceDetails(e.currentTarget.dataset.deviceId);
+                });
             });
         }
 
-         function getDeviceStatus(device) {
-             const timestamp = device.lastUpdated; // Using the summary timestamp from worker
-             // Enhancement: If worker provided latest error code in summary, use it here.
-             // const errorCode = device.latestErrorCode; // Hypothetical
+        // Determine device status based on summary data
+        function getDeviceStatus(device) {
+            const timestamp = device.lastUpdated;
+            const errorCode = device.latestData?.errorCode;
+            const timeDiffMinutes = getTimeDifference(timestamp);
+            if (timeDiffMinutes > OFFLINE_THRESHOLD_MINUTES) {
+                return 'offline';
+            }
+            if (errorCode == null || errorCode === 'N/A') return 'online';
+            if (errorCode === 'NO_ERROR') return 'online';
+            if (['LOW_FLOW', 'SYSTEM_PAUSED', 'MISWEIGHTED', 'TANK_LEVEL_LOW'].includes(errorCode)) return 'warning';
+            return 'error';
+        }
 
-             const timeDiffMinutes = getTimeDifference(timestamp);
+        // Map status to badge class
+        function getStatusBadgeClass(status) {
+            switch (status) {
+                case 'online': return 'text-bg-success';
+                case 'warning': return 'text-bg-warning';
+                case 'error': return 'text-bg-danger';
+                case 'offline': default: return 'text-bg-secondary';
+            }
+        }
 
-             if (timeDiffMinutes > OFFLINE_THRESHOLD_MINUTES) {
-                 return 'offline';
-             }
-             // Without error code, assume 'online' if recent. Add 'warning'/'error' logic if worker provides codes.
-             /* Example if errorCode was available:
-             if (errorCode === 'NO_ERROR') return 'online';
-             if (['LOW_FLOW', 'SYSTEM_PAUSED', 'TANK_LEVEL_LOW'].includes(errorCode)) return 'warning';
-             if (errorCode && errorCode !== 'NO_ERROR') return 'error';
-             */
-             return 'online'; // Fallback if recent and no error info
-         }
-
-         function getStatusBadgeClass(status) {
-             switch (status) {
-                 case 'online': return 'text-bg-success';
-                 case 'warning': return 'text-bg-warning';
-                 case 'error': return 'text-bg-danger';
-                 case 'offline':
-                 default: return 'text-bg-secondary';
-             }
-         }
-
-         function showOverviewMessage(message) {
+        // Show/hide overview messages
+        function showOverviewMessage(message) {
             DOMElements.overviewMessageText.textContent = message;
             DOMElements.overviewMessageArea.style.display = 'block';
-         }
-
-         function hideOverviewMessage() {
+        }
+        function hideOverviewMessage() {
             DOMElements.overviewMessageArea.style.display = 'none';
-         }
+        }
 
+        // Handle search and sort inputs
+        function handleSearchInput(event) {
+            currentSearchTerm = event.target.value.toLowerCase().trim();
+            applyFiltersAndSort();
+            renderDeviceCards();
+        }
+        function handleSortChange(event) {
+            currentSortCriteria = event.target.dataset.sort;
+            applyFiltersAndSort();
+            renderDeviceCards();
+        }
 
         // --- Device Details Modal ---
         async function showDeviceDetails(deviceId) {
-            if (!apiKey) { showToastError("Authentication required."); return; }
-            console.log(`Fetching details for ${deviceId}...`);
             DOMElements.deviceDetailTitle.textContent = `Device Details: ${deviceId}`;
-
-            // Reset modal content to loading state
             resetDetailModal();
             deviceDetailModal.show();
             showLoading(`Loading details for ${deviceId}...`);
-
             try {
-                // Fetch recent detailed data (e.g., last 50-100 entries)
                 const limit = 100;
-                const url = `${API_ENDPOINT}/devices?deviceId=${deviceId}&limit=${limit}`;
-                const response = await fetchWithAuth(url);
-
-                if (!response.ok) { throw new Error(`Failed to fetch details: ${response.status}`); }
-
-                const result = await response.json();
-                if (!result.success || !Array.isArray(result.data)) { throw new Error("Invalid data structure received."); }
-
-                // Worker returns data grouped by file upload. Flatten and sort.
-                let allLogEntries = [];
-                result.data.forEach(fileMeta => {
-                    if (Array.isArray(fileMeta.logData)) {
-                        fileMeta.logData.forEach(entry => {
-                            entry.uploaded = fileMeta.uploaded; // Add upload time from metadata
-                            entry.deviceId = entry.deviceId || deviceId; // Ensure deviceId
-                        });
-                        allLogEntries = allLogEntries.concat(fileMeta.logData);
-                    }
-                });
-
-                // Sort by timestamp, newest first
-                allLogEntries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-                console.log(`Processed ${allLogEntries.length} log entries for detail view.`);
-
-                if (allLogEntries.length > 0) {
-                    populateDetailModal(allLogEntries, deviceId);
+                const result = await fetchWithAuth(`${API_ENDPOINT}/devices?deviceId=${deviceId}&limit=${limit}`);
+                if (result && result.success && Array.isArray(result.data)) {
+                    let allLogEntries = [];
+                    result.data.forEach(fileMeta => {
+                        if (Array.isArray(fileMeta.logData)) {
+                            fileMeta.logData.forEach(entry => {
+                                entry.uploaded = fileMeta.uploaded;
+                                entry.deviceId = entry.deviceId || deviceId;
+                            });
+                            allLogEntries = allLogEntries.concat(fileMeta.logData);
+                        }
+                    });
+                    allLogEntries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    if (allLogEntries.length > 0) populateDetailModal(allLogEntries, deviceId);
+                    else showDetailMessage("No recent log entries found for this device.");
                 } else {
-                    showDetailMessage("No recent log entries found for this device.");
+                    throw new Error(result.message || "Invalid data structure received for device details.");
                 }
-
             } catch (error) {
                 console.error(`Error fetching details for ${deviceId}:`, error);
-                showToastError(`Could not load details: ${error.message}`);
-                 showDetailMessage(`Error loading data: ${error.message}`, true); // Show error in modal body
-                 // Optionally hide modal on critical error: deviceDetailModal.hide();
+                showDetailMessage(`Error loading data: ${error.message}`, true);
             } finally {
                 hideLoading();
             }
         }
 
         function resetDetailModal() {
-            // Clear metrics, tables, charts
             DOMElements.detailMetricsContainer.innerHTML = '<p class="text-muted text-center p-3">Loading metrics...</p>';
             DOMElements.detailDataTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted p-3">Loading data log...</td></tr>';
             DOMElements.detailInfoTableBody.innerHTML = '<tr><td colspan="2" class="text-center text-muted p-3">Loading info...</td></tr>';
-
-             // Destroy previous charts if they exist
-             destroyChart(detailFlowChart); detailFlowChart = null;
-             destroyChart(detailProbeChart); detailProbeChart = null;
-
-             // Ensure chart canvases are visible
-             DOMElements.detailFlowChartCanvas.parentElement.style.display = 'block';
-             DOMElements.detailProbeChartCanvas.parentElement.style.display = 'block';
-
-            // Reset to overview tab
+            destroyChart(detailFlowChart); detailFlowChart = null;
+            destroyChart(detailProbeChart); detailProbeChart = null;
             const overviewTab = document.getElementById('detail-overview-tab');
-            if (overviewTab) {
-                try { bootstrap.Tab.getOrCreateInstance(overviewTab).show(); }
-                catch (e) { console.error("Error showing overview tab:", e); }
-            }
+            if (overviewTab) bootstrap.Tab.getOrCreateInstance(overviewTab).show();
         }
 
-         function showDetailMessage(message, isError = false) {
-            const messageHtml = `<div class="col-12 message-area text-center p-3 ${isError ? 'error-message' : 'info-message'}">${message}</div>`;
-            DOMElements.detailMetricsContainer.innerHTML = messageHtml;
-            DOMElements.detailDataTableBody.innerHTML = `<tr><td colspan="${DOMElements.detailDataTableBody.parentElement.rows[0].cells.length}" class="text-center p-3 ${isError ? 'text-danger' : 'text-muted'}">${message}</td></tr>`;
+        function showDetailMessage(message, isError = false) {
+            const msgClass = isError ? 'error-message' : 'info-message';
+            DOMElements.detailMetricsContainer.innerHTML = `<div class="col-12 message-area text-center p-3 ${msgClass}">${message}</div>`;
+            DOMElements.detailDataTableBody.innerHTML = `<tr><td colspan="7" class="text-center p-3 ${isError ? 'text-danger' : 'text-muted'}">${message}</td></tr>`;
             DOMElements.detailInfoTableBody.innerHTML = `<tr><td colspan="2" class="text-center p-3 ${isError ? 'text-danger' : 'text-muted'}">${message}</td></tr>`;
-            // Hide charts if there's an error or no data
             DOMElements.detailFlowChartCanvas.parentElement.style.display = 'none';
             DOMElements.detailProbeChartCanvas.parentElement.style.display = 'none';
         }
 
-
         function populateDetailModal(logEntries, deviceId) {
-            const latestEntry = logEntries[0]; // Newest entry
-
-            // Populate Overview Tab
+            const latestEntry = logEntries[0];
             populateDetailMetrics(latestEntry);
-            createDetailCharts(logEntries); // Create charts using the list
-
-            // Populate Data Log Tab
+            createDetailCharts(logEntries);
             populateDetailDataTable(logEntries);
-
-            // Populate Info Tab
             populateDetailInfoTable(latestEntry, deviceId);
         }
 
         function populateDetailMetrics(entry) {
-            DOMElements.detailMetricsContainer.innerHTML = ''; // Clear loading
+            DOMElements.detailMetricsContainer.innerHTML = '';
             if (!entry) {
                 DOMElements.detailMetricsContainer.innerHTML = '<p class="text-muted text-center col-12">No metrics available.</p>';
                 return;
             }
-             const metrics = [
+            const metrics = [
                 { label: 'Flow Rate', value: `${(entry.flow?.actual ?? 0).toFixed(1)} GPM` },
                 { label: 'PPM Reading', value: entry.ppm ?? 'N/A' },
                 { label: 'pH Reading', value: entry.pH?.actual !== undefined ? entry.pH.actual.toFixed(1) : 'N/A' },
@@ -1097,631 +1006,267 @@
                 { label: 'Total Flow', value: `${(entry.flow?.totalizer ?? 0).toFixed(1)} Gal` },
                 { label: 'Chem Inj. Total', value: `${(entry.chemPump?.totalizer ?? 0).toFixed(4)} Gal` },
                 { label: 'Acid Inj. Total', value: `${(entry.acidPump?.totalizer ?? 0).toFixed(4)} Gal` },
-             ];
-
-             metrics.forEach(metric => {
-                 if (metric.value === 'N/A') return; // Skip N/A values
-                 const col = document.createElement('div');
-                 col.className = 'col-lg-3 col-md-4 col-sm-6'; // Responsive columns
-                 col.innerHTML = `
-                     <div class="card card-body p-2 text-center h-100 shadow-sm">
-                         <div class="metric-label small text-muted">${metric.label}</div>
-                         <div class="metric-value">${metric.value}</div>
-                     </div>
-                 `;
-                 DOMElements.detailMetricsContainer.appendChild(col);
-             });
-             if (DOMElements.detailMetricsContainer.children.length === 0) {
-                 DOMElements.detailMetricsContainer.innerHTML = '<p class="text-muted text-center col-12">No metrics available.</p>';
-             }
+            ];
+            metrics.forEach(metric => {
+                if (metric.value === 'N/A') return;
+                const col = document.createElement('div');
+                col.className = 'col-lg-3 col-md-4 col-sm-6';
+                col.innerHTML = `
+                    <div class="card card-body p-2 text-center h-100 shadow-sm">
+                        <div class="metric-label small text-muted">${metric.label}</div>
+                        <div class="metric-value">${metric.value}</div>
+                    </div>
+                `;
+                DOMElements.detailMetricsContainer.appendChild(col);
+            });
+            if (!DOMElements.detailMetricsContainer.children.length) {
+                DOMElements.detailMetricsContainer.innerHTML = '<p class="text-muted text-center col-12">No metrics available.</p>';
+            }
         }
 
         function createDetailCharts(logEntries) {
-            // Reverse log entries for chronological plotting (oldest first)
             const chronologicalEntries = [...logEntries].reverse();
-
             createDetailFlowChart(chronologicalEntries);
             createDetailProbeChart(chronologicalEntries);
         }
 
         function createDetailFlowChart(entries) {
-            destroyChart(detailFlowChart); // Ensure old chart is gone
+            destroyChart(detailFlowChart);
             const labels = entries.map(e => formatTime(e.timestamp));
             const data = entries.map(e => e.flow?.actual ?? null);
-
-             if (data.every(d => d === null)) {
-                 console.log("No flow data for detail chart.");
-                 DOMElements.detailFlowChartCanvas.parentElement.style.display = 'none'; // Hide if no data
-                 return;
-             }
-             DOMElements.detailFlowChartCanvas.parentElement.style.display = 'block'; // Show if data exists
-
+            if (data.every(d => d === null)) {
+                DOMElements.detailFlowChartCanvas.parentElement.style.display = 'none';
+                return;
+            }
+            DOMElements.detailFlowChartCanvas.parentElement.style.display = 'block';
             detailFlowChart = new Chart(DOMElements.detailFlowChartCanvas, {
                 type: 'line',
                 data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Flow Rate (GPM)', data: data,
-                        borderColor: 'rgba(203, 32, 38, 0.8)', backgroundColor: 'rgba(203, 32, 38, 0.2)',
-                        borderWidth: 1.5, tension: 0.1, fill: true, pointRadius: 1, pointHoverRadius: 4, spanGaps: true
-                    }]
+                    labels, datasets: [{ label: 'Flow Rate (GPM)', data, borderColor: 'rgba(203, 32, 38, 0.8)', backgroundColor: 'rgba(203, 32, 38, 0.2)', borderWidth: 1.5, tension: 0.1, fill: true, pointRadius: 1, pointHoverRadius: 4, spanGaps: true }]
                 },
                 options: commonChartOptions('Flow Rate Trend (Recent)', 'Time', 'GPM')
             });
         }
 
         function createDetailProbeChart(entries) {
-             destroyChart(detailProbeChart);
-             const labels = entries.map(e => formatTime(e.timestamp));
-             const phData = entries.map(e => e.pH?.actual ?? null);
-             const orpData = entries.map(e => e.orp?.actual ?? null);
-
-             const hasPH = phData.some(d => d !== null);
-             const hasORP = orpData.some(d => d !== null);
-
-             if (!hasPH && !hasORP) {
-                console.log("No pH or ORP data for detail chart.");
+            destroyChart(detailProbeChart);
+            const labels = entries.map(e => formatTime(e.timestamp));
+            const phData = entries.map(e => e.pH?.actual ?? null);
+            const orpData = entries.map(e => e.orp?.actual ?? null);
+            const hasPH = phData.some(d => d !== null);
+            const hasORP = orpData.some(d => d !== null);
+            if (!hasPH && !hasORP) {
                 DOMElements.detailProbeChartCanvas.parentElement.style.display = 'none';
                 return;
-             }
-             DOMElements.detailProbeChartCanvas.parentElement.style.display = 'block';
-
-             const datasets = [];
-             if (hasPH) datasets.push({
-                 label: 'pH', data: phData, yAxisID: 'yPH', spanGaps: true,
-                 borderColor: 'rgba(66, 135, 245, 0.8)', backgroundColor: 'rgba(66, 135, 245, 0.2)',
-                 borderWidth: 1.5, tension: 0.1, fill: false, pointRadius: 1, pointHoverRadius: 4,
-             });
-             if (hasORP) datasets.push({
-                 label: 'ORP (mV)', data: orpData, yAxisID: 'yORP', spanGaps: true,
-                 borderColor: 'rgba(66, 245, 132, 0.8)', backgroundColor: 'rgba(66, 245, 132, 0.2)',
-                 borderWidth: 1.5, tension: 0.1, fill: false, pointRadius: 1, pointHoverRadius: 4,
-             });
-
-             detailProbeChart = new Chart(DOMElements.detailProbeChartCanvas, {
-                 type: 'line',
-                 data: { labels: labels, datasets: datasets },
-                 options: commonChartOptions('Probe Readings Trend (Recent)', 'Time', null, { // Pass scales config directly
-                     yPH: { type: 'linear', display: hasPH, position: 'left', title: { display: hasPH, text: 'pH' } },
-                     yORP: { type: 'linear', display: hasORP, position: 'right', title: { display: hasORP, text: 'ORP (mV)' }, grid: { drawOnChartArea: !hasPH } }
-                 })
-             });
+            }
+            DOMElements.detailProbeChartCanvas.parentElement.style.display = 'block';
+            const datasets = [];
+            if (hasPH) datasets.push({ label: 'pH', data: phData, yAxisID: 'yPH', spanGaps: true, borderColor: 'rgba(66, 135, 245, 0.8)', backgroundColor: 'rgba(66, 135, 245, 0.2)', borderWidth: 1.5, tension: 0.1, fill: false, pointRadius: 1, pointHoverRadius: 4 });
+            if (hasORP) datasets.push({ label: 'ORP (mV)', data: orpData, yAxisID: 'yORP', spanGaps: true, borderColor: 'rgba(66, 245, 132, 0.8)', backgroundColor: 'rgba(66, 245, 132, 0.2)', borderWidth: 1.5, tension: 0.1, fill: false, pointRadius: 1, pointHoverRadius: 4 });
+            detailProbeChart = new Chart(DOMElements.detailProbeChartCanvas, {
+                type: 'line', data: { labels, datasets },
+                options: commonChartOptions('Probe Readings Trend (Recent)', 'Time', null, {
+                    yPH: { type: 'linear', display: hasPH, position: 'left', title: { display: hasPH, text: 'pH' } },
+                    yORP: { type: 'linear', display: hasORP, position: 'right', title: { display: hasORP, text: 'ORP (mV)' }, grid: { drawOnChartArea: !hasPH } }
+                })
+            });
         }
 
-
         function populateDetailDataTable(logEntries) {
-             DOMElements.detailDataTableBody.innerHTML = ''; // Clear loading/previous
-             if (logEntries.length === 0) {
-                 DOMElements.detailDataTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted p-3">No data log entries found.</td></tr>';
-                 return;
-             }
-
-             logEntries.forEach(entry => {
-                 const row = DOMElements.detailDataTableBody.insertRow();
-                 row.innerHTML = `
-                     <td>${formatDateTime(entry.timestamp)}</td>
-                     <td>${entry.flow?.actual?.toFixed(1) ?? 'N/A'}</td>
-                     <td>${entry.ppm ?? 'N/A'}</td>
-                     <td>${entry.chemPump?.totalizer?.toFixed(4) ?? 'N/A'}</td>
-                     <td>${entry.acidPump?.totalizer?.toFixed(4) ?? 'N/A'}</td>
-                     <td>${(entry.errorCode || 'N/A').replace(/_/g, ' ')}</td>
-                     <td>${formatDateTime(entry.uploaded)}</td>
-                 `;
-             });
+            DOMElements.detailDataTableBody.innerHTML = '';
+            if (!logEntries.length) {
+                DOMElements.detailDataTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted p-3">No data log entries found.</td></tr>';
+                return;
+            }
+            logEntries.forEach(entry => {
+                const row = DOMElements.detailDataTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${formatDateTime(entry.timestamp)}</td>
+                    <td>${entry.flow?.actual?.toFixed(1) ?? 'N/A'}</td>
+                    <td>${entry.ppm ?? 'N/A'}</td>
+                    <td>${entry.chemPump?.totalizer?.toFixed(4) ?? 'N/A'}</td>
+                    <td>${entry.acidPump?.totalizer?.toFixed(4) ?? 'N/A'}</td>
+                    <td>${(entry.errorCode || 'N/A').replace(/_/g, ' ')}</td>
+                    <td>${formatDateTime(entry.uploaded)}</td>
+                `;
+            });
         }
 
         function populateDetailInfoTable(entry, deviceId) {
-             DOMElements.detailInfoTableBody.innerHTML = ''; // Clear loading/previous
-              if (!entry) {
-                 DOMElements.detailInfoTableBody.innerHTML = '<tr><td colspan="2" class="text-center text-muted p-3">No device information available.</td></tr>';
-                 return;
-             }
-             const info = [
-                 { name: 'Device ID', value: deviceId },
-                 { name: 'Last Log Timestamp', value: formatDateTime(entry.timestamp) },
-                 { name: 'Last Data Upload', value: formatDateTime(entry.uploaded) },
-                 { name: 'Latest Status Code', value: (entry.errorCode || 'N/A').replace(/_/g, ' ') },
-                 // Add Firmware version if worker/device provides it
-                 // { name: 'Firmware Version', value: entry.firmwareVersion || 'N/A' },
-             ];
-
-             info.forEach(item => {
-                 const row = DOMElements.detailInfoTableBody.insertRow();
-                 row.innerHTML = `
-                     <td><strong>${item.name}</strong></td>
-                     <td>${item.value}</td>
-                 `;
-             });
+            DOMElements.detailInfoTableBody.innerHTML = '';
+            if (!entry) {
+                DOMElements.detailInfoTableBody.innerHTML = '<tr><td colspan="2" class="text-center text-muted p-3">No device information available.</td></tr>';
+                return;
+            }
+            const info = [
+                { name: 'Device ID', value: deviceId },
+                { name: 'Last Log Timestamp', value: formatDateTime(entry.timestamp) },
+                { name: 'Last Data Upload', value: formatDateTime(entry.uploaded) },
+                { name: 'Latest Status Code', value: (entry.errorCode || 'N/A').replace(/_/g, ' ') },
+            ];
+            info.forEach(item => {
+                const row = DOMElements.detailInfoTableBody.insertRow();
+                row.innerHTML = `<td><strong>${item.name}</strong></td><td>${item.value}</td>`;
+            });
         }
 
         // --- History Page Logic ---
         function populateHistoryDeviceDropdown() {
             const currentVal = DOMElements.historyDeviceSelect.value;
-            DOMElements.historyDeviceSelect.innerHTML = '<option value="" selected>Select a device...</option>'; // Reset
-
-            const sorted = [...allDevices].sort((a, b) => a.deviceId.localeCompare(b.deviceId));
-            sorted.forEach(dev => {
-                const option = document.createElement('option');
-                option.value = dev.deviceId;
-                option.textContent = dev.deviceId;
-                DOMElements.historyDeviceSelect.appendChild(option);
+            DOMElements.historyDeviceSelect.innerHTML = '<option value="" selected>Select your device...</option>';
+            const sorted = [...allDevices].sort((a,b)=>a.deviceId.localeCompare(b.deviceId));
+            sorted.forEach(dev=>{
+                const option=document.createElement('option');option.value=dev.deviceId;option.textContent=dev.deviceId;DOMElements.historyDeviceSelect.appendChild(option);
             });
-
-            // Restore selection if possible
-            if (sorted.some(d => d.deviceId === currentVal)) {
-                DOMElements.historyDeviceSelect.value = currentVal;
-            }
+            if (sorted.some(d=>d.deviceId===currentVal)) DOMElements.historyDeviceSelect.value=currentVal;
         }
 
-         function resetHistoryView() {
-             DOMElements.historyMessageText.textContent = "Select criteria and search to view history.";
-             DOMElements.historyMessageArea.style.display = 'block';
-             DOMElements.historyChartContainer.style.display = 'none';
-             DOMElements.historyTableContainer.style.display = 'none';
-             DOMElements.historyTableBody.innerHTML = '';
-             DOMElements.exportCsvBtn.disabled = true;
-             destroyChart(historyChart); historyChart = null;
-         }
+        function resetHistoryView() {
+            DOMElements.historyMessageText.textContent = "Select a device and search to view history.";
+            DOMElements.historyMessageArea.style.display = 'block';
+            DOMElements.historyChartContainer.style.display = 'none';
+            DOMElements.historyTableContainer.style.display = 'none';
+            DOMElements.historyTableBody.innerHTML = '';
+            DOMElements.exportCsvBtn.disabled = true;
+            destroyChart(historyChart); historyChart = null;
+        }
 
         async function fetchHistoricalData() {
             const deviceId = DOMElements.historyDeviceSelect.value;
+            if (!deviceId) { showToastError("Please select a device."); return; }
             const startDate = DOMElements.historyStartDateInput.value;
             const endDate = DOMElements.historyEndDateInput.value;
             const limit = DOMElements.historyLimitSelect.value;
-
-            if (!deviceId) {
-                showToastError("Please select a device.");
-                return;
-            }
-
-            resetHistoryView(); // Clear previous results and show loading message implicitly
+            resetHistoryView();
             showLoading("Fetching history...");
-
             try {
-                let url = `${API_ENDPOINT}/devices?deviceId=${deviceId}&limit=${limit}`;
-                if (startDate) url += `&startDate=${startDate}`;
-                if (endDate) {
-                    // Make end date inclusive by adding one day (server-side logic might vary)
-                    const end = new Date(endDate);
-                    end.setDate(end.getDate() + 1);
-                    url += `&endDate=${end.toISOString().split('T')[0]}`;
-                }
-
-                console.log("Fetching history URL:", url);
-                const response = await fetchWithAuth(url);
-                if (!response.ok) { throw new Error(`Failed to fetch history: ${response.status}`); }
-
-                const result = await response.json();
-                 if (!result.success || !Array.isArray(result.data)) { throw new Error("Invalid data structure received."); }
-
-                // Flatten and sort chronologically (oldest first for table/chart)
-                let historicalEntries = [];
-                 result.data.forEach(fileMeta => {
-                    if (Array.isArray(fileMeta.logData)) {
-                        historicalEntries = historicalEntries.concat(fileMeta.logData);
-                    }
-                 });
-                 historicalEntries.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-                 console.log(`Processed ${historicalEntries.length} historical log entries.`);
-
-                 if (historicalEntries.length > 0) {
-                    renderHistoricalData(historicalEntries);
-                    DOMElements.historyMessageArea.style.display = 'none'; // Hide placeholder message
-                    DOMElements.exportCsvBtn.disabled = false;
-                 } else {
-                    DOMElements.historyMessageText.textContent = "No data found for the selected criteria.";
-                    DOMElements.historyMessageArea.style.display = 'block';
-                    DOMElements.exportCsvBtn.disabled = true;
-                 }
-
-            } catch (error) {
-                 console.error("Error fetching historical data:", error);
-                 showToastError(`Could not load history: ${error.message}`);
-                 DOMElements.historyMessageText.textContent = `Error loading history: ${error.message}`;
-                 DOMElements.historyMessageArea.style.display = 'block';
-                 DOMElements.exportCsvBtn.disabled = true;
-            } finally {
-                 hideLoading();
-            }
+                let url=`${API_ENDPOINT}/devices?deviceId=${deviceId}&limit=${limit}`;
+                if(startDate) url+=`&startDate=${startDate}`;
+                if(endDate){const end=new Date(endDate);end.setDate(end.getDate()+1);url+=`&endDate=${end.toISOString().split('T')[0]}`;}
+                const result=await fetchWithAuth(url);
+                if(result && result.success && Array.isArray(result.data)){
+                    let entries=[];result.data.forEach(file=>{if(Array.isArray(file.logData))entries=entries.concat(file.logData);});
+                    entries.sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp));
+                    if(entries.length){renderHistoricalData(entries);DOMElements.historyMessageArea.style.display='none';DOMElements.exportCsvBtn.disabled=false;} else {DOMElements.historyMessageText.textContent="No data found for the selected criteria.";DOMElements.historyMessageArea.style.display='block';DOMElements.exportCsvBtn.disabled=true;}
+                } else throw new Error(result.message||"Invalid data structure received for history.");
+            } catch(error){console.error("Error fetching historical data:",error);DOMElements.historyMessageText.textContent=`Error loading history: ${error.message}`;DOMElements.historyMessageArea.style.display='block';DOMElements.exportCsvBtn.disabled=true;} finally {hideLoading();}
         }
 
         function renderHistoricalData(entries) {
-             // Populate Table
-             DOMElements.historyTableBody.innerHTML = ''; // Clear
-             entries.forEach(entry => {
-                 const row = DOMElements.historyTableBody.insertRow();
-                 row.innerHTML = `
-                     <td>${formatDateTime(entry.timestamp)}</td>
-                     <td>${entry.flow?.actual?.toFixed(1) ?? 'N/A'}</td>
-                     <td>${entry.ppm ?? 'N/A'}</td>
-                     <td>${entry.chemPump?.totalizer?.toFixed(4) ?? 'N/A'}</td>
-                     <td>${entry.acidPump?.totalizer?.toFixed(4) ?? 'N/A'}</td>
-                     <td>${(entry.errorCode || 'N/A').replace(/_/g, ' ')}</td>
-                 `;
-             });
-             DOMElements.historyTableContainer.style.display = 'block';
-
-             // Create Chart
-             createHistoryChart(entries);
-             DOMElements.historyChartContainer.style.display = 'block';
+            DOMElements.historyTableBody.innerHTML = '';
+            entries.forEach(entry=>{
+                const row=DOMElements.historyTableBody.insertRow();
+                row.innerHTML=`<td>${formatDateTime(entry.timestamp)}</td><td>${entry.flow?.actual?.toFixed(1)??'N/A'}</td><td>${entry.ppm??'N/A'}</td><td>${entry.chemPump?.totalizer?.toFixed(4)??'N/A'}</td><td>${entry.acidPump?.totalizer?.toFixed(4)??'N/A'}</td><td>${(entry.errorCode||'N/A').replace(/_/g,' ')}</td>`;
+            });
+            DOMElements.historyTableContainer.style.display='block';
+            createHistoryChart(entries);
+            DOMElements.historyChartContainer.style.display='block';
         }
 
         function createHistoryChart(entries) {
             destroyChart(historyChart);
-            const labels = entries.map(e => formatDateTime(e.timestamp)); // Use full date/time
-            const flowData = entries.map(e => e.flow?.actual ?? null);
-            const ppmData = entries.map(e => e.ppm ?? null);
-
-            const hasFlow = flowData.some(d => d !== null);
-            const hasPPM = ppmData.some(d => d !== null);
-
-            if (!hasFlow && !hasPPM) {
-                console.log("No data for history chart.");
-                DOMElements.historyChartContainer.style.display = 'none';
-                return;
-            }
-             DOMElements.historyChartContainer.style.display = 'block';
-
-
-            const datasets = [];
-            if (hasFlow) datasets.push({
-                label: 'Flow Rate (GPM)', data: flowData, yAxisID: 'yFlow', spanGaps: true,
-                borderColor: 'rgba(203, 32, 38, 0.8)', backgroundColor: 'rgba(203, 32, 38, 0.1)',
-                borderWidth: 1.5, tension: 0.1, fill: false, pointRadius: 0, pointHoverRadius: 3,
-            });
-             if (hasPPM) datasets.push({
-                label: 'PPM Reading', data: ppmData, yAxisID: 'yPPM', spanGaps: true,
-                borderColor: 'rgba(66, 135, 245, 0.8)', backgroundColor: 'rgba(66, 135, 245, 0.1)',
-                borderWidth: 1.5, tension: 0.1, fill: false, pointRadius: 0, pointHoverRadius: 3,
-            });
-
-            historyChart = new Chart(DOMElements.historyChartCanvas, {
-                type: 'line',
-                data: { labels: labels, datasets: datasets },
-                options: commonChartOptions('Historical Data Trend', 'Timestamp', null, { // Pass scales config
-                    yFlow: { type: 'linear', display: hasFlow, position: 'left', title: { display: hasFlow, text: 'Flow Rate (GPM)' }, beginAtZero: true },
-                    yPPM: { type: 'linear', display: hasPPM, position: 'right', title: { display: hasPPM, text: 'PPM' }, grid: { drawOnChartArea: !hasFlow } },
-                    x: { ticks: { autoSkip: true, maxTicksLimit: 20 } } // Adjust x-axis ticks for readability
-                })
-            });
+            const labels=entries.map(e=>formatDateTime(e.timestamp));
+            const flowData=entries.map(e=>e.flow?.actual??null);
+            const ppmData=entries.map(e=>e.ppm??null);
+            const hasFlow=flowData.some(d=>d!==null);
+            const hasPPM=ppmData.some(d=>d!==null);
+            if(!hasFlow && !hasPPM){DOMElements.historyChartContainer.style.display='none';return;}
+            const datasets=[];
+            if(hasFlow)datasets.push({label:'Flow Rate (GPM)',data:flowData,yAxisID:'yFlow',spanGaps:true,borderColor:'rgba(203,32,38,0.8)',backgroundColor:'rgba(203,32,38,0.1)',borderWidth:1.5,tension:0.1,fill:false,pointRadius:0,pointHoverRadius:3});
+            if(hasPPM)datasets.push({label:'PPM Reading',data:ppmData,yAxisID:'yPPM',spanGaps:true,borderColor:'rgba(66,135,245,0.8)',backgroundColor:'rgba(66,135,245,0.1)',borderWidth:1.5,tension:0.1,fill:false,pointRadius:0,pointHoverRadius:3});
+            historyChart=new Chart(DOMElements.historyChartCanvas,{type:'line',data:{labels,datasets},options:commonChartOptions('Historical Data Trend','Timestamp',null,{yFlow:{type:'linear',display:hasFlow,position:'left',title:{display:hasFlow,text:'Flow Rate (GPM)'},beginAtZero:true},yPPM:{type:'linear',display:hasPPM,position:'right',title:{display:hasPPM,text:'PPM'},grid:{drawOnChartArea:!hasFlow}},x:{ticks:{autoSkip:true,maxTicksLimit:20}}})});
         }
 
         function exportHistoryToCSV() {
-            const table = document.getElementById('historyTable'); // Get table element directly
-            const rows = table.querySelectorAll('tr');
-            if (rows.length <= 1) { // Header only or empty
-                showToastError("No data in table to export.");
-                return;
-            }
-
-            let csvContent = "";
-
-            // Get headers
-            const headers = Array.from(rows[0].querySelectorAll('th')).map(th => `"${th.textContent.replace(/"/g, '""')}"`).join(',');
-            csvContent += headers + "\r\n";
-
-            // Get rows
-             for (let i = 1; i < rows.length; i++) {
-                const cells = Array.from(rows[i].querySelectorAll('td')).map(td => {
-                    let cellData = td.textContent.replace(/"/g, '""'); // Escape double quotes
-                    // Quote if contains comma, newline, or quote
-                    return (cellData.includes(',') || cellData.includes('\n') || cellData.includes('"')) ? `"${cellData}"` : cellData;
-                }).join(',');
-                csvContent += cells + "\r\n";
-            }
-
-            // Create download link
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const filename = `EDIE_History_${DOMElements.historyDeviceSelect.value || 'Export'}_${formatDateForFilename(new Date())}.csv`;
-            const link = document.createElement("a");
-
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", filename);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            console.log("CSV Exported:", filename);
+            const table=document.getElementById('historyTable');
+            const rows=table.querySelectorAll('tr');
+            if(rows.length<=1){showToastError("No data in table to export.");return;}
+            let csv="";
+            const headers=Array.from(rows[0].querySelectorAll('th')).map(th=>`"${th.textContent.replace(/"/g,'""')}"`).join(',');csv+=headers+"\r\n";
+            for(let i=1;i<rows.length;i++){const cells=Array.from(rows[i].querySelectorAll('td')).map(td=>{let d=td.textContent.replace(/"/g,'""');return(d.includes(',')||d.includes('\n')||d.includes('"'))?`"${d}"`:d;}).join(',');csv+=cells+"\r\n";}
+            const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+            const filename=`EDIE_History_${DOMElements.historyDeviceSelect.value||'Export'}_${formatDateForFilename(new Date())}.csv`;
+            const link=document.createElement('a');const url=URL.createObjectURL(blob);link.setAttribute('href',url);link.setAttribute('download',filename);link.style.visibility='hidden';document.body.appendChild(link);link.click();document.body.removeChild(link);URL.revokeObjectURL(url);
         }
 
         // --- Device Selection Modal Logic ---
         function openDeviceSelectionModal() {
-            console.log("Opening device selection modal.");
             populateDeviceSelectionList();
             deviceSelectModal.show();
-             DOMElements.filterDeviceSelectInput.value = ''; // Clear filter on open
-             filterDeviceSelectionList(); // Apply empty filter initially
+            DOMElements.filterDeviceSelectInput.value='';
+            filterDeviceSelectionList();
         }
 
         function populateDeviceSelectionList() {
-             DOMElements.deviceSelectList.innerHTML = ''; // Clear
-             const sortedDevices = [...allDevices].sort((a, b) => a.deviceId.localeCompare(b.deviceId));
-
-            if (sortedDevices.length === 0) {
-                DOMElements.deviceSelectList.innerHTML = '<p class="text-muted text-center p-3">No devices available.</p>';
-                DOMElements.selectAllDevicesCheckbox.disabled = true;
-                DOMElements.selectAllDevicesCheckbox.checked = false;
-                return;
-            }
-
-             DOMElements.selectAllDevicesCheckbox.disabled = false;
-             sortedDevices.forEach(device => {
-                 const isSelected = selectedDeviceIDs === null || selectedDeviceIDs.includes(device.deviceId);
-                 const div = document.createElement('div');
-                 div.className = 'form-check device-select-item';
-                 div.innerHTML = `
-                    <input class="form-check-input device-select-checkbox" type="checkbox" value="${device.deviceId}" id="select-${device.deviceId}" ${isSelected ? 'checked' : ''}>
-                    <label class="form-check-label" for="select-${device.deviceId}">
-                        ${device.deviceId}
-                    </label>
-                 `;
-                 // Add listener to each checkbox AFTER creating it
-                 div.querySelector('.device-select-checkbox').addEventListener('change', checkSelectAllState);
-                 DOMElements.deviceSelectList.appendChild(div);
-             });
-
-             checkSelectAllState(); // Set initial state of "Select All" checkbox
+            DOMElements.deviceSelectList.innerHTML='';
+            const sorted=[...allDevices].sort((a,b)=>a.deviceId.localeCompare(b.deviceId));
+            if(!sorted.length){DOMElements.deviceSelectList.innerHTML='<p class="text-muted text-center p-3">No devices available.</p>';DOMElements.selectAllDevicesCheckbox.disabled=true;return;}
+            DOMElements.selectAllDevicesCheckbox.disabled=false;
+            sorted.forEach(device=>{
+                const isSelected=selectedDeviceIDs===null||selectedDeviceIDs.includes(device.deviceId);
+                const div=document.createElement('div');div.className='form-check device-select-item';div.innerHTML=`<input class="form-check-input device-select-checkbox" type="checkbox" value="${device.deviceId}" id="select-${device.deviceId}" ${isSelected?'checked':''}><label class="form-check-label" for="select-${device.deviceId}">${device.deviceId}</label>`;
+                div.querySelector('.device-select-checkbox').addEventListener('change',checkSelectAllState);
+                DOMElements.deviceSelectList.appendChild(div);
+            });
+            checkSelectAllState();
         }
 
-         function filterDeviceSelectionList() {
-            const filterText = DOMElements.filterDeviceSelectInput.value.toLowerCase();
-            const items = DOMElements.deviceSelectList.querySelectorAll('.device-select-item');
-            items.forEach(item => {
-                const label = item.querySelector('label').textContent.toLowerCase();
-                item.style.display = label.includes(filterText) ? 'block' : 'none';
+        function filterDeviceSelectionList() {
+            const filterText=DOMElements.filterDeviceSelectInput.value.toLowerCase();
+            DOMElements.deviceSelectList.querySelectorAll('.device-select-item').forEach(item=>{
+                const label=item.querySelector('label').textContent.toLowerCase();
+                item.style.display=label.includes(filterText)?'block':'none';
             });
         }
 
-
         function handleSelectAllToggle(event) {
-            const isChecked = event.target.checked;
-            console.log(`Select All toggled: ${isChecked}`);
-            // Only affect VISIBLE checkboxes if filtering is applied
-             DOMElements.deviceSelectList.querySelectorAll('.device-select-checkbox').forEach(checkbox => {
-                 if (checkbox.parentElement.style.display !== 'none') { // Check if the item is visible
-                    checkbox.checked = isChecked;
-                 }
-             });
+            const checked=event.target.checked;
+            DOMElements.deviceSelectList.querySelectorAll('.device-select-checkbox').forEach(cb=>{if(cb.parentElement.style.display!=='none')cb.checked=checked;});
         }
 
         function checkSelectAllState() {
-            // Check state based on VISIBLE checkboxes
-            const allCheckboxes = DOMElements.deviceSelectList.querySelectorAll('.device-select-checkbox');
-            const visibleCheckboxes = Array.from(allCheckboxes).filter(cb => cb.parentElement.style.display !== 'none');
-
-            if (visibleCheckboxes.length === 0) {
-                 DOMElements.selectAllDevicesCheckbox.checked = false; // No visible items to select/deselect
-                 DOMElements.selectAllDevicesCheckbox.indeterminate = false;
-                 return;
-            }
-
-            const checkedVisibleCount = visibleCheckboxes.filter(cb => cb.checked).length;
-
-            if (checkedVisibleCount === 0) {
-                DOMElements.selectAllDevicesCheckbox.checked = false;
-                DOMElements.selectAllDevicesCheckbox.indeterminate = false;
-            } else if (checkedVisibleCount === visibleCheckboxes.length) {
-                DOMElements.selectAllDevicesCheckbox.checked = true;
-                DOMElements.selectAllDevicesCheckbox.indeterminate = false;
-            } else {
-                DOMElements.selectAllDevicesCheckbox.checked = false; // Show as unchecked
-                DOMElements.selectAllDevicesCheckbox.indeterminate = true; // Indicate partial selection
-            }
+            const all=Array.from(DOMElements.deviceSelectList.querySelectorAll('.device-select-checkbox')).filter(cb=>cb.parentElement.style.display!=='none');
+            if(!all.length){DOMElements.selectAllDevicesCheckbox.checked=false;DOMElements.selectAllDevicesCheckbox.indeterminate=false;return;}
+            const checked=all.filter(cb=>cb.checked).length;
+            DOMElements.selectAllDevicesCheckbox.checked=checked===all.length;
+            DOMElements.selectAllDevicesCheckbox.indeterminate=checked>0&&checked<all.length;
         }
-
 
         function saveDeviceSelection() {
-             console.log("Saving device selection...");
-             const allCheckboxes = DOMElements.deviceSelectList.querySelectorAll('.device-select-checkbox');
-             const checkedCheckboxes = DOMElements.deviceSelectList.querySelectorAll('.device-select-checkbox:checked');
-
-             // Important: Consider all checkboxes, not just visible ones, for the final selection state
-             const newlySelectedIDs = Array.from(checkedCheckboxes).map(cb => cb.value);
-
-             // If the number selected equals the total number available, treat as "Show All"
-             if (newlySelectedIDs.length === allDevices.length && allDevices.length > 0) {
-                 selectedDeviceIDs = null; // Use null for "Show All"
-                 localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY);
-                 console.log("Selection saved as 'Show All'.");
-             } else {
-                 selectedDeviceIDs = newlySelectedIDs;
-                 localStorage.setItem(SELECTED_DEVICES_STORAGE_KEY, JSON.stringify(selectedDeviceIDs));
-                 console.log("Saved specific device selection:", selectedDeviceIDs);
-             }
-
-             deviceSelectModal.hide();
-             applyFiltersAndSort(); // Re-filter based on new selection
-             renderDeviceCards(); // Re-render the overview
+            const checked=Array.from(DOMElements.deviceSelectList.querySelectorAll('.device-select-checkbox:checked')).map(cb=>cb.value);
+            if(checked.length===allDevices.length&&allDevices.length>0){selectedDeviceIDs=null;localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY);} else {selectedDeviceIDs=checked;localStorage.setItem(SELECTED_DEVICES_STORAGE_KEY,JSON.stringify(checked));}
+            deviceSelectModal.hide();applyFiltersAndSort();renderDeviceCards();
         }
 
-
-        // --- Charting Utilities ---
+        // --- Chart Utilities ---
         function createMiniChart(deviceId, history) {
-            // Placeholder - needs actual data structure from worker/device detail
-            // const canvas = document.getElementById(`mini-chart-${deviceId}`);
-            // if (!canvas || !Array.isArray(history) || history.length === 0) return;
-            // destroyChart(chartInstances[deviceId]); // Destroy old if exists
-            // const ctx = canvas.getContext('2d');
-            // // ... prepare labels/data from history ...
-            // chartInstances[deviceId] = new Chart(ctx, { /* ... mini chart config ... */ });
-             const container = document.getElementById(`mini-chart-container-${deviceId}`);
-             if (container) {
-                container.innerHTML = '<small class="text-muted d-block text-center pt-3">Mini-chart data not available</small>';
-             }
+            const container=document.getElementById(`mini-chart-container-${deviceId}`);
+            if(container)container.innerHTML='<small class="text-muted d-block text-center pt-3">Mini-chart data not available</small>';
         }
-
-         function commonChartOptions(titleText, xLabel, yLabel, scalesOverride = {}) {
-             const options = {
-                 responsive: true,
-                 maintainAspectRatio: false,
-                 interaction: { mode: 'index', intersect: false },
-                 plugins: {
-                     title: { display: !!titleText, text: titleText, padding: { bottom: 10 } },
-                     legend: { display: true, position: 'top' }, // Default legend display
-                     tooltip: { mode: 'index', intersect: false }
-                 },
-                 scales: {
-                     x: { title: { display: !!xLabel, text: xLabel } },
-                     y: { // Default Y-axis (can be overridden)
-                         title: { display: !!yLabel, text: yLabel },
-                         beginAtZero: false // Default, often overridden
-                     },
-                     // Merge in overrides
-                     ...scalesOverride
-                 }
-             };
-             // Adjust legend display based on number of datasets
-             options.plugins.legend.display = (options.data?.datasets?.length ?? 0) > 1;
-             return options;
-         }
-
-
-        function destroyChart(chartInstance) {
-            if (chartInstance) {
-                chartInstance.destroy();
-            }
+        function commonChartOptions(titleText,xLabel,yLabel,scalesOverride={}){
+            const opts={responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{title:{display:!!titleText,text:titleText,padding:{bottom:10}},legend:{display:true,position:'top'},tooltip:{mode:'index',intersect:false}},scales:{x:{title:{display:!!xLabel,text:xLabel}},y:{title:{display:!!yLabel,text:yLabel},beginAtZero:false},...scalesOverride}};
+            opts.plugins.legend.display=(opts.data?.datasets?.length??0)>1;
+            return opts;
         }
-
-        function destroyAllMiniCharts() {
-            Object.values(chartInstances).forEach(chart => destroyChart(chart));
-            chartInstances = {};
-        }
-
-        function clearAllCharts() {
-             destroyAllMiniCharts();
-             destroyChart(detailFlowChart); detailFlowChart = null;
-             destroyChart(detailProbeChart); detailProbeChart = null;
-             destroyChart(historyChart); historyChart = null;
-        }
+        function destroyChart(chart){if(chart)chart.destroy();}
+        function destroyAllMiniCharts(){Object.values(chartInstances).forEach(destroyChart);chartInstances={};}
+        function clearAllCharts(){destroyAllMiniCharts();destroyChart(detailFlowChart);detailFlowChart=null;destroyChart(detailProbeChart);detailProbeChart=null;destroyChart(historyChart);historyChart=null;}
 
         // --- Auto Refresh & Visibility ---
-        function startAutoRefresh() {
-            stopAutoRefresh(); // Clear any existing timer first
-            if (!AUTO_REFRESH_INTERVAL || AUTO_REFRESH_INTERVAL < 10000) { // Safety check
-                 console.log("Auto-refresh disabled or interval too short.");
-                 return;
-            }
-            console.log(`Starting auto-refresh interval: ${AUTO_REFRESH_INTERVAL / 1000} seconds.`);
-            autoRefreshTimer = setInterval(() => {
-                if (isTabVisible && apiKey && DOMElements.overviewSection.classList.contains('d-none') === false) { // Only refresh overview when visible
-                    console.log("Auto-refreshing device list...");
-                    refreshDeviceList();
-                } else {
-                    console.log("Auto-refresh skipped (Tab hidden, logged out, or not on overview).");
-                }
-            }, AUTO_REFRESH_INTERVAL);
-        }
+        function startAutoRefresh(){stopAutoRefresh();if(AUTO_REFRESH_INTERVAL<10000)return;autoRefreshTimer=setInterval(()=>{if(isTabVisible&&loggedInUser&&DOMElements.overviewSection.classList.contains('d-none')===false){refreshDeviceList();}},AUTO_REFRESH_INTERVAL);}        
+        function stopAutoRefresh(){if(autoRefreshTimer){clearInterval(autoRefreshTimer);autoRefreshTimer=null;}}
+        function handleVisibilityChange(){isTabVisible=document.visibilityState==='visible';if(isTabVisible&&loggedInUser){startAutoRefresh();}}
 
-        function stopAutoRefresh() {
-            if (autoRefreshTimer) {
-                clearInterval(autoRefreshTimer);
-                autoRefreshTimer = null;
-                console.log("Auto-refresh stopped.");
-            }
-        }
-
-        function handleVisibilityChange() {
-            isTabVisible = document.visibilityState === 'visible';
-            console.log(`Tab visibility changed: ${isTabVisible ? 'Visible' : 'Hidden'}`);
-            if (isTabVisible && apiKey) {
-                console.log("Tab visible, potentially refreshing data...");
-                startAutoRefresh(); // Restart timer just in case
-                // Optional: Force refresh immediately on becoming visible
-                // if (DOMElements.overviewSection.classList.contains('d-none') === false) {
-                //    refreshDeviceList(true);
-                // }
-            } else if (!isTabVisible) {
-                // Don't stop the timer, just let it skip refreshes while hidden
-                // stopAutoRefresh(); // Or stop it completely if preferred
-            }
-        }
-
-
-        // --- Utilities ---
-        function formatDateTime(dateString) {
-            if (!dateString) return 'N/A';
-            try {
-                const date = new Date(dateString);
-                if (isNaN(date.getTime())) return 'Invalid Date';
-                // Example format: Jan 5, 2024, 2:30 PM
-                return date.toLocaleString(undefined, {
-                    year: 'numeric', month: 'short', day: 'numeric',
-                    hour: 'numeric', minute: '2-digit', hour12: true
-                });
-            } catch (e) { return 'Date Error'; }
-        }
-
-        function formatTime(dateString) {
-             if (!dateString) return 'N/A';
-             try {
-                const date = new Date(dateString);
-                if (isNaN(date.getTime())) return 'Invalid Time';
-                return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true });
-            } catch (e) { return 'Time Error'; }
-        }
-
-         function formatDate(dateString) {
-            if (!dateString) return 'N/A';
-            try {
-                const date = new Date(dateString);
-                if (isNaN(date.getTime())) return 'Invalid Date';
-                return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-            } catch (e) { return 'Date Error'; }
-        }
-
-        function getTimeDifference(timestamp) {
-            if (!timestamp) return Infinity;
-            try {
-                const date = new Date(timestamp);
-                if (isNaN(date.getTime())) return Infinity;
-                return (Date.now() - date.getTime()) / (1000 * 60); // Difference in minutes
-            } catch (e) { return Infinity; }
-        }
-
-        function getRelativeTimeString(dateString) {
-            if (!dateString) return 'never';
-            try {
-                const date = new Date(dateString);
-                if (isNaN(date.getTime())) return 'invalid date';
-                const diffMin = getTimeDifference(dateString);
-
-                if (diffMin < 1) return 'just now';
-                if (diffMin < 60) return `${Math.floor(diffMin)} min ago`;
-                const diffHour = Math.floor(diffMin / 60);
-                if (diffHour === 1) return `1 hour ago`;
-                if (diffHour < 24) return `${diffHour} hours ago`;
-                const diffDay = Math.floor(diffHour / 24);
-                if (diffDay === 1) return `yesterday`;
-                if (diffDay < 7) return `${diffDay} days ago`;
-                return formatDate(dateString); // Fallback for older dates
-            } catch (e) { return 'time error'; }
-        }
-
-        function formatDateForFilename(date) {
-            return date.toISOString().split('T')[0]; // YYYY-MM-DD
-        }
-
-        function showLoading(message = "Loading...") {
-            DOMElements.loadingMessage.textContent = message;
-            DOMElements.loadingIndicator.style.display = 'flex';
-        }
-
-        function hideLoading() {
-            DOMElements.loadingIndicator.style.display = 'none';
-        }
-
-        function showToastError(message) {
-            console.error("Toast Error:", message);
-            DOMElements.toastMessage.textContent = message;
-             if (errorToast) { // Check if toast was initialized
-                errorToast.show();
-             } else { // Fallback if toast init failed
-                alert("Error: " + message);
-             }
-        }
-
+        // --- Utility Functions ---
+        function formatDateTime(dateString){if(!dateString)return 'N/A';const d=new Date(dateString);if(isNaN(d))return 'Invalid Date';return d.toLocaleString(undefined,{year:'numeric',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true});}
+        function formatTime(dateString){if(!dateString)return 'N/A';const d=new Date(dateString);if(isNaN(d))return 'Invalid Time';return d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit',hour12:true});}
+        function formatDate(dateString){if(!dateString)return 'N/A';const d=new Date(dateString);if(isNaN(d))return 'Invalid Date';return d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});}        
+        function getTimeDifference(timestamp){if(!timestamp)return Infinity;const d=new Date(timestamp);if(isNaN(d))return Infinity;return (Date.now()-d.getTime())/(1000*60);}        
+        function getRelativeTimeString(dateString){if(!dateString)return 'never';const diff=getTimeDifference(dateString);if(diff<1)return 'just now';if(diff<60)return `${Math.floor(diff)} min ago`;const h=Math.floor(diff/60);if(h===1)return '1 hour ago';if(h<24)return `${h} hours ago`;const d=Math.floor(h/24);if(d===1)return 'yesterday';if(d<7)return `${d} days ago`;return formatDate(dateString);}        
+        function formatDateForFilename(date){return date.toISOString().split('T')[0];}
+        function showLoading(message="Loading..."){DOMElements.loadingMessage.textContent=message;DOMElements.loadingIndicator.style.display='flex';}
+        function hideLoading(){DOMElements.loadingIndicator.style.display='none';}
+        function showToastError(message){DOMElements.toastMessage.textContent=message;errorToast?errorToast.show():alert("Error: "+message);}    
     </script>
 </body>
 </html>
