@@ -274,14 +274,6 @@
                                     <option value="" selected>Select your device...</option>
                                 </select>
                             </div>
-                            <div class="col-md-3 col-lg-2">
-                                <label for="historyStartDateInput" class="form-label">Start Date</label>
-                                <input type="date" id="historyStartDateInput" class="form-control form-control-sm">
-                            </div>
-                            <div class="col-md-3 col-lg-2">
-                                <label for="historyEndDateInput" class="form-label">End Date</label>
-                                <input type="date" id="historyEndDateInput" class="form-control form-control-sm">
-                            </div>
                             <div class="col-md-2 col-lg-2">
                                 <label for="historyLimitSelect" class="form-label">Max Entries</label>
                                 <select id="historyLimitSelect" class="form-select form-select-sm">
@@ -1130,15 +1122,11 @@
         async function fetchHistoricalData() {
             const deviceId = DOMElements.historyDeviceSelect.value;
             if (!deviceId) { showToastError("Please select a device."); return; }
-            const startDate = DOMElements.historyStartDateInput.value;
-            const endDate = DOMElements.historyEndDateInput.value;
             const limit = DOMElements.historyLimitSelect.value;
             resetHistoryView();
             showLoading("Fetching history...");
             try {
                 let url=`${API_ENDPOINT}/devices?deviceId=${deviceId}&limit=${limit}`;
-                if(startDate) url+=`&startDate=${startDate}`;
-                if(endDate){const end=new Date(endDate);end.setDate(end.getDate()+1);url+=`&endDate=${end.toISOString().split('T')[0]}`;}
                 const result=await fetchWithAuth(url);
                 if(result && result.success && Array.isArray(result.data)){
                     let entries=[];result.data.forEach(file=>{if(Array.isArray(file.logData))entries=entries.concat(file.logData);});
