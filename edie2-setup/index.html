@@ -10,10 +10,13 @@
       rel="stylesheet"
     />
     <style>
-      /* Optional: Add minor custom styles if needed */
+      /* Base typography */
       body {
-        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont,
+          'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
+          'Helvetica Neue', sans-serif;
       }
+      /* Code block styling */
       code {
         background-color: #e5e7eb; /* gray-200 */
         padding: 0.1rem 0.4rem;
@@ -21,12 +24,13 @@
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.9em;
       }
+      /* SVG icon sizing */
       .icon {
-          display: inline-block;
-          width: 1.25em;
-          height: 1.25em;
-          margin-right: 0.5em;
-          vertical-align: text-bottom;
+        display: inline-block;
+        width: 1.25em;
+        height: 1.25em;
+        margin-right: 0.5em;
+        vertical-align: text-bottom;
       }
     </style>
   </head>
@@ -45,27 +49,74 @@
     <!-- Babel for JSX compilation -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Your Updated React code -->
     <script type="text/babel">
       "use strict";
 
       const { useState } = React;
 
-      // Simple SVG Icon components (can be expanded)
-      // ***** USE ACTUAL => and > ******
+      //
+      // Icon components
+      //
       const WifiIcon = () => (
-        <svg className="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071a10 10 0 0114.142 0M1.394 9.393a15 15 0 0121.213 0"></path></svg>
+        <svg
+          className="icon"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071a10 10 0 0114.142 0M1.394 9.393a15 15 0 0121.213 0"
+          ></path>
+        </svg>
       );
       const SettingsIcon = () => (
-        <svg className="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+        <svg
+          className="icon"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+          ></path>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+          ></path>
+        </svg>
       );
       const WarningIcon = () => (
-        <svg className="icon text-red-500" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"></path></svg>
+        <svg className="icon text-red-500" viewBox="0 0 20 20" fill="currentColor">
+          <path
+            fillRule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+            clipRule="evenodd"
+          ></path>
+        </svg>
       );
       const InfoIcon = () => (
-          <svg className="icon text-blue-500" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"></path></svg>
+        <svg className="icon text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+          <path
+            fillRule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+            clipRule="evenodd"
+          ></path>
+        </svg>
       );
-      // ***** USE ACTUAL => and { } ******
+
+      //
+      // Main component
+      //
       const EdieControllerInstructions = () => {
         const [activeSection, setActiveSection] = useState('initial');
 
@@ -82,9 +133,8 @@
         ];
 
         return (
-          // ***** USE ACTUAL > ******
           <div className="bg-gray-100 min-h-screen">
-
+            {/* Header */}
             <header className="bg-gradient-to-r from-blue-700 to-blue-900 text-white p-6 shadow-lg relative">
               <div className="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded-full shadow-sm font-semibold tracking-wide">
                 BETA
@@ -94,16 +144,18 @@
             </header>
 
             <div className="container mx-auto p-6">
-              {/* Beta Status Warning */}
+              {/* Beta advisory */}
               <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-8 rounded-r-lg shadow-md" role="alert">
-                  <div className="flex items-center">
-                      {/* ***** USE ACTUAL /> ****** */}
-                      <WarningIcon />
-                      <div>
-                          <p className="font-bold">BETA STATUS ADVISORY</p>
-                          <p>This controller firmware is under active development. Core functionality and safety features are implemented, but advanced features (like OTA updates or Cloudflare integration) may be unstable or incomplete. Always verify system operation and monitor chemical dosing independently.</p>
-                      </div>
+                <div className="flex items-center">
+                  <WarningIcon />
+                  <div>
+                    <p className="font-bold">BETA STATUS ADVISORY</p>
+                    <p>
+                      This controller firmware is under active development. Core functionality and safety features are implemented,
+                      but advanced features may be unstable or incomplete. Always verify system operation and monitor dosing independently.
+                    </p>
                   </div>
+                </div>
               </div>
 
               <div className="flex flex-col lg:flex-row gap-8">
@@ -112,10 +164,8 @@
                   <div className="bg-white rounded-lg shadow-lg p-4 sticky top-6">
                     <h2 className="text-xl font-bold mb-4 text-blue-800 border-b border-gray-200 pb-2">Navigation</h2>
                     <ul className="space-y-1">
-                       {/* ***** USE ACTUAL => ****** */}
-                      {sections.map(section => (
+                      {sections.map((section) => (
                         <li key={section.id}>
-                           {/* ***** USE ACTUAL => ****** */}
                           <button
                             onClick={() => setActiveSection(section.id)}
                             className={`w-full text-left p-3 rounded-md hover:bg-blue-100 hover:text-blue-800 transition-colors duration-150 ${
@@ -130,59 +180,67 @@
                   </div>
                 </nav>
 
-                {/* Main Content Area */}
+                {/* Main Content */}
                 <main className="lg:w-3/4">
-                  {/* ***** USE ACTUAL > ****** */}
                   <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
                     {activeSection === 'initial' && (
                       <section>
                         <h2 className="text-2xl font-bold text-blue-800 mb-6 border-b pb-2">1. Initial Connection & Access</h2>
-
                         <div className="space-y-6">
+                          {/* Step 1 */}
                           <div className="prose max-w-none">
-                             {/* ***** USE ACTUAL > ****** */}
-                            <h3 className="text-lg font-semibold text-gray-800 flex items-center"><span className="text-3xl font-bold text-blue-600 mr-3">①</span> Power Up</h3>
-                            <p>Connect the controller to a suitable power source. The LCD will display "EDIE Controller", followed by its Serial ID (e.g., <code>EM1001</code>) and "Initializing...".</p>
+                            <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                              <span className="text-3xl font-bold text-blue-600 mr-3">①</span> Power Up
+                            </h3>
+                            <p>
+                              Connect the controller to a suitable power source. The LCD will display “EDIE Controller”,
+                              followed by its Serial ID (e.g., <code>EM1001</code>) and “Initializing…”.
+                            </p>
                           </div>
 
+                          {/* Step 2 */}
                           <div className="prose max-w-none">
-                              <h3 className="text-lg font-semibold text-gray-800 flex items-center"><span className="text-3xl font-bold text-blue-600 mr-3">②</span> Connect via Wi-Fi (AP Mode)</h3>
-                              <p>By default, the controller starts in Access Point (AP) mode. Use your computer or mobile device to:</p>
-                              <ul className="list-disc pl-5 space-y-1">
-                                  <li>Scan for Wi-Fi networks.</li>
-                                    {/* ***** USE ACTUAL > ****** */}
-                                  <li>Find the network named after the controller's <strong>Serial ID</strong> (Default: <code>EM1001</code>).</li>
-                                  <li>Connect to this network using the default password: <code>PASSWORD</code> (case-sensitive).</li>
-                              </ul>
-                          </div>
-
-                           <div className="prose max-w-none">
-                              <h3 className="text-lg font-semibold text-gray-800 flex items-center"><span className="text-3xl font-bold text-blue-600 mr-3">③</span> Access the Web Interface (Captive Portal)</h3>
-                              <p>Once connected to the controller's Wi-Fi:</p>
-                              <ul className="list-disc pl-5 space-y-1">
-                                  <li>Open a web browser (like Chrome, Firefox, Safari).</li>
-                                    {/* ***** USE ACTUAL > ****** */}
-                                  <li>Try to navigate to <strong>any external website</strong> (e.g., <code>http://google.com</code>).</li>
-                                  <li>The controller's <strong>Captive Portal</strong> should automatically redirect your browser to its setup page.</li>
-                                  <li>If automatic redirection fails, manually navigate to the controller's IP address: <code>http://192.168.4.1</code></li>
-                                    {/* ***** USE ACTUAL > ****** */}
-                                  <li>Alternatively, try the mDNS address (if your device supports it): <code>http://[serialid].local</code> (e.g., <code>http://EM1001.local</code>)</li>
-                                  <li>The EDIE Controller dashboard web interface should load.</li>
-                              </ul>
-                           </div>
-
-                          {/* Quick Reference Box */}
-                          <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg shadow-sm">
-                             {/* ***** USE ACTUAL /> ****** */}
-                            <h4 className="font-semibold text-blue-700 flex items-center"><InfoIcon /> Default PINs (Passwords)</h4>
-                            <p className="text-sm text-gray-600 mb-2">These are the initial 4-digit PINs required to access protected sections of the web interface.</p>
-                            <ul className="mt-1 space-y-1 text-sm">
-                               {/* ***** USE ACTUAL > ****** */}
-                              <li><span className="font-medium text-gray-800">User Level PIN:</span> <code>1111</code></li>
-                              <li><span className="font-medium text-gray-800">Tech Level PIN:</span> <code>2222</code></li>
-                              <li><span className="font-medium text-gray-800">Master Level PIN:</span> <code>9999</code></li>
+                            <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                              <span className="text-3xl font-bold text-blue-600 mr-3">②</span> Connect via Wi‑Fi (AP Mode)
+                            </h3>
+                            <p>By default, the controller starts in Access Point (AP) mode. Use your device to:</p>
+                            <ul className="list-disc pl-5 space-y-1">
+                              <li>Scan for Wi‑Fi networks.</li>
+                              <li>Find the network named after the controller’s <strong>Serial ID</strong> (Default: <code>EM1001</code>).</li>
+                              <li>Connect using the default password: <code>PASSWORD</code> (case‑sensitive).</li>
                             </ul>
-                            <p className="mt-2 text-xs text-gray-500">It is strongly recommended to change these default PINs in the Settings tab for security.</p>
+                          </div>
+
+                          {/* Step 3 */}
+                          <div className="prose max-w-none">
+                            <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                              <span className="text-3xl font-bold text-blue-600 mr-3">③</span> Access the Web Interface (Captive Portal)
+                            </h3>
+                            <p>Once connected to the controller’s Wi‑Fi:</p>
+                            <ul className="list-disc pl-5 space-y-1">
+                              <li>Open a web browser (Chrome, Firefox, Safari).</li>
+                              <li>Navigate to any external site (e.g., <code>http://google.com</code>); you’ll be redirected.</li>
+                              <li>If not, go to <code>http://192.168.4.1</code> manually.</li>
+                              <li>Or use mDNS: <code>http://EM1001.local</code>.</li>
+                            </ul>
+                          </div>
+
+                          {/* Quick Reference */}
+                          <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg shadow-sm">
+                            <h4 className="font-semibold text-blue-700 flex items-center">
+                              <InfoIcon /> Default PINs (Passwords)
+                            </h4>
+                            <p className="text-sm text-gray-600 mb-2">
+                              Initial 4‑digit PINs to access protected web sections:
+                            </p>
+                            <ul className="mt-1 space-y-1 text-sm">
+                              <li><strong>User Level PIN:</strong> <code>1111</code></li>
+                              <li><strong>Tech Level PIN:</strong> <code>2222</code></li>
+                              <li><strong>Master Level PIN:</strong> <code>9999</code></li>
+                            </ul>
+                            <p className="mt-2 text-xs text-gray-500">
+                              Strongly recommended to change these in Settings.
+                            </p>
                           </div>
                         </div>
                       </section>
@@ -191,459 +249,517 @@
                     {activeSection === 'setup' && (
                       <section>
                         <h2 className="text-2xl font-bold text-blue-800 mb-6 border-b pb-2">2. Basic Setup Configuration</h2>
-                        <p className="mb-6 text-gray-600">Configure core operational parameters and network settings.</p>
+                        <p className="mb-6 text-gray-600">
+                          Configure core operational parameters and network settings.
+                        </p>
 
-                        <div className="space-y-8">
-                          {/* Parameters Section */}
-                          <div className="border rounded-lg p-4 shadow-sm">
-                            {/* ***** USE ACTUAL /> and > ****** */}
-                            <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center"><SettingsIcon /> System Parameters <span className="text-sm font-normal text-gray-500 ml-2">(User PIN: <code>1111</code> required)</span></h3>
-                            <p className="text-sm text-gray-600 mb-4">Navigate to the <strong className="text-blue-700">Parameters</strong> tab and enter the User PIN when prompted. Adjust the following settings based on your specific application:</p>
-                            <div className="overflow-x-auto">
-                              <table className="min-w-full border border-gray-200 text-sm">
-                                <thead className="bg-gray-100">
-                                  <tr>
-                                    <th className="px-4 py-2 border text-left font-semibold text-gray-600">Parameter</th>
-                                    <th className="px-4 py-2 border text-left font-semibold text-gray-600">Description</th>
-                                    <th className="px-4 py-2 border text-left font-semibold text-gray-600">Typical Range</th>
-                                  </tr>
-                                </thead>
-                                <tbody className="bg-white">
-                                  <tr>
-                                    <td className="px-4 py-2 border font-medium">Desired PPM</td>
-                                    <td className="px-4 py-2 border">Target chemical concentration</td>
-                                     {/* ***** USE ACTUAL > ****** */}
-                                    <td className="px-4 py-2 border"><code>3</code> - <code>500</code></td>
-                                  </tr>
-                                  <tr className="bg-gray-50">
-                                    <td className="px-4 py-2 border font-medium">Product Selection</td>
-                                    <td className="px-4 py-2 border">Choose your chemical product (impacts dosing calculation)</td>
-                                    <td className="px-4 py-2 border">List (PRO-OXINE, etc.)</td>
-                                  </tr>
-                                  <tr>
-                                    <td className="px-4 py-2 border font-medium">Product Acid Ratio</td>
-                                    <td className="px-4 py-2 border">Chemical:Acid ratio (e.g., 5.0 means 5 parts Chem to 1 part Acid)</td>
-                                    <td className="px-4 py-2 border"><code>0.1</code> - <code>50.0</code></td>
-                                  </tr>
-                                   <tr className="bg-gray-50">
-                                    <td className="px-4 py-2 border font-medium">Chem Pump Weight</td>
-                                    <td className="px-4 py-2 border">Max capacity of the primary chemical pump (GPH)</td>
-                                    <td className="px-4 py-2 border"><code>0.1</code> - <code>10.0</code></td>
-                                  </tr>
-                                  <tr>
-                                    <td className="px-4 py-2 border font-medium">Acid Stroke Volume</td>
-                                    <td className="px-4 py-2 border">Volume dosed per acid pump pulse (mL)</td>
-                                    <td className="px-4 py-2 border"><code>0.01</code> - <code>20.0</code></td>
-                                  </tr>
-                                </tbody>
-                              </table>
+                        {/* System Parameters */}
+                        <div className="border rounded-lg p-4 shadow-sm mb-8">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                            <SettingsIcon /> System Parameters
+                            <span className="text-sm font-normal text-gray-500 ml-2">(User PIN: <code>1111</code>)</span>
+                          </h3>
+                          <p className="text-sm text-gray-600 mb-4">
+                            In Parameters tab, enter User PIN and adjust:
+                          </p>
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full border border-gray-200 text-sm">
+                              <thead className="bg-gray-100">
+                                <tr>
+                                  <th className="px-4 py-2 border text-left font-semibold text-gray-600">Parameter</th>
+                                  <th className="px-4 py-2 border text-left font-semibold text-gray-600">Description</th>
+                                  <th className="px-4 py-2 border text-left font-semibold text-gray-600">Typical Range</th>
+                                </tr>
+                              </thead>
+                              <tbody className="bg-white">
+                                <tr>
+                                  <td className="px-4 py-2 border font-medium">Desired PPM</td>
+                                  <td className="px-4 py-2 border">Target chemical concentration</td>
+                                  <td className="px-4 py-2 border"><code>3</code> – <code>500</code></td>
+                                </tr>
+                                <tr className="bg-gray-50">
+                                  <td className="px-4 py-2 border font-medium">Product Selection</td>
+                                  <td className="px-4 py-2 border">Choose chemical product</td>
+                                  <td className="px-4 py-2 border">List (PRO-OXINE, etc.)</td>
+                                </tr>
+                                <tr>
+                                  <td className="px-4 py-2 border font-medium">Product Acid Ratio</td>
+                                  <td className="px-4 py-2 border">Chem:Acid ratio (e.g., 5.0 = 5 parts Chem to 1 part Acid)</td>
+                                  <td className="px-4 py-2 border"><code>0.1</code> – <code>50.0</code></td>
+                                </tr>
+                                <tr className="bg-gray-50">
+                                  <td className="px-4 py-2 border font-medium">Chem Pump Weight</td>
+                                  <td className="px-4 py-2 border">Max pump capacity (GPH)</td>
+                                  <td className="px-4 py-2 border"><code>0.1</code> – <code>10.0</code></td>
+                                </tr>
+                                <tr>
+                                  <td className="px-4 py-2 border font-medium">Acid Stroke Volume</td>
+                                  <td className="px-4 py-2 border">Volume per acid pump pulse (mL)</td>
+                                  <td className="px-4 py-2 border"><code>0.01</code> – <code>20.0</code></td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                          <button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors">
+                            Save Parameters
+                          </button>
+                        </div>
+
+                        {/* Network & Security */}
+                        <div className="border rounded-lg p-4 shadow-sm">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                            <WifiIcon /> Network & Security
+                            <span className="text-sm font-normal text-gray-500 ml-2">(Tech PIN: <code>2222</code> / Master PIN: <code>9999</code>)</span>
+                          </h3>
+                          <p className="text-sm text-gray-600 mb-4">
+                            In Settings tab, enter Tech or Master PIN.
+                          </p>
+
+                          {/* AP vs STA modes */}
+                          <div className="space-y-4 mb-4">
+                            <div>
+                              <h4 className="font-medium text-gray-700">Network Configuration</h4>
+                              <ul className="list-disc pl-5 text-sm text-gray-600 mt-2 space-y-1">
+                                <li><strong>Access Point (AP) Mode:</strong>
+                                  <ul className="list-circle pl-5 text-xs">
+                                    <li>Controller creates its own Wi‑Fi network.</li>
+                                    <li>SSID = Serial ID.</li>
+                                    <li>Set secure password (default: <code>PASSWORD</code>).</li>
+                                  </ul>
+                                </li>
+                                <li><strong>Station (STA) Mode:</strong>
+                                  <ul className="list-circle pl-5 text-xs">
+                                    <li>Controller joins existing network.</li>
+                                    <li>Enter your SSID & password.</li>
+                                  </ul>
+                                </li>
+                                <li>Enter Master PIN (<code>9999</code>) to save changes.</li>
+                                <li><strong className="text-red-600">Important:</strong> Saving restarts the controller; reconnect afterwards.</li>
+                              </ul>
+                              <button className="mt-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors">
+                                Save Network Settings
+                              </button>
                             </div>
-                            <button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors">Save Parameters</button>
+
+                            <div>
+                              <h4 className="font-medium text-gray-700">Change Security PINs</h4>
+                              <ul className="list-disc pl-5 text-sm text-gray-600 mt-2 space-y-1">
+                                <li>Change User, Tech, Master PINs here.</li>
+                                <li>Enter current Master PIN (<code>9999</code>) to authorize.</li>
+                                <li>Enter new 4‑digit PIN and confirm.</li>
+                                <li>Master PIN cannot be <code>0000</code>.</li>
+                              </ul>
+                              <button className="mt-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors">
+                                Save Security PINs
+                              </button>
+                            </div>
                           </div>
-
-                          {/* Network & Security Section */}
-                          <div className="border rounded-lg p-4 shadow-sm">
-                             {/* ***** USE ACTUAL /> and > ****** */}
-                             <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center"><WifiIcon /> Network & Security <span className="text-sm font-normal text-gray-500 ml-2">(Tech PIN: <code>2222</code> / Master PIN: <code>9999</code> required)</span></h3>
-                             <p className="text-sm text-gray-600 mb-4">Navigate to the <strong className="text-blue-700">Settings</strong> tab. Enter the Tech or Master PIN when prompted.</p>
-
-                             <div className="space-y-4">
-                                <div>
-                                    <h4 className="font-medium text-gray-700">Network Configuration (Tech/Master Access)</h4>
-                                    <ul className="list-disc pl-5 text-sm text-gray-600 mt-2 space-y-1">
-                                        <li><strong>Access Point (AP) Mode:</strong>
-                                            <ul className="list-circle pl-5 text-xs">
-                                                <li>Controller creates its own Wi-Fi network.</li>
-                                                <li>SSID is fixed to the device <span className="font-medium">Serial ID</span>.</li>
-                                                <li>Set a secure Wi-Fi password (default: <code>PASSWORD</code>).</li>
-                                            </ul>
-                                        </li>
-                                        <li><strong>Station (STA) Mode:</strong>
-                                            <ul className="list-circle pl-5 text-xs">
-                                                <li>Controller connects to your existing Wi-Fi network.</li>
-                                                <li>Enter your network's SSID and Password accurately.</li>
-                                            </ul>
-                                        </li>
-                                         {/* ***** USE ACTUAL > ****** */}
-                                         <li>Enter the <span className="font-medium">Master PIN</span> (<code>9999</code>) to save network changes.</li>
-                                        <li><strong className="text-red-600">Important:</strong> Saving network changes <span className="font-medium">will restart</span> the controller. Reconnect accordingly.</li>
-                                    </ul>
-                                    <button className="mt-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors">Save Network Settings</button>
-                                </div>
-
-                                <div>
-                                    <h4 className="font-medium text-gray-700">Security PINs (Master Access Only)</h4>
-                                    <ul className="list-disc pl-5 text-sm text-gray-600 mt-2 space-y-1">
-                                        <li>You can change the User, Tech, and Master PINs here.</li>
-                                         {/* ***** USE ACTUAL > ****** */}
-                                        <li>Enter the <span className="font-medium">Current Master PIN</span> (<code>9999</code> by default) to authorize changes.</li>
-                                        <li>Enter the new 4-digit PIN and confirm it for each level you wish to change.</li>
-                                        <li>Master PIN cannot be <code>0000</code>.</li>
-                                    </ul>
-                                    <button className="mt-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors">Save Security PINs</button>
-                                </div>
-                             </div>
-                          </div>
-
                         </div>
                       </section>
                     )}
 
-                     {activeSection === 'calibration' && (
+                    {activeSection === 'calibration' && (
                       <section>
-                         {/* ***** USE ACTUAL > ****** */}
-                        <h2 className="text-2xl font-bold text-blue-800 mb-6 border-b pb-2">3. Sensor & Output Calibration</h2>
-                        <p className="mb-6 text-gray-600">Accurate calibration is crucial for proper operation. Navigate to the <strong className="text-blue-700">Calibration</strong> tab. <span className="font-medium">(Tech PIN: <code>2222</code> required)</span></p>
+                        <h2 className="text-2xl font-bold text-blue-800 mb-6 border-b pb-2">
+                          3. Sensor & Output Calibration
+                        </h2>
+                        <p className="mb-6 text-gray-600">
+                          Accurate calibration is crucial. In Calibration tab (Tech PIN: <code>2222</code>).
+                        </p>
 
-                        <div className="space-y-8">
-                          {/* Flow Sensor Calibration */}
-                          <div className="border rounded-lg p-4 shadow-sm">
-                            <h3 className="text-lg font-semibold text-gray-800 mb-3">Flow Sensor Calibration</h3>
-                             <p className="text-sm text-gray-600 mb-4">Ensure the flow meter is installed correctly and water is flowing at known rates for calibration.</p>
-                            <ul className="list-disc pl-5 text-sm text-gray-600 space-y-2">
-                               {/* ***** USE ACTUAL > ****** */}
-                               <li><strong>Set Max Flow Rate (GPM):</strong> Enter the highest flow rate your system will experience (e.g., <code>100</code> GPM). This sets the upper range for display and calculations.</li>
-                              <li><strong>Set Min Calibrate Flow (Raw):</strong> While running water at the lowest typical operating flow, note the "Raw ADC" value shown on the gauge and enter it here.</li>
-                              <li><strong>Set Max Calibrate Flow (Raw):</strong> While running water at the highest typical operating flow, note the "Raw ADC" value shown on the gauge and enter it here.</li>
+                        {/* Flow Sensor Calibration */}
+                        <div className="border rounded-lg p-4 shadow-sm mb-8">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-3">Flow Sensor Calibration</h3>
+                          <p className="text-sm text-gray-600 mb-4">
+                            Ensure flow meter is installed and water flows at known rates.
+                          </p>
+                          <ul className="list-disc pl-5 text-sm text-gray-600 space-y-2">
+                            <li>
+                              <strong>Set Max Flow Rate (GPM):</strong> Enter highest expected flow (e.g., <code>100</code>).
+                            </li>
+                            <li>
+                              <strong>Set Min Calibrate Flow (Raw):</strong> Run at lowest flow, note "Raw ADC", enter value.
+                            </li>
+                            <li>
+                              <strong>Set Max Calibrate Flow (Raw):</strong> Run at highest flow, note "Raw ADC", enter value.
+                            </li>
+                          </ul>
+                          <button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors">
+                            Save Flow Calibration
+                          </button>
+                        </div>
+
+                        {/* DAC Output Calibration */}
+                        <div className="border rounded-lg p-4 shadow-sm mb-8">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                            DAC (4-20mA / 0-20mA) Output Calibration
+                          </h3>
+                          <p className="text-sm text-gray-600 mb-4">
+                            Calibrate analog outputs. Use a multimeter capable of measuring mA.
+                          </p>
+                          <div className="space-y-3 text-sm">
+                            <p><strong>Chem Pump (Ch0) / Flow Mirror (Ch2) - 4-20mA:</strong></p>
+                            <ul className="list-disc pl-5 text-gray-600 space-y-1">
+                              <li>Connect meter in series with output.</li>
+                              <li>Click "Test 4mA", adjust "DAC Value for 4mA" until meter reads 4.0mA.</li>
+                              <li>Click "Test 20mA", adjust "DAC Value for 20mA" until meter reads 20.0mA.</li>
+                              <li>Click "Stop Test" between adjustments.</li>
                             </ul>
-                             <button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors">Save Flow Calibration</button>
-                          </div>
-
-                          {/* DAC Output Calibration */}
-                          <div className="border rounded-lg p-4 shadow-sm">
-                            <h3 className="text-lg font-semibold text-gray-800 mb-3">DAC (4-20mA / 0-20mA) Output Calibration</h3>
-                            <p className="text-sm text-gray-600 mb-4">Calibrate the analog outputs used for pump control and signal mirroring. Requires a multimeter capable of measuring mA.</p>
-                            <div className="space-y-3 text-sm">
-                                <p><strong>Chem Pump (Ch0) / Flow Mirror (Ch2) - 4-20mA:</strong></p>
-                                <ul className="list-disc pl-5 text-gray-600 space-y-1">
-                                    <li>Connect multimeter in series with the respective output.</li>
-                                    <li>Click "Test 4mA". Adjust "DAC Value for 4mA" until the meter reads 4.0mA.</li>
-                                    <li>Click "Test 20mA". Adjust "DAC Value for 20mA" until the meter reads 20.0mA.</li>
-                                    <li>Click "Stop Test" between adjustments.</li>
-                                </ul>
-                                <p><strong>PPM Output (Ch3) - 0-20mA:</strong></p>
-                                <ul className="list-disc pl-5 text-gray-600 space-y-1">
-                                     <li>Connect multimeter in series with the Ch3 output.</li>
-                                    <li>Click "Test 0mA". Adjust "DAC Value for 0mA" until the meter reads 0.0mA (or minimum).</li>
-                                    <li>Click "Test 20mA". Adjust "DAC Value for 20mA" until the meter reads 20.0mA.</li>
-                                    <li>Set the PPM values corresponding to 0mA and 20mA outputs (e.g., 0 PPM at 0mA, 20 PPM at 20mA).</li>
-                                    <li>Click "Stop Test" between adjustments.</li>
-                                </ul>
-                            </div>
-                             <button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors">Save All DAC Calibration</button>
-                          </div>
-
-                           {/* Probe Calibration */}
-                          <div className="border rounded-lg p-4 shadow-sm">
-                            <h3 className="text-lg font-semibold text-gray-800 mb-3">Probe Calibration (Probe One / Probe Two)</h3>
-                            <p className="text-sm text-gray-600 mb-4">Calibrate connected analog probes (pH, ORP, ClO2, etc.). Requires appropriate standard calibration solutions.</p>
-                            <ul className="list-disc pl-5 text-sm text-gray-600 space-y-2">
-                               {/* ***** USE ACTUAL > ****** */}
-                                <li><strong>Select Probe Type:</strong> Choose the type (pH, ORP, ClO2, Other, None). Default engineering ranges will populate based on type.</li>
-                                <li><strong>Set Cal Low (Raw) & Low Eng Value:</strong> Place the probe in the low standard solution. Note the "Raw ADC" value and enter it in "Calibration Low (Raw)". Enter the known value of the low standard in "Engineering Value at Low Cal".</li>
-                               <li><strong>Set Cal High (Raw) & High Eng Value:</strong> Place the probe in the high standard solution. Note the "Raw ADC" value and enter it in "Calibration High (Raw)". Enter the known value of the high standard in "Engineering Value at High Cal".</li>
-                                {/* ***** USE < ENTITIES HERE FOR TEXT DISPLAY ***** */}
-                                <li>Ensure Low Eng Value < High Eng Value and Low Raw < High Raw.</li>
+                            <p><strong>PPM Output (Ch3) - 0-20mA:</strong></p>
+                            <ul className="list-disc pl-5 text-gray-600 space-y-1">
+                              <li>Connect meter in series with Ch3 output.</li>
+                              <li>Click "Test 0mA", adjust "DAC Value for 0mA" until meter reads 0.0mA.</li>
+                              <li>Click "Test 20mA", adjust "DAC Value for 20mA" until meter reads 20.0mA.</li>
+                              <li>Set PPM values: 0 PPM at 0mA, 20 PPM at 20mA.</li>
+                              <li>Click "Stop Test" between adjustments.</li>
                             </ul>
-                            <button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors mr-2">Save Probe One Cal</button>
-                            <button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors">Save Probe Two Cal</button>
                           </div>
+                          <button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors">
+                            Save All DAC Calibration
+                          </button>
+                        </div>
 
-                          {/* Calibration Tips */}
-                           <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg shadow-sm">
-                             {/* ***** USE ACTUAL /> ****** */}
-                             <h4 className="font-semibold text-blue-700 flex items-center"><InfoIcon /> Calibration Tips</h4>
-                             <ul className="mt-2 space-y-1 text-sm text-gray-700 list-disc list-inside">
-                               <li>Allow sensors and system to stabilize before taking calibration readings.</li>
-                               <li>Use certified calibration standards for probes.</li>
-                               <li>Use an accurate flow meter or timed fill method for flow calibration references.</li>
-                               <li>Verify DAC output ranges with a calibrated multimeter.</li>
-                               <li>Document all final calibration values.</li>
-                             </ul>
-                           </div>
+                        {/* Probe Calibration */}
+                        <div className="border rounded-lg p-4 shadow-sm mb-8">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                            Probe Calibration (Probe One / Probe Two)
+                          </h3>
+                          <p className="text-sm text-gray-600 mb-4">
+                            Calibrate analog probes (pH, ORP, ClO2, etc.). Use certified solutions.
+                          </p>
+                          <ul className="list-disc pl-5 text-sm text-gray-600 space-y-2">
+                            <li>
+                              <strong>Select Probe Type:</strong> pH, ORP, ClO2, Other, None. Default ranges load.
+                            </li>
+                            <li>
+                              <strong>Set Cal Low (Raw) & Low Eng Value:</strong> Place in low standard, note "Raw ADC", enter it. Enter known low value.
+                            </li>
+                            <li>
+                              <strong>Set Cal High (Raw) & High Eng Value:</strong> Place in high standard, note "Raw ADC", enter it. Enter known high value.
+                            </li>
+                            <li>
+                              Ensure Low Eng Value {'<'} High Eng Value and Low Raw {'<'} High Raw.
+                            </li>
+                          </ul>
+                          <button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors mr-2">
+                            Save Probe One Cal
+                          </button>
+                          <button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors">
+                            Save Probe Two Cal
+                          </button>
+                        </div>
+
+                        {/* Calibration Tips */}
+                        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg shadow-sm">
+                          <h4 className="font-semibold text-blue-700 flex items-center">
+                            <InfoIcon /> Calibration Tips
+                          </h4>
+                          <ul className="mt-2 space-y-1 text-sm text-gray-700 list-disc list-inside">
+                            <li>Allow sensors to stabilize before readings.</li>
+                            <li>Use certified standards for probes.</li>
+                            <li>Use accurate flow meter or timed fill for flow calibration.</li>
+                            <li>Verify DAC ranges with a calibrated multimeter.</li>
+                            <li>Document final calibration values.</li>
+                          </ul>
                         </div>
                       </section>
                     )}
 
                     {activeSection === 'serialId' && (
                       <section>
-                        {/* ***** USE ACTUAL > ****** */}
-                        <h2 className="text-2xl font-bold text-blue-800 mb-6 border-b pb-2">4. Changing the Device Serial ID</h2>
-                        <p className="mb-6 text-gray-600">The Serial ID is the unique identifier for the controller. Changing it affects network identification and logging. <span className="font-medium">(Master PIN: <code>9999</code> required)</span></p>
+                        <h2 className="text-2xl font-bold text-blue-800 mb-6 border-b pb-2">
+                          4. Changing the Device Serial ID
+                        </h2>
+                        <p className="mb-6 text-gray-600">
+                          Changing the Serial ID affects network and logs. (Master PIN: <code>9999</code>)
+                        </p>
 
                         <div className="space-y-6">
-                          <div className="border rounded-lg p-4 shadow-sm">
-                             <h3 className="text-lg font-semibold text-gray-800 mb-3">Procedure</h3>
-                             <ol className="list-decimal pl-5 text-sm text-gray-600 space-y-2">
-                                  {/* ***** USE ACTUAL > ****** */}
-                                 <li>Navigate to the <strong className="text-blue-700">Settings</strong> tab.</li>
-                                 <li>Enter the Master PIN (<code>9999</code> by default) when prompted.</li>
-                                 <li>Locate the "Device Serial ID" section.</li>
-                                 <li>Enter the desired <span className="font-medium">New Serial ID</span>. It must be 3-16 characters long and contain only letters (a-z, A-Z), numbers (0-9), hyphens (-), and underscores (_).</li>
-                                  {/* ***** USE ACTUAL > ****** */}
-                                 <li>Enter the <span className="font-medium">Verification Code:</span> <code>1123</code>. This is a safety check.</li>
-                                 <li>Re-enter the <span className="font-medium">Master PIN</span>.</li>
-                                 <li>Click the <span className="font-medium text-red-600">Update Serial ID & Restart</span> button.</li>
-                             </ol>
+                          <div className="border rounded-lg p-4 shadow-sm mb-4">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-3">Procedure</h3>
+                            <ol className="list-decimal pl-5 text-sm text-gray-600 space-y-2">
+                              <li>Go to Settings tab.</li>
+                              <li>Enter Master PIN (<code>9999</code>).</li>
+                              <li>Locate “Device Serial ID” section.</li>
+                              <li>
+                                Enter new Serial ID (3–16 chars; letters, numbers, hyphens, underscores).
+                              </li>
+                              <li>Enter Verification Code: <code>1123</code>.</li>
+                              <li>Re-enter Master PIN.</li>
+                              <li>
+                                Click <span className="font-medium text-red-600">Update Serial ID & Restart</span>.
+                              </li>
+                            </ol>
                           </div>
 
-                           {/* Warning Box */}
-                           <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-r-lg shadow-md" role="alert">
-                               <div className="flex items-center">
-                                   {/* This SVG uses XML syntax, not JSX, so > is fine here */}
-                                   <svg className="icon text-yellow-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                       <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 3.001-1.742 3.001H4.42c-1.53 0-2.493-1.667-1.743-3.001l5.58-9.92zM10 13a1 1 0 110-2 1 1 0 010 2zm-1.75-5.75a.75.75 0 001.5 0v-2.5a.75.75 0 00-1.5 0v2.5z" clipRule="evenodd" />
-                                   </svg>
-                                   <div className="ml-3">
-                                       <p className="font-bold">Important Consequences of Changing Serial ID:</p>
-                                       <ul className="list-disc pl-5 text-sm mt-1">
-                                           {/* ***** USE ACTUAL > ****** */}
-                                           <li>The controller <span className="font-medium">will restart</span> immediately after saving.</li>
-                                           <li>If in <span className="font-medium">AP Mode</span>, the Wi-Fi Network Name (SSID) will change to the <span className="font-medium">new Serial ID</span>. You must reconnect your devices.</li>
-                                           <li>The mDNS address (e.g., <code>http://[new-id].local</code>) will change.</li>
-                                           <li>Future log files will use the new Serial ID.</li>
-                                       </ul>
-                                   </div>
-                               </div>
-                           </div>
+                          {/* Important consequences */}
+                          <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-r-lg shadow-md" role="alert">
+                            <div className="flex items-center">
+                              <svg className="icon text-yellow-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 3.001-1.742 3.001H4.42c-1.53 0-2.493-1.667-1.743-3.001l5.58-9.92zM10 13a1 1 0 110-2 1 1 0 010 2zm-1.75-5.75a.75.75 0 001.5 0v-2.5a.75.75 0 00-1.5 0v2.5z" clipRule="evenodd" />
+                              </svg>
+                              <div className="ml-3">
+                                <p className="font-bold">Important Consequences of Changing Serial ID:</p>
+                                <ul className="list-disc pl-5 text-sm mt-1">
+                                  <li>Controller will restart immediately.</li>
+                                  <li>AP Mode SSID changes to new Serial ID; reconnect required.</li>
+                                  <li>mDNS address changes (<code>http://[new-id].local</code>).</li>
+                                  <li>Future logs use the new Serial ID.</li>
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </section>
                     )}
 
                     {activeSection === 'data' && (
-                       <section>
-                         {/* ***** USE ACTUAL > ****** */}
-                        <h2 className="text-2xl font-bold text-blue-800 mb-6 border-b pb-2">5. Data Logging & Management</h2>
-                        <p className="mb-6 text-gray-600">The controller logs operational data periodically. Access these features on the <strong className="text-blue-700">History</strong> tab. <span className="font-medium">(User PIN: <code>1111</code> / Tech PIN: <code>2222</code> required)</span></p>
+                      <section>
+                        <h2 className="text-2xl font-bold text-blue-800 mb-6 border-b pb-2">
+                          5. Data Logging & Management
+                        </h2>
+                        <p className="mb-6 text-gray-600">
+                          Logs operational data. In History tab (User PIN: <code>1111</code>, Tech PIN: <code>2222</code>).
+                        </p>
 
-                        <div className="space-y-6">
-                           {/* Data Storage */}
-                           <div className="border rounded-lg p-4 shadow-sm">
-                               <h3 className="text-lg font-semibold text-gray-800 mb-3">Data Storage</h3>
-                               <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-                                   {/* ***** USE ACTUAL > ****** */}
-                                   <li><strong>Primary Storage (SD Card):</strong> If an SD card is inserted and functional, logs are written here in CSV format (<code>datalog.csv</code>).</li>
-                                   <li><strong>Backup Storage (Internal SPIFFS):</strong> If no SD card is present, logs are written to internal flash memory in JSON Lines format (<code>datalog.log</code>). Storage is limited.</li>
-                                   <li><strong>Memory Buffer:</strong> The most recent log entries are always kept in RAM.</li>
-                                   <li><strong>Log Interval:</strong> Data is typically logged every 60 seconds. Significant events (like errors or setting changes) are logged immediately.</li>
-                                   {/* ***** USE ≈ ENTITY HERE FOR TEXT DISPLAY ***** */}
-                                   <li><strong>Log Rotation:</strong> SD card logs are rotated (renamed) when they exceed ≈5MB. SPIFFS logs rotate at ≈100KB.</li>
-                               </ul>
-                           </div>
-
-                           {/* Downloading Data */}
-                           <div className="border rounded-lg p-4 shadow-sm">
-                               <h3 className="text-lg font-semibold text-gray-800 mb-3">Downloading Logs (User Access)</h3>
-                               <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-                                   <li>Click <span className="font-medium">Download CSV Log</span>.</li>
-                                    {/* ***** USE ACTUAL > ****** */}
-                                   <li>If an SD card is used, this downloads the current <code>datalog.csv</code> file.</li>
-                                   <li>If SPIFFS is used (or SD fails), this downloads the contents of the RAM buffer as a CSV file (limited history).</li>
-                                   <li>You can also download the raw SPIFFS log (JSON Lines format) via the <a href="/download-json" target="_blank" className="text-blue-600 hover:underline">/download-json</a> endpoint.</li>
-                               </ul>
-                           </div>
-
-                           {/* Deleting Data */}
-                           <div className="border rounded-lg p-4 shadow-sm">
-                               <h3 className="text-lg font-semibold text-gray-800 mb-3">Deleting Logs (Tech Access)</h3>
-                               <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-                                    {/* ***** USE ACTUAL > ****** */}
-                                   <li>Click <span className="font-medium text-red-600">Delete All Logs</span> (Requires Tech PIN <code>2222</code>).</li>
-                                   <li><strong className="text-red-600">Warning:</strong> This permanently deletes the current log file from both SD card and SPIFFS, and clears the RAM buffer. This action cannot be undone.</li>
-                                   <li>A new, empty log file (with header if applicable) will be created.</li>
-                               </ul>
-                           </div>
-
-                           {/* Logged Data Fields */}
-                           <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg shadow-sm">
-                             {/* ***** USE ACTUAL /> ****** */}
-                             <h4 className="font-semibold text-blue-700 flex items-center"><InfoIcon /> Logged Data Fields</h4>
-                             <p className="text-xs text-gray-600 mt-1 mb-2">Key fields included in each log entry:</p>
-                             <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1 text-xs">
-                               <span>Timestamp</span>
-                               <span>Device ID</span>
-                               <span>Flow Rate (Actual)</span>
-                               <span>Flow Totalizer</span>
-                               <span>Flow Average (per min)</span>
-                               <span>Chem Pump Rate (Actual/Calculated)</span>
-                               <span>Chem Pump Totalizer</span>
-                               <span>Chem Pump Average (per min)</span>
-                               <span>Acid Pump Rate (Calculated)</span>
-                               <span>Acid Pump Totalizer</span>
-                               <span>Acid Pump Average (per min)</span>
-                               <span>Probe 1 Value (ClO2/pH/ORP/Other)</span>
-                               <span>Probe 2 Value (ClO2/pH/ORP/Other)</span>
-                               <span>PPM Setting</span>
-                               <span>Error Code</span>
-                               <span>Device Uptime (ms)</span>
-                             </div>
-                           </div>
+                        {/* Data Storage */}
+                        <div className="border rounded-lg p-4 shadow-sm mb-4">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-3">Data Storage</h3>
+                          <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                            <li>
+                              <strong>Primary (SD Card):</strong> Logs in CSV (<code>datalog.csv</code>).
+                            </li>
+                            <li>
+                              <strong>Backup (SPIFFS):</strong> Logs in JSON Lines (<code>datalog.log</code>) if no SD.
+                            </li>
+                            <li><strong>RAM Buffer:</strong> Most recent entries kept in memory.</li>
+                            <li><strong>Log Interval:</strong> Every 60s; events logged immediately.</li>
+                            <li><strong>Log Rotation:</strong> SD rotates at ~5 MB; SPIFFS at ~100 KB.</li>
+                          </ul>
                         </div>
-                       </section>
+
+                        {/* Downloading Logs */}
+                        <div className="border rounded-lg p-4 shadow-sm mb-4">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-3">Downloading Logs (User Access)</h3>
+                          <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                            <li>Click <strong>Download CSV Log</strong>.</li>
+                            <li>If SD card present, downloads <code>datalog.csv</code>.</li>
+                            <li>If SPIFFS, downloads RAM buffer as CSV (limited).</li>
+                            <li>
+                              Raw SPIFFS log (JSON) via <a href="/download-json" className="text-blue-600 hover:underline">/download-json</a>.
+                            </li>
+                          </ul>
+                        </div>
+
+                        {/* Deleting Logs */}
+                        <div className="border rounded-lg p-4 shadow-sm mb-4">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-3">Deleting Logs (Tech Access)</h3>
+                          <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                            <li>
+                              Click <span className="font-medium text-red-600">Delete All Logs</span> (Tech PIN <code>2222</code>).
+                            </li>
+                            <li><strong className="text-red-600">Warning:</strong> Permanently deletes all logs and clears RAM buffer.</li>
+                            <li>New empty log file is created.</li>
+                          </ul>
+                        </div>
+
+                        {/* Logged Data Fields */}
+                        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg shadow-sm">
+                          <h4 className="font-semibold text-blue-700 flex items-center">
+                            <InfoIcon /> Logged Data Fields
+                          </h4>
+                          <p className="text-xs text-gray-600 mt-1 mb-2">Fields per entry:</p>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1 text-xs">
+                            <span>Timestamp</span>
+                            <span>Device ID</span>
+                            <span>Flow Rate (Actual)</span>
+                            <span>Flow Totalizer</span>
+                            <span>Flow Average (per min)</span>
+                            <span>Chem Pump Rate (Actual/Calculated)</span>
+                            <span>Chem Pump Totalizer</span>
+                            <span>Chem Pump Average (per min)</span>
+                            <span>Acid Pump Rate (Calculated)</span>
+                            <span>Acid Pump Totalizer</span>
+                            <span>Acid Pump Average (per min)</span>
+                            <span>Probe 1 Value (ClO2/pH/ORP/Other)</span>
+                            <span>Probe 2 Value (ClO2/pH/ORP/Other)</span>
+                            <span>PPM Setting</span>
+                            <span>Error Code</span>
+                            <span>Device Uptime (ms)</span>
+                          </div>
+                        </div>
+                      </section>
                     )}
 
                     {activeSection === 'hardware' && (
-                       <section>
-                        <h2 className="text-2xl font-bold text-blue-800 mb-6 border-b pb-2">6. Hardware Connections Overview</h2>
-                        <p className="mb-6 text-gray-600">Reference for primary hardware interfaces and connections.</p>
+                      <section>
+                        <h2 className="text-2xl font-bold text-blue-800 mb-6 border-b pb-2">
+                          6. Hardware Connections Overview
+                        </h2>
+                        <p className="mb-6 text-gray-600">Primary hardware interfaces:</p>
 
-                        <div className="space-y-6">
-                           {/* I2C Bus */}
-                           <div className="border rounded-lg p-4 shadow-sm">
-                               <h3 className="text-lg font-semibold text-gray-800 mb-3">I2C Bus (via TCA9548A MUX @ 0x74)</h3>
-                               <p className="text-sm text-gray-600 mb-3">Multiple devices share the I2C bus, selected via the multiplexer:</p>
-                               <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-                                   {/* ***** USE ACTUAL > ****** */}
-                                   <li><span className="font-medium">LCD Display:</span> <code>0x27</code> (Typical, verify) - MUX Channel N/A (Direct?) <span className="text-xs text-gray-500 italic">(Verify MUX usage for LCD if applicable)</span></li>
-                                   <li><span className="font-medium">MCP23017 I/O Expander & Chem Pump DAC:</span> <code>0x20</code> (MCP) / <code>0x58</code> (DAC) - MUX Channel <code>0</code></li>
-                                   <li><span className="font-medium">Flow Mirror DAC (GP8302):</span> <code>0x58</code> - MUX Channel <code>2</code></li>
-                                   <li><span className="font-medium">Desired PPM DAC (GP8302):</span> <code>0x58</code> - MUX Channel <code>3</code></li>
-                                   <li><span className="font-medium">ADS1115 ADC:</span> <code>0x49</code> (Verify) - MUX Channel <code>4</code></li>
-                               </ul>
-                           </div>
-
-                           {/* ADC Inputs */}
-                           <div className="border rounded-lg p-4 shadow-sm">
-                               <h3 className="text-lg font-semibold text-gray-800 mb-3">Analog Inputs (ADS1115 on MUX Ch 4)</h3>
-                               <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-                                    {/* ***** USE ACTUAL > ****** */}
-                                   <li><span className="font-medium">Flow Meter Signal:</span> ADC Channel <code>1</code></li>
-                                   <li><span className="font-medium">Probe One Signal:</span> ADC Channel <code>0</code></li>
-                                   <li><span className="font-medium">Probe Two Signal:</span> ADC Channel <code>2</code></li>
-                                   {/* Probe Three was mentioned in previous hardware list but not used in code? Clarify. */}
-                                   {/* <li><span className="font-medium">Probe Three Signal:</span> ADC Channel <code>3</code></li> */}
-                               </ul>
-                           </div>
-
-                            {/* Digital I/O */}
-                           <div className="border rounded-lg p-4 shadow-sm">
-                               <h3 className="text-lg font-semibold text-gray-800 mb-3">Digital I/O (MCP23017 on MUX Ch 0)</h3>
-                               <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-                                    <li><span className="font-medium">Inputs (Internal Pullups Recommended):</span>
-                                        <ul className="list-circle pl-5 text-xs">
-                                            <li>Pause Switch (Pin 9): HIGH = Paused</li>
-                                            <li>Pump 1 Warning (Pin 4): LOW = Warning</li>
-                                            <li>Pump 1 Alarm (Pin 3): LOW = Alarm</li>
-                                            <li>Pump 2 Warning (Pin 8): LOW = Warning</li>
-                                            <li>Pump 2 Alarm (Pin 7): LOW = Alarm</li>
-                                        </ul>
-                                    </li>
-                                     <li><span className="font-medium">Outputs:</span>
-                                        <ul className="list-circle pl-5 text-xs">
-                                            <li>Pump 1 Pause (Pin 1): HIGH = Pause, LOW = Run</li>
-                                            <li>Pump 2 Pause (Pin 5): HIGH = Pause, LOW = Run</li>
-                                            <li>Acid Pump Trigger (Pin 6): HIGH = Pulse ON</li>
-                                            <li>Flow Pulse (Pin 14): HIGH = Pulse ON (1 pulse/gallon)</li>
-                                        </ul>
-                                    </li>
-                               </ul>
-                           </div>
-
-                           {/* Onboard Relays & SD */}
-                           <div className="border rounded-lg p-4 shadow-sm">
-                               <h3 className="text-lg font-semibold text-gray-800 mb-3">Other Connections</h3>
-                                <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-                                     {/* ***** USE ACTUAL > ****** */}
-                                    <li><span className="font-medium">Status Relays (Direct ESP32 Pins):</span> Error (Pin 25), Warning (Pin 26), Normal (Pin 32) - Verify Colors/Labels</li>
-                                    <li><span className="font-medium">LCD Buttons (Direct ESP32 Pins):</span> Up (34), Down (35), Enter (33), Exit (27)</li>
-                                    <li><span className="font-medium">SD Card (SPI):</span> CS Pin <code>5</code> (MOSI, MISO, SCK standard SPI pins)</li>
-                                </ul>
-                           </div>
+                        {/* I2C Bus */}
+                        <div className="border rounded-lg p-4 shadow-sm mb-4">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-3">I2C Bus (via TCA9548A MUX @ 0x74)</h3>
+                          <p className="text-sm text-gray-600 mb-2">
+                            Multiple devices on I2C, selected via multiplexer:
+                          </p>
+                          <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                            <li>
+                              <strong>LCD Display:</strong> 0x27 (verify). MUX channel N/A.
+                            </li>
+                            <li>
+                              <strong>MCP23017 I/O & Chem Pump DAC:</strong> 0x20 / 0x58 – MUX Ch 0.
+                            </li>
+                            <li>
+                              <strong>Flow Mirror DAC (GP8302):</strong> 0x58 – MUX Ch 2.
+                            </li>
+                            <li>
+                              <strong>Desired PPM DAC (GP8302):</strong> 0x58 – MUX Ch 3.
+                            </li>
+                            <li>
+                              <strong>ADS1115 ADC:</strong> 0x49 – MUX Ch 4.
+                            </li>
+                          </ul>
                         </div>
-                       </section>
+
+                        {/* Analog Inputs */}
+                        <div className="border rounded-lg p-4 shadow-sm mb-4">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-3">Analog Inputs (ADS1115 on MUX Ch 4)</h3>
+                          <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                            <li><strong>Flow Meter Signal:</strong> ADC Ch 1</li>
+                            <li><strong>Probe One Signal:</strong> ADC Ch 0</li>
+                            <li><strong>Probe Two Signal:</strong> ADC Ch 2</li>
+                          </ul>
+                        </div>
+
+                        {/* Digital I/O */}
+                        <div className="border rounded-lg p-4 shadow-sm mb-4">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-3">Digital I/O (MCP23017 on MUX Ch 0)</h3>
+                          <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                            <li>
+                              <strong>Inputs (pullups recommended):</strong>
+                              <ul className="list-circle pl-5 text-xs">
+                                <li>Pause Switch (Pin 9): HIGH = Paused</li>
+                                <li>Pump 1 Warning (Pin 4): LOW = Warning</li>
+                                <li>Pump 1 Alarm (Pin 3): LOW = Alarm</li>
+                                <li>Pump 2 Warning (Pin 8): LOW = Warning</li>
+                                <li>Pump 2 Alarm (Pin 7): LOW = Alarm</li>
+                              </ul>
+                            </li>
+                            <li>
+                              <strong>Outputs:</strong>
+                              <ul className="list-circle pl-5 text-xs">
+                                <li>Pump 1 Pause (Pin 1): HIGH = Pause</li>
+                                <li>Pump 2 Pause (Pin 5): HIGH = Pause</li>
+                                <li>Acid Pump Trigger (Pin 6): HIGH = Pulse ON</li>
+                                <li>Flow Pulse (Pin 14): HIGH = Pulse ON (1 pulse/gallon)</li>
+                              </ul>
+                            </li>
+                          </ul>
+                        </div>
+
+                        {/* Relays & SD */}
+                        <div className="border rounded-lg p-4 shadow-sm mb-4">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-3">Other Connections</h3>
+                          <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                            <li><strong>Status Relays:</strong> Pins 25 (Error), 26 (Warning), 32 (Normal)</li>
+                            <li><strong>LCD Buttons:</strong> Up (34), Down (35), Enter (33), Exit (27)</li>
+                            <li><strong>SD Card (SPI):</strong> CS Pin 5 (standard MOSI/MISO/SCK)</li>
+                          </ul>
+                        </div>
+                      </section>
                     )}
 
                     {activeSection === 'operation' && (
                       <section>
                         <h2 className="text-2xl font-bold text-blue-800 mb-6 border-b pb-2">7. System Operation</h2>
-                        <p className="mb-6 text-gray-600">Understanding how the controller functions during normal operation.</p>
+                        <p className="mb-6 text-gray-600">Normal operating behavior:</p>
 
-                        <div className="space-y-6">
-                          {/* Flow States */}
-                           <div className="border rounded-lg p-4 shadow-sm">
-                               <h3 className="text-lg font-semibold text-gray-800 mb-3">Flow State Management</h3>
-                               <p className="text-sm text-gray-600 mb-3">The system operates based on the detected flow rate:</p>
-                               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                                   <div className="p-3 bg-red-50 rounded border border-red-200">
-                                       <p className="font-semibold text-red-700">NO FLOW</p>
-                                       <p className="text-xs text-gray-600">(State 0)</p>
-                                        {/* ***** USE < and ≈ ENTITIES HERE FOR TEXT DISPLAY ***** */}
-                                       <p className="text-sm font-mono mt-1">< ≈0.04 GPM</p>
-                                       <p className="text-xs text-gray-600 mt-1">Pumps Paused</p>
-                                   </div>
-                                   <div className="p-3 bg-yellow-50 rounded border border-yellow-200">
-                                       <p className="font-semibold text-yellow-700">LOW FLOW</p>
-                                        <p className="text-xs text-gray-600">(State 1)</p>
-                                        {/* ***** USE ≈ ENTITY HERE FOR TEXT DISPLAY ***** */}
-                                       <p className="text-sm font-mono mt-1">≈0.09 - 0.27 GPM</p>
-                                       <p className="text-xs text-gray-600 mt-1">Pumps Run (Warning)</p>
-                                   </div>
-                                    <div className="p-3 bg-green-50 rounded border border-green-200">
-                                       <p className="font-semibold text-green-700">NORMAL FLOW</p>
-                                       <p className="text-xs text-gray-600">(State 2)</p>
-                                        {/* ***** USE > and ≈ ENTITIES HERE FOR TEXT DISPLAY ***** */}
-                                       <p className="text-sm font-mono mt-1">> ≈0.33 GPM</p>
-                                       <p className="text-xs text-gray-600 mt-1">Pumps Run</p>
-                                   </div>
-                               </div>
-                               <p className="text-xs text-gray-500 mt-3 italic">Note: Hysteresis thresholds and a 2.5-second delay are used for state transitions to prevent rapid switching.</p>
-                           </div>
+                        {/* Flow States */}
+                        <div className="border rounded-lg p-4 shadow-sm mb-4">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-3">Flow State Management</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                            <div className="p-3 bg-red-50 rounded border border-red-200">
+                              <p className="font-semibold text-red-700">NO FLOW</p>
+                              <p className="text-xs text-gray-600">(State 0)</p>
+                              <p className="text-sm font-mono mt-1">{'<'} 0.04 GPM</p>
+                              <p className="text-xs text-gray-600 mt-1">Pumps Paused</p>
+                            </div>
+                            <div className="p-3 bg-yellow-50 rounded border border-yellow-200">
+                              <p className="font-semibold text-yellow-700">LOW FLOW</p>
+                              <p className="text-xs text-gray-600">(State 1)</p>
+                              <p className="text-sm font-mono mt-1">0.09 – 0.27 GPM</p>
+                              <p className="text-xs text-gray-600 mt-1">Pumps Run (Warning)</p>
+                            </div>
+                            <div className="p-3 bg-green-50 rounded border border-green-200">
+                              <p className="font-semibold text-green-700">NORMAL FLOW</p>
+                              <p className="text-xs text-gray-600">(State 2)</p>
+                              <p className="text-sm font-mono mt-1">{'>='} 0.33 GPM</p>
+                              <p className="text-xs text-gray-600 mt-1">Pumps Run</p>
+                            </div>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-3 italic">
+                            Hysteresis and a 2.5s delay prevent rapid switching.
+                          </p>
+                        </div>
 
-                           {/* Error Handling */}
-                           <div className="border rounded-lg p-4 shadow-sm">
-                               <h3 className="text-lg font-semibold text-gray-800 mb-3">Error and Warning Conditions</h3>
-                               <p className="text-sm text-gray-600 mb-3">The system reacts to various conditions, indicated by status relays and LCD messages:</p>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                        <p className="font-semibold text-red-600 mb-1">Errors (Pump Operation Halted):</p>
-                                        <ul className="list-disc pl-5 space-y-1 text-gray-700">
-                                            <li><code>NO_FLOW</code></li>
-                                             {/* ***** USE ACTUAL > ****** */}
-                                            <li><code>PUMP_ALARM</code> (From external pump input)</li>
-                                        </ul>
-                                    </div>
-                                     <div>
-                                        <p className="font-semibold text-yellow-600 mb-1">Warnings (Pump Operation Continues):</p>
-                                        <ul className="list-disc pl-5 space-y-1 text-gray-700">
-                                             <li><code>LOW_FLOW</code></li>
-                                              {/* ***** USE ACTUAL > ****** */}
-                                            <li><code>PUMP_WARNING</code> (From external pump input)</li>
-                                            {/* ***** USE > ENTITY HERE FOR TEXT DISPLAY ***** */}
-                                            <li><code>MISWEIGHTED</code> (Calculated dose > Pump Max GPH)</li>
-                                             {/* ***** USE ACTUAL > ****** */}
-                                            <li><code>SYSTEM_PAUSED</code> (Manual switch active, pump stopped)</li>
-                                        </ul>
-                                    </div>
-                               </div>
-                                {/* ***** USE > ENTITIES HERE FOR TEXT DISPLAY ***** */}
-                               <p className="text-xs text-gray-500 mt-3 italic">Error/Warning state can be seen on the Dashboard tab and LCD. Some errors can be cleared via the LCD menu (Status > Errors > Enter).</p>
-                           </div>
+                        {/* Errors & Warnings */}
+                        <div className="border rounded-lg p-4 shadow-sm mb-4">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-3">Error & Warning Conditions</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <p className="font-semibold text-red-600 mb-1">Errors (Halt Dosing):</p>
+                              <ul className="list-disc pl-5 text-gray-700">
+                                <li><code>NO_FLOW</code></li>
+                                <li><code>PUMP_ALARM</code> (external pump)</li>
+                              </ul>
+                            </div>
+                            <div>
+                              <p className="font-semibold text-yellow-600 mb-1">Warnings (Continue):</p>
+                              <ul className="list-disc pl-5 text-gray-700">
+                                <li><code>LOW_FLOW</code></li>
+                                <li><code>PUMP_WARNING</code> (external pump)</li>
+                                <li><code>MISWEIGHTED</code> (dose > pump capacity)</li>
+                                <li><code>SYSTEM_PAUSED</code> (manual switch)</li>
+                              </ul>
+                            </div>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-3 italic">
+                            States visible on Dashboard and LCD. Some errors clear via LCD menu.
+                          </p>
+                        </div>
 
-                           {/* Dosing Logic */}
-                            <div className="border rounded-lg p-4 shadow-sm">
-                               <h3 className="text-lg font-semibold text-gray-800 mb-3">Chemical Dosing Logic</h3>
-                               <ul className="list-disc pl-5 text-sm text-gray-600 space-y-2">
-                                    {/* ***** USE ACTUAL > ****** */}
-                                   <li><span className="font-medium">Chemical Pump (4-20mA):</span> Output current is calculated based on Flow Rate, Desired PPM, and Product Concentration. The signal (4mA=0 GPH, 20mA=Max Pump GPH) drives the primary chemical pump.</li>
-                                   <li><span className="font-medium">Acid Pump (Digital Pulse):</span> Required acid rate is calculated based on the chemical rate and the Product:Acid Ratio. The controller generates digital pulses (HIGH on Pin 6) at the required frequency, based on the configured Acid Stroke Volume (mL/pulse).</li>
-                                   <li><span className="font-medium">Flow Pulse Output:</span> A digital pulse (HIGH on Pin 14) is generated for every gallon of flow measured by the flow meter, useful for external totalizers or PLCs.</li>
-                                   <li>Dosing only occurs when the system is in a 'Run' state (Normal Flow, Low Flow, Pump Warning, Misweighted) and not manually paused.</li>
-                               </ul>
-                           </div>
+                        {/* Dosing Logic */}
+                        <div className="border rounded-lg p-4 shadow-sm mb-4">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-3">Chemical Dosing Logic</h3>
+                          <ul className="list-disc pl-5 text-sm text-gray-600 space-y-2">
+                            <li>
+                              <strong>Chem Pump (4-20mA):</strong> Current based on flow, PPM, concentration (4mA=0 GPH; 20mA=Max).
+                            </li>
+                            <li>
+                              <strong>Acid Pump (Pulse):</strong> Pulses on Pin 6 at rate from Product:Acid Ratio and stroke volume.
+                            </li>
+                            <li>
+                              <strong>Flow Pulse Output:</strong> Pulse on Pin 14 per gallon for external totalizers.
+                            </li>
+                            <li>
+                              Dosing only in Run states (Normal/Low flow, warnings) and not paused.
+                            </li>
+                          </ul>
+                        </div>
 
-                           {/* LCD Interface */}
-                           <div className="border rounded-lg p-4 shadow-sm">
-                               <h3 className="text-lg font-semibold text-gray-800 mb-3">LCD Menu System</h3>
-                               <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-                                     {/* ***** USE ACTUAL > ****** */}
-                                    <li><span className="font-medium">Home Screen:</span> Displays key status (ID, Pump State, Flow, Time, Probes/Errors).</li>
-                                   <li><span className="font-medium">Navigation:</span> Use Up/Down buttons to scroll, Enter to select, Exit to go back.</li>
-                                    <li><span className="font-medium">Menus:</span> Main Menu provides access to Status, Settings, Calibration, and System Info.</li>
-                                    <li><span className="font-medium">Editing Values:</span> Use Up/Down to adjust, Enter to set the value (temporary), Exit to cancel. Calibration values require an explicit "Save Cal" action.</li>
-                                    <li><span className="font-medium">PIN Entry:</span> Use Up/Down to select digits 0-9, Enter to add the digit, Exit to backspace or cancel.</li>
-                                    <li><span className="font-medium">Inactivity Timeout:</span> The menu returns to the Home Screen after 30 seconds of inactivity.</li>
-                               </ul>
-                           </div>
+                        {/* LCD Interface */}
+                        <div className="border rounded-lg p-4 shadow-sm mb-4">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-3">LCD Menu System</h3>
+                          <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                            <li><strong>Home Screen:</strong> ID, Pump State, Flow, Time, Probes/Errors.</li>
+                            <li><strong>Navigation:</strong> Up/Down to scroll, Enter to select, Exit to back.</li>
+                            <li><strong>Menus:</strong> Status, Settings, Calibration, System Info.</li>
+                            <li><strong>Editing:</strong> Up/Down to change, Enter to set, Exit to cancel. Save required for calibration.</li>
+                            <li><strong>PIN Entry:</strong> Up/Down to pick digit, Enter to add, Exit to backspace.</li>
+                            <li><strong>Timeout:</strong> Returns to Home after 30s inactivity.</li>
+                          </ul>
                         </div>
                       </section>
                     )}
@@ -651,155 +767,172 @@
                     {activeSection === 'troubleshooting' && (
                       <section>
                         <h2 className="text-2xl font-bold text-blue-800 mb-6 border-b pb-2">8. Troubleshooting Guide</h2>
-                        <p className="mb-6 text-gray-600">Common issues and potential solutions.</p>
+                        <p className="mb-6 text-gray-600">Common issues and solutions:</p>
+                        <div className="border rounded-lg p-4 shadow-sm space-y-4">
+                          {/* Issue: Cannot connect */}
+                          <div>
+                            <p className="font-semibold text-gray-800">Issue: Cannot connect to Web Interface in AP Mode.</p>
+                            <p className="text-sm text-gray-600 mt-1 pl-4">
+                              <strong>Solutions:</strong><br />
+                              - Ensure you’re on the correct SSID (Serial ID).<br />
+                              - Verify Wi‑Fi password (<code>PASSWORD</code>).<br />
+                              - Try <code>http://192.168.4.1</code> manually.<br />
+                              - Restart controller and device.<br />
+                            </p>
+                          </div>
+                          <hr />
 
-                        <div className="space-y-6">
-                            {/* Issue/Solution Format */}
-                           <div className="border rounded-lg p-4 shadow-sm space-y-4">
-                                <div>
-                                    <p className="font-semibold text-gray-800">Issue: Cannot connect to Web Interface in AP Mode.</p>
-                                    <p className="text-sm text-gray-600 mt-1 pl-4">
-                                        <strong>Solutions:</strong><br/>
-                                        - Ensure your device is connected to the correct Wi-Fi network (SSID = Controller Serial ID).<br/>
-                                        - Verify the Wi-Fi password (default: <code>PASSWORD</code>).<br/>
-                                         {/* ***** USE ACTUAL > ****** */}
-                                        - Try accessing <code>http://192.168.4.1</code> directly.<br/>
-                                        - Check if another device is already monopolizing the connection (ESP32 AP has limited client capacity).<br/>
-                                        - Restart the controller and your connecting device.
-                                    </p>
-                                </div>
-                                {/* ***** USE ACTUAL /> ****** */}
-                                <hr/>
-                                <div>
-                                    <p className="font-semibold text-gray-800">Issue: Controller keeps reverting to AP Mode.</p>
-                                     <p className="text-sm text-gray-600 mt-1 pl-4">
-                                         {/* ***** USE ACTUAL > ****** */}
-                                        <strong>Explanation:</strong> This happens after 3 failed attempts to connect to the configured Station (STA) mode network.<br/>
-                                        <strong>Solutions:</strong><br/>
-                                         {/* ***** USE > ENTITY HERE FOR TEXT DISPLAY ***** */}
-                                        - Verify the STA mode SSID and Password are correct in Settings > Network Settings.<br/>
-                                        - Ensure the target Wi-Fi network is operational and within range.<br/>
-                                        - Check for MAC address filtering on the target Wi-Fi network.<br/>
-                                        - Connect to the controller in AP mode (SSID=Serial ID, Pass=PASSWORD) and reconfigure STA settings.
-                                    </p>
-                                </div>
-                                 <hr/>
-                                <div>
-                                    <p className="font-semibold text-gray-800">Issue: "NO_FLOW" or "LOW_FLOW" error persists despite flow.</p>
-                                    <p className="text-sm text-gray-600 mt-1 pl-4">
-                                        <strong>Solutions:</strong><br/>
-                                        - Verify flow meter wiring to ADC input.<br/>
-                                        - Check flow meter functionality (e.g., spinning freely).<br/>
-                                        - Recalibrate the Flow Sensor in the Calibration tab using accurate flow measurements.<br/>
-                                        - Ensure the "Min Calibrate Flow (Raw)" value is set correctly for your zero-flow condition.
-                                    </p>
-                                </div>
-                                <hr/>
-                                <div>
-                                    <p className="font-semibold text-gray-800">Issue: Pump not dosing or dosing incorrectly.</p>
-                                     <p className="text-sm text-gray-600 mt-1 pl-4">
-                                        <strong>Solutions:</strong><br/>
-                                        - Check system status for errors (NO_FLOW, PUMP_ALARM, SYSTEM_PAUSED halt dosing).<br/>
-                                        - Verify 4-20mA wiring and pump functionality.<br/>
-                                        - Recalibrate the DAC Output for the Chem Pump (Ch0).<br/>
-                                        - Verify the "Pump Weight" (Max GPH) parameter is set correctly.<br/>
-                                        - For acid pump: Verify wiring, "Acid Stroke Volume", and "Product Acid Ratio" parameters.<br/>
-                                        - Check if the "MISWEIGHTED" warning is active (required dose exceeds pump capacity).
-                                    </p>
-                                </div>
-                                 <hr/>
-                                <div>
-                                    <p className="font-semibold text-gray-800">Issue: Inaccurate probe readings.</p>
-                                     <p className="text-sm text-gray-600 mt-1 pl-4">
-                                        <strong>Solutions:</strong><br/>
-                                        - Ensure the correct "Probe Type" is selected.<br/>
-                                        - Verify probe wiring to the correct ADC input.<br/>
-                                        - Clean the probe according to manufacturer instructions.<br/>
-                                        - Recalibrate the probe using fresh, certified standard solutions.<br/>
-                                        - Ensure the "Low/High Raw" and "Low/High Eng Value" settings are correct during calibration.
-                                    </p>
-                                </div>
-                                <hr/>
-                                 <div>
-                                    <p className="font-semibold text-gray-800">Issue: Forgot PIN / Locked out.</p>
-                                     <p className="text-sm text-gray-600 mt-1 pl-4">
-                                          {/* ***** USE ACTUAL > ****** */}
-                                        <strong>Solution:</strong> Perform a Factory Reset.<br/>
-                                        - Access the web interface (you might need AP mode if STA connection fails).<br/>
-                                          {/* ***** USE > ENTITY HERE FOR TEXT DISPLAY ***** */}
-                                        - Go to Settings > System Reset.<br/>
-                                        - This requires the <span className="font-medium">Master PIN</span>. If the Master PIN is also forgotten, physical reflashing of the firmware might be necessary (Contact Support). Performing a reset will revert all PINs to their defaults (<code>1111</code>, <code>2222</code>, <code>9999</code>).
-                                    </p>
-                                </div>
-                           </div>
+                          {/* Issue: Reverting to AP */}
+                          <div>
+                            <p className="font-semibold text-gray-800">Issue: Controller keeps reverting to AP Mode.</p>
+                            <p className="text-sm text-gray-600 mt-1 pl-4">
+                              <strong>Explanation:</strong> After 3 failed STA attempts.<br />
+                              <strong>Solutions:</strong><br />
+                              - Verify STA SSID/password.<br />
+                              - Ensure target network is in range.<br />
+                              - Check for MAC filtering.<br />
+                              - Reconfigure in AP mode.<br />
+                            </p>
+                          </div>
+                          <hr />
 
-                           {/* Debugging Tools */}
-                            <div className="border rounded-lg p-4 shadow-sm">
-                               <h3 className="text-lg font-semibold text-gray-800 mb-3">Debugging Tools</h3>
-                               <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-                                     {/* ***** USE ACTUAL > ****** */}
-                                    <li><span className="font-medium">Web UI Debug Console:</span> Press <kbd className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">Ctrl</kbd> + <kbd className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">Shift</kbd> + <kbd className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">D</kbd> to toggle live status messages.</li>
-                                   <li><span className="font-medium">Diagnostics Endpoint:</span> Access <code>/diag</code> in your browser (e.g., <code>http://192.168.4.1/diag</code>) for a plain text summary of system status, network info, and memory.</li>
-                                    <li><span className="font-medium">Serial Monitor:</span> Connect via USB and use a serial terminal (like Arduino IDE Serial Monitor, Putty, etc.) at 115200 baud for detailed boot messages and debug logs.</li>
-                                    <li><span className="font-medium">LCD Display:</span> Check for error messages on the primary display.</li>
-                               </ul>
-                           </div>
+                          {/* Issue: NO_FLOW persists */}
+                          <div>
+                            <p className="font-semibold text-gray-800">Issue: "NO_FLOW" or "LOW_FLOW" persists.</p>
+                            <p className="text-sm text-gray-600 mt-1 pl-4">
+                              <strong>Solutions:</strong><br />
+                              - Check flow meter wiring.<br />
+                              - Ensure meter spins freely.<br />
+                              - Recalibrate flow sensor.<br />
+                              - Verify Min Calibrate Flow (Raw) for zero flow.<br />
+                            </p>
+                          </div>
+                          <hr />
+
+                          {/* Issue: Pump dosing */}
+                          <div>
+                            <p className="font-semibold text-gray-800">Issue: Pump not dosing or incorrect.</p>
+                            <p className="text-sm text-gray-600 mt-1 pl-4">
+                              <strong>Solutions:</strong><br />
+                              - Check for errors (NO_FLOW, PUMP_ALARM).<br />
+                              - Verify 4-20mA wiring.<br />
+                              - Recalibrate Chem Pump DAC.<br />
+                              - Verify Pump Weight parameter.<br />
+                              - For acid pump: check wiring, stroke volume, ratio.<br />
+                              - Check MISWEIGHTED warning.<br />
+                            </p>
+                          </div>
+                          <hr />
+
+                          {/* Issue: Probe readings */}
+                          <div>
+                            <p className="font-semibold text-gray-800">Issue: Inaccurate probe readings.</p>
+                            <p className="text-sm text-gray-600 mt-1 pl-4">
+                              <strong>Solutions:</strong><br />
+                              - Select correct Probe Type.<br />
+                              - Verify ADC wiring.<br />
+                              - Clean probe per manufacturer.<br />
+                              - Recalibrate with fresh standards.<br />
+                              - Verify Raw & Eng values in calibration.<br />
+                            </p>
+                          </div>
+                          <hr />
+
+                          {/* Issue: Locked out */}
+                          <div>
+                            <p className="font-semibold text-gray-800">Issue: Forgot PIN / Locked out.</p>
+                            <p className="text-sm text-gray-600 mt-1 pl-4">
+                              <strong>Solution:</strong> Factory Reset:<br />
+                              - In web UI, go to Settings &gt; System Reset.<br />
+                              - Requires Master PIN.<br />
+                              - Resets all PINs to defaults (1111, 2222, 9999).<br />
+                              - If Master PIN forgotten, reflash firmware.<br />
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Debugging Tools */}
+                        <div className="border rounded-lg p-4 shadow-sm mt-6">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-3">Debugging Tools</h3>
+                          <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
+                            <li>
+                              <strong>Web UI Debug Console:</strong> Ctrl + Shift + D to toggle live messages.
+                            </li>
+                            <li>
+                              <strong>Diagnostics Endpoint:</strong> <code>/diag</code> for status summary.
+                            </li>
+                            <li>
+                              <strong>Serial Monitor:</strong> USB at 115200 baud for boot & debug logs.
+                            </li>
+                            <li>
+                              <strong>LCD Display:</strong> Check for error messages.
+                            </li>
+                          </ul>
                         </div>
                       </section>
                     )}
 
                     {activeSection === 'known' && (
                       <section>
-                        <h2 className="text-2xl font-bold text-blue-800 mb-6 border-b pb-2">9. Known Issues & Limitations (BETA)</h2>
-                        <p className="mb-6 text-gray-600">As beta firmware, some features have limitations.</p>
+                        <h2 className="text-2xl font-bold text-blue-800 mb-6 border-b pb-2">
+                          9. Known Issues & Limitations (BETA)
+                        </h2>
+                        <p className="mb-6 text-gray-600">
+                          As beta firmware, some features have limitations.
+                        </p>
 
-                        <div className="space-y-4">
-                          {/* Known Issue Item */}
-                          <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-r-lg shadow-sm">
-                            <p className="font-bold">Firmware Update (OTA)</p>
-                            <p className="mt-1 text-sm">The Over-The-Air update feature accessible via the web interface ("Settings" tab) is <strong className="font-semibold">currently unstable</strong>. Attempting an OTA update may fail or potentially render the device unresponsive, requiring manual reflashing. <strong className="font-semibold">Use with extreme caution or avoid unless instructed by support.</strong></p>
-                          </div>
+                        {/* OTA */}
+                        <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-r-lg shadow-sm mb-4">
+                          <p className="font-bold">Firmware Update (OTA)</p>
+                          <p className="mt-1 text-sm">
+                            The OTA feature is currently unstable. Updates may fail or brick the device.
+                            Manual reflashing may be required. Use with caution.
+                          </p>
+                        </div>
 
-                          {/* Known Issue Item */}
-                           <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-r-lg shadow-sm">
-                            <p className="font-bold">Cloudflare Integration (Email/Upload)</p>
-                            <p className="mt-1 text-sm">The features for sending email notifications and uploading log data via Cloudflare Workers ("History" tab) are <strong className="font-semibold">experimental</strong>. They require specific Cloudflare account setup, API keys, and correctly configured Worker scripts which may not be generally available or fully functional. Connection tests may fail, and functionality is not guaranteed.</p>
-                          </div>
+                        {/* Cloudflare */}
+                        <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-r-lg shadow-sm mb-4">
+                          <p className="font-bold">Cloudflare Integration (Email/Upload)</p>
+                          <p className="mt-1 text-sm">
+                            Experimental. Requires Cloudflare account, API keys, and scripts.
+                            Connection tests may fail; not guaranteed.
+                          </p>
+                        </div>
 
-                           {/* Known Issue Item */}
-                           <div className="bg-yellow-50 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-r-lg shadow-sm">
-                            <p className="font-bold">WiFi Stability (STA Mode)</p>
-                            <p className="mt-1 text-sm">Connecting to existing networks (Station mode) might occasionally be unreliable depending on network conditions and router compatibility. The automatic fallback to AP mode after 3 failed attempts is a safety measure but may necessitate reconfiguration if the underlying network issue isn't resolved.</p>
-                          </div>
+                        {/* Wi‑Fi */}
+                        <div className="bg-yellow-50 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-r-lg shadow-sm mb-4">
+                          <p className="font-bold">Wi‑Fi Stability (STA Mode)</p>
+                          <p className="mt-1 text-sm">
+                            STA mode may be unreliable depending on network. Auto-fallback to AP after 3 fails.
+                            Reconfiguration may be needed.
+                          </p>
+                        </div>
 
-                           {/* Known Issue Item */}
-                           <div className="bg-yellow-50 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-r-lg shadow-sm">
-                            <p className="font-bold">Data Storage Limitations (SPIFFS)</p>
-                             {/* ***** USE ≈ ENTITY HERE FOR TEXT DISPLAY ***** */}
-                            <p className="mt-1 text-sm">When an SD card is not used, data logging falls back to the internal SPIFFS memory. This memory is limited in size and write endurance. Log rotation happens frequently (≈100KB), meaning only a relatively short history is retained on the device itself in this mode.</p>
-                          </div>
+                        {/* SPIFFS */}
+                        <div className="bg-yellow-50 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-r-lg shadow-sm mb-6">
+                          <p className="font-bold">Data Storage Limitations (SPIFFS)</p>
+                          <p className="mt-1 text-sm">
+                            Without SD card, logs use SPIFFS (~100 KB rotation), so history is short.
+                          </p>
+                        </div>
 
-                          {/* General Disclaimer */}
-                          <div className="bg-gray-100 border border-gray-300 p-4 rounded-lg mt-6">
-                             {/* ***** USE ACTUAL /> ****** */}
-                            <h4 className="font-semibold text-gray-700 flex items-center"><WarningIcon /> Final System Verification</h4>
-                            <p className="mt-1 text-sm text-gray-600">
-                              {/* ***** USE ACTUAL > ****** */}
-                              This controller is a component within a larger chemical dosing system. <strong className="font-medium">Always perform independent verification</strong> of the final water quality and chemical residuals using appropriate test kits or laboratory analysis after installation and calibration. Do not rely solely on the controller's readings or settings. Ensure all safety protocols for handling chemicals are strictly followed.
-                            </p>
-                          </div>
+                        {/* Final disclaimer */}
+                        <div className="bg-gray-100 border border-gray-300 p-4 rounded-lg">
+                          <h4 className="font-semibold text-gray-700 flex items-center">
+                            <WarningIcon /> Final System Verification
+                          </h4>
+                          <p className="mt-1 text-sm text-gray-600">
+                            This controller is part of a chemical dosing system. Always perform independent verification
+                            of water quality with test kits or lab analysis after installation. Follow all safety protocols.
+                          </p>
                         </div>
                       </section>
                     )}
 
                     {/* Footer */}
-                    <div className="mt-10 pt-6 border-t border-gray-200 text-center">
-                      <p className="text-xs text-gray-500">
-                        EDIE Controller Instructions | Firmware Version: 1.3 BETA (Captive Portal Enabled)
-                      </p>
-                       <p className="text-xs text-gray-500 mt-1">
-                        For technical support, please contact the manufacturer or your system provider.
-                      </p>
+                    <div className="mt-10 pt-6 border-t border-gray-200 text-center text-xs text-gray-500">
+                      <p>EDIE Controller Instructions | Firmware Version: 1.3 BETA (Captive Portal Enabled)</p>
+                      <p className="mt-1">For technical support, contact the manufacturer or system provider.</p>
                     </div>
                   </div>
                 </main>
