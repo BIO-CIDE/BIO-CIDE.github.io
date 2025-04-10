@@ -1,2043 +1,1727 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EDIE Fleet Dashboard</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-  <style>
-      :root {
-          --primary-color: #cb2026; /* Original primary color */
-          --background-color: #f5f5f5;
-          --card-bg: #ffffff;
-          --text-color: #333333;
-          --success-color: #44cc44;
-          --warning-color: #ffcc44;
-          --error-color: #ff4444;
-          --offline-color: #999; /* Added offline color */
-      }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDIE Fleet Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary-color: #cb2026;
+            --background-color: #f8f9fa; /* Slightly lighter */
+            --card-bg: #ffffff;
+            --text-color: #212529; /* Bootstrap default */
+            --success-color: #198754; /* Bootstrap success */
+            --warning-color: #ffc107; /* Bootstrap warning */
+            --error-color: #dc3545;   /* Bootstrap danger */
+            --offline-color: #6c757d; /* Bootstrap secondary */
+        }
 
-      body {
-          background-color: var(--background-color);
-          color: var(--text-color);
-          font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu;
-      }
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        }
 
-      .navbar {
-          background-color: var(--primary-color);
-      }
+        .navbar {
+            background-color: var(--primary-color);
+        }
+        .navbar-brand, .nav-link, .navbar-toggler-icon {
+            color: white !important; /* Ensure contrast */
+        }
+        .btn-outline-light:hover {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+        }
 
-      .navbar-brand {
-          color: white;
-          font-weight: 600;
-      }
+        /* Make primary buttons use the theme color */
+        .btn-primary {
+          --bs-btn-bg: var(--primary-color);
+          --bs-btn-border-color: var(--primary-color);
+          --bs-btn-hover-bg: #a31a20; /* Darker shade */
+          --bs-btn-hover-border-color: #96181d;
+          --bs-btn-active-bg: #96181d;
+          --bs-btn-active-border-color: #8a161a;
+          --bs-btn-disabled-bg: var(--primary-color);
+          --bs-btn-disabled-border-color: var(--primary-color);
+        }
 
-      .device-card {
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-          /* Removed fixed height, using Bootstrap's h-100 instead */
-      }
+        /* Make outline-primary buttons use the theme color */
+        .btn-outline-primary {
+          --bs-btn-color: var(--primary-color);
+          --bs-btn-border-color: var(--primary-color);
+          --bs-btn-hover-bg: var(--primary-color);
+          --bs-btn-hover-border-color: var(--primary-color);
+          --bs-btn-hover-color: white;
+          --bs-btn-active-bg: var(--primary-color);
+          --bs-btn-active-border-color: var(--primary-color);
+          --bs-btn-active-color: white;
+        }
 
-      .device-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      }
+        .auth-container {
+            max-width: 450px;
+            margin: 5rem auto;
+        }
+        .auth-container .card-header {
+            background-color: var(--primary-color);
+            color: white;
+        }
 
-      .card-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-      }
+        .device-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            border: 1px solid #dee2e6;
+            border-left-width: 4px; /* Add space for status border */
+            border-left-color: transparent; /* Default */
+        }
+        .device-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .device-card.status-online { border-left-color: var(--success-color); }
+        .device-card.status-warning { border-left-color: var(--warning-color); }
+        .device-card.status-error { border-left-color: var(--error-color); }
+        .device-card.status-offline { border-left-color: var(--offline-color); }
 
-      .status-indicator {
-          display: inline-block;
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          margin-right: 8px;
-      }
+        .card-header { display: flex; justify-content: space-between; align-items: center; }
+        .device-id { font-weight: 600; word-break: break-all; /* Prevent overflow */ }
+        .status-badge { font-size: 0.8em; }
 
-      .status-online {
-          background-color: var(--success-color);
-      }
+        .mini-chart-container { height: 80px; margin-bottom: 1rem; }
+        .metric-value { font-size: 1.1rem; font-weight: 600; }
+        .metric-label { color: #6c757d; font-size: 0.8rem; text-transform: uppercase; }
+        .last-update-time { font-size: 0.85rem; color: #6c757d; }
 
-      .status-warning {
-          background-color: var(--warning-color);
-      }
+        #loadingIndicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1060; /* Higher than modals */
+            color: white;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        #loadingIndicator .spinner-border { width: 3rem; height: 3rem; }
 
-      .status-error {
-          background-color: var(--error-color);
-      }
+        .timezone-info {
+            font-size: 0.9rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            background-color: rgba(203, 32, 38, 0.08);
+            border-left: 3px solid var(--primary-color);
+            margin-bottom: 1rem;
+            color: #555;
+        }
 
-      .status-offline {
-          background-color: var(--offline-color);
-      }
+        .device-select-list { max-height: 350px; overflow-y: auto; border: 1px solid #dee2e6; padding: 10px; border-radius: 0.25rem; }
+        .device-select-item { display: block; padding: 0.25rem 0; }
 
-      /* Adjusted chart container height for mini charts */
-      .chart-container {
-          height: 100px; /* Reduced height for mini chart */
-          margin-bottom: 10px; /* Added some bottom margin */
-      }
+        .detail-chart-container { height: 280px; }
 
-      .metric-value {
-          font-size: 1.1rem; /* Slightly reduced for compactness */
-          font-weight: 600;
-      }
+        /* Improve table readability */
+        .table th { font-weight: 600; }
+        .table-hover tbody tr:hover { background-color: rgba(0,0,0,0.05); }
+        .table-sm td, .table-sm th { padding: 0.4rem; }
 
-      .metric-label {
-          color: #666;
-          font-size: 0.85rem; /* Slightly reduced */
-      }
+        /* Style for error/info messages */
+        .message-area { padding: 1rem; text-align: center; }
+        .error-message { color: var(--error-color); font-weight: 500; }
+        .info-message { color: #555; }
 
-      #loadingIndicator {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background-color: rgba(0,0,0,0.5);
-          display: flex; /* Keep using flex */
-          justify-content: center;
-          align-items: center;
-          z-index: 9999;
-          /* Initially hidden via inline style */
-      }
+         /* Toast for non-blocking errors */
+        .toast-container { z-index: 1100; } /* Ensure toasts are above other elements */
 
-      .spinner-border {
-          width: 3rem;
-          height: 3rem;
-      }
-
-      .tab-content {
-          padding: 20px 0;
-      }
-
-      .auth-container {
-          max-width: 400px;
-          margin: 100px auto;
-      }
-
-      .timezone-info {
-          font-size: 0.85rem;
-          padding: 0.5rem;
-          border-radius: 0.25rem;
-          background-color: rgba(203, 32, 38, 0.1); /* Use primary color with alpha */
-          border-left: 3px solid var(--primary-color);
-          margin-bottom: 1rem;
-      }
-
-      /* Added styles for Device Selection Modal */
-      .device-select-list {
-          max-height: 300px;
-          overflow-y: auto;
-          border: 1px solid #dee2e6;
-          padding: 10px;
-          border-radius: 0.25rem;
-      }
-      .device-select-item {
-          display: block; /* Make label take full width for easier clicking */
-      }
-      /* End Added Styles */
-  </style>
+    </style>
 </head>
 <body>
-  <!-- Loading Indicator - Initially hidden -->
-  <div id="loadingIndicator" style="display: none;">
-      <div class="spinner-border text-light" role="status">
-          <span class="visually-hidden">Loading...</span>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" style="display: none;">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <div id="loadingMessage" class="mt-2">Loading...</div>
+    </div>
+
+     <!-- Toast Container for Errors -->
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+      <div id="errorToast" class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span id="toastErrorMessage">Error message goes here.</span>
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
       </div>
-  </div>
+    </div>
 
-  <!-- Authentication Screen -->
-  <div id="authScreen" class="container auth-container">
-      <div class="card">
-          <div class="card-header bg-primary text-white" style="background-color: var(--primary-color) !important;">
-              <h4 class="mb-0">EDIE Dashboard Login</h4>
-          </div>
-          <div class="card-body">
-              <div class="mb-3">
-                  <label for="apiKey" class="form-label">API Key</label>
-                  <!-- Input type changed back to password as requested -->
-                  <!-- Added default API key value as requested -->
-                  <input type="password" class="form-control" id="apiKey" placeholder="Enter your API key" value="k32BWMByEJrCihED0YEmhs0AaUJCeontFUC_qbeB">
-              </div>
-              <div class="form-check mb-3">
-                  <input class="form-check-input" type="checkbox" id="rememberKey">
-                  <label class="form-check-label" for="rememberKey">
-                      Remember API key
-                  </label>
-              </div>
-              <!-- Updated button style to match primary color -->
-              <button id="loginBtn" class="btn btn-primary w-100" style="background-color: var(--primary-color); border-color: var(--primary-color);">Login</button>
-              <div id="authError" class="alert alert-danger mt-3 d-none"></div>
-          </div>
-      </div>
-  </div>
+    <!-- Authentication Screen -->
+    <div id="authScreen" class="container auth-container">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="bi bi-shield-lock-fill me-2"></i>EDIE Dashboard Login</h4>
+            </div>
+            <div class="card-body p-4">
+                <div class="mb-3">
+                    <label for="apiKeyInput" class="form-label">API Key</label>
+                    <input type="password" class="form-control" id="apiKeyInput" placeholder="Enter your API key" value="k32BWMByEJrCihED0YEmhs0AaUJCeontFUC_qbeB" required>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="rememberKeyCheckbox">
+                    <label class="form-check-label" for="rememberKeyCheckbox">
+                        Remember API key
+                    </label>
+                </div>
+                <button id="loginBtn" class="btn btn-primary w-100">Login</button>
+                <div id="authError" class="alert alert-danger mt-3 p-2 text-center d-none"></div>
+            </div>
+        </div>
+    </div>
 
-  <!-- Main Dashboard - Hidden by default -->
-  <div id="mainDashboard" class="d-none">
-      <!-- Navigation Bar -->
-      <nav class="navbar navbar-expand-lg navbar-dark">
-          <div class="container-fluid">
-              <a class="navbar-brand" href="#">EDIE Fleet Dashboard</a>
-              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                  <span class="navbar-toggler-icon"></span>
-              </button>
-              <div class="collapse navbar-collapse" id="navbarNav">
-                  <ul class="navbar-nav me-auto">
-                      <li class="nav-item">
-                          <a class="nav-link active" href="#" id="overviewLink">Overview</a>
-                      </li>
-                      <li class="nav-item">
-                          <a class="nav-link" href="#" id="historyLink">History</a>
-                      </li>
-                  </ul>
-                  <!-- Updated structure for alignment -->
-                  <div class="d-flex align-items-center">
-                      <!-- ADDED Select Devices Button -->
-                      <button id="selectDevicesBtn" class="btn btn-outline-light me-2" title="Select Devices to Display">
-                          <i class="bi bi-list-check"></i> Devices
-                      </button>
-                      <!-- Changed Refresh button text back -->
-                      <button id="refreshBtn" class="btn btn-outline-light me-2">Refresh</button>
-                      <button id="logoutBtn" class="btn btn-outline-light">Logout</button>
-                  </div>
-              </div>
-          </div>
-      </nav>
+    <!-- Main Dashboard Area -->
+    <div id="mainDashboard" class="d-none">
+        <!-- Navigation Bar -->
+        <nav class="navbar navbar-expand-lg navbar-dark mb-4 shadow-sm">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">
+                    <i class="bi bi-speedometer2 me-1"></i> EDIE Fleet Dashboard
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" id="navOverviewLink" aria-current="page"><i class="bi bi-grid-fill me-1"></i>Overview</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="navHistoryLink"><i class="bi bi-clock-history me-1"></i>History</a>
+                        </li>
+                    </ul>
+                    <div class="d-flex align-items-center">
+                        <button id="selectDevicesBtn" class="btn btn-sm btn-outline-light me-2" title="Select Devices to Display">
+                            <i class="bi bi-list-check me-1"></i> Devices
+                        </button>
+                        <button id="refreshBtn" class="btn btn-sm btn-outline-light me-2" title="Refresh Data">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                        </button>
+                        <button id="logoutBtn" class="btn btn-sm btn-outline-light" title="Logout">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
 
-      <!-- Overview Section -->
-      <div id="overviewSection" class="container mt-4">
-          <!-- Timezone info remains the same -->
-          <div class="timezone-info" id="overviewTimezoneInfo">
-              <i class="bi bi-clock"></i> All times are shown in your local timezone:
-              <strong id="userTimezone"></strong>
-          </div>
-          <!-- Search/Sort controls remain the same -->
-           <div class="row mb-4">
-              <div class="col-md-6">
-                  <div class="input-group">
-                      <input type="text" id="searchDevices" class="form-control" placeholder="Search devices...">
-                      <button class="btn btn-primary" type="button" id="searchBtn" style="background-color: var(--primary-color); border-color: var(--primary-color);">Search</button>
-                  </div>
-              </div>
-              <div class="col-md-6 d-flex justify-content-end">
-                  <div class="btn-group">
-                      <button id="sortByName" class="btn btn-outline-primary" style="--bs-btn-color: var(--primary-color); --bs-btn-border-color: var(--primary-color); --bs-btn-hover-bg: var(--primary-color); --bs-btn-hover-border-color: var(--primary-color); --bs-btn-active-bg: var(--primary-color); --bs-btn-active-border-color: var(--primary-color);">Sort by Name</button>
-                      <button id="sortByStatus" class="btn btn-outline-primary" style="--bs-btn-color: var(--primary-color); --bs-btn-border-color: var(--primary-color); --bs-btn-hover-bg: var(--primary-color); --bs-btn-hover-border-color: var(--primary-color); --bs-btn-active-bg: var(--primary-color); --bs-btn-active-border-color: var(--primary-color);">Sort by Status</button>
-                  </div>
-              </div>
-          </div>
+        <!-- Content Area -->
+        <div class="container-fluid">
 
-          <div class="row" id="devicesGrid">
-              <!-- Devices will be inserted here -->
-              <!-- ADDED Initial message for when no devices are selected/found -->
-              <div class="col-12" id="noDevicesMessage" style="display: none;">
-                  <div class="alert alert-info">No devices selected or found. Use the 'Devices' button above to select which devices to display.</div>
-              </div>
-          </div>
-      </div>
+            <!-- Overview Section -->
+            <div id="overviewSection">
+                <div class="timezone-info" id="overviewTimezoneInfo">
+                    <i class="bi bi-clock"></i> All times shown in local timezone: <strong id="userTimezoneOverview"></strong>
+                </div>
+                <div class="row mb-3 g-2 align-items-center">
+                    <div class="col-md-5 col-lg-4">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" id="searchDevicesInput" class="form-control" placeholder="Search by Device ID...">
+                        </div>
+                    </div>
+                    <div class="col-md-7 col-lg-8 d-flex justify-content-md-end">
+                         <div class="btn-group btn-group-sm" role="group" aria-label="Sort devices">
+                            <input type="radio" class="btn-check" name="sortOptions" id="sortByNameBtn" autocomplete="off" checked data-sort="name">
+                            <label class="btn btn-outline-secondary" for="sortByNameBtn"><i class="bi bi-sort-alpha-down"></i> Name</label>
 
-      <!-- History Section (Structure unchanged) -->
-      <div id="historySection" class="container mt-4 d-none">
-          <div class="timezone-info" id="historyTimezoneInfo">
-              <i class="bi bi-clock"></i> All times are shown in your local timezone:
-              <strong id="historyUserTimezone"></strong>
-          </div>
-           <div class="card">
-              <div class="card-header d-flex justify-content-between align-items-center">
-                  <h5 class="mb-0">Historical Data</h5>
-                  <button id="exportCSV" class="btn btn-sm btn-outline-primary" style="--bs-btn-color: var(--primary-color); --bs-btn-border-color: var(--primary-color); --bs-btn-hover-bg: var(--primary-color); --bs-btn-hover-border-color: var(--primary-color);">Export CSV</button>
-              </div>
-              <div class="card-body">
-                  <!-- Filters remain the same -->
-                  <div class="row mb-4">
-                      <div class="col-md-3">
-                          <label for="deviceSelect" class="form-label">Device</label>
-                          <select id="deviceSelect" class="form-select">
-                              <option value="">Select Device</option>
-                          </select>
-                      </div>
-                      <div class="col-md-3">
-                          <label for="startDate" class="form-label">Start Date</label>
-                          <input type="date" id="startDate" class="form-control">
-                      </div>
-                      <div class="col-md-3">
-                          <label for="endDate" class="form-label">End Date</label>
-                          <input type="date" id="endDate" class="form-control">
-                      </div>
-                      <div class="col-md-3">
-                          <label for="entriesLimit" class="form-label">Entries Limit</label>
-                          <select id="entriesLimit" class="form-select">
-                              <option value="10">10</option>
-                              <option value="25">25</option>
-                              <option value="50" selected>50</option> <!-- Defaulted to 50 -->
-                              <option value="100">100</option>
-                              <option value="250">250</option> <!-- Added more options -->
-                              <option value="500">500</option>
-                          </select>
-                      </div>
-                  </div>
-                  <div class="row">
-                      <div class="col-12">
-                          <button id="searchHistoryBtn" class="btn btn-primary" style="background-color: var(--primary-color); border-color: var(--primary-color);">Search History</button>
-                      </div>
-                  </div>
+                            <input type="radio" class="btn-check" name="sortOptions" id="sortByStatusBtn" autocomplete="off" data-sort="status">
+                            <label class="btn btn-outline-secondary" for="sortByStatusBtn"><i class="bi bi-shield-exclamation"></i> Status</label>
 
-                  <!-- History chart container remains -->
-                  <div class="mt-4">
-                      <div class="chart-container" style="height: 300px;">
-                          <canvas id="historyChart"></canvas>
-                      </div>
-                  </div>
-
-                  <!-- History table remains -->
-                  <div class="table-responsive mt-4">
-                      <table class="table table-striped table-hover" id="historyTable">
-                          <thead>
-                              <tr>
-                                  <th>Timestamp</th>
-                                  <th>Flow Rate (GPM)</th>
-                                  <th>PPM</th>
-                                  <th>Injection (G)</th>
-                                  <th>Acid (G)</th>
-                                  <th>Status</th>
-                              </tr>
-                          </thead>
-                          <tbody>
-                              <!-- History data will be inserted here -->
-                              <tr><td colspan="6" class="text-center text-muted">Select criteria and search to view history.</td></tr>
-                          </tbody>
-                      </table>
-                  </div>
-              </div>
-           </div>
-      </div>
-
-      <!-- Device Detail Modal (Structure unchanged) -->
-       <div class="modal fade" id="deviceDetailModal" tabindex="-1">
-            <div class="modal-dialog modal-lg">
-              <div class="modal-content">
-                  <div class="modal-header">
-                      <h5 class="modal-title" id="deviceDetailTitle">Device Details</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body">
-                      <ul class="nav nav-tabs" id="deviceDetailTabs" role="tablist">
-                          <li class="nav-item" role="presentation">
-                              <!-- Added role and controls attributes for accessibility -->
-                              <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overviewTab" type="button" role="tab" aria-controls="overviewTab" aria-selected="true">Overview</button>
-                          </li>
-                          <li class="nav-item" role="presentation">
-                              <button class="nav-link" id="data-tab" data-bs-toggle="tab" data-bs-target="#dataTab" type="button" role="tab" aria-controls="dataTab" aria-selected="false">Data</button>
-                          </li>
-                          <li class="nav-item" role="presentation">
-                              <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settingsTab" type="button" role="tab" aria-controls="settingsTab" aria-selected="false">Settings</button>
-                          </li>
-                      </ul>
-                      <div class="tab-content" id="deviceDetailTabContent">
-                          <!-- Added roles and labelledby attributes for accessibility -->
-                          <div class="tab-pane fade show active" id="overviewTab" role="tabpanel" aria-labelledby="overview-tab">
-                              <div class="row mt-3">
-                                  <div class="col-md-6">
-                                      <!-- Increased height for detail charts -->
-                                      <div class="chart-container" style="height: 250px;">
-                                          <canvas id="flowChart"></canvas>
-                                      </div>
-                                  </div>
-                                  <div class="col-md-6">
-                                      <div class="chart-container" style="height: 250px;">
-                                          <canvas id="probeChart"></canvas>
-                                      </div>
-                                  </div>
-                              </div>
-                              <h6 class="mt-4">Latest Metrics:</h6>
-                              <div class="row mt-2" id="deviceMetrics">
-                                  <!-- Metrics will be inserted here -->
-                                  <p class="text-muted">Loading metrics...</p>
-                              </div>
+                             <input type="radio" class="btn-check" name="sortOptions" id="sortByLastUpdateBtn" autocomplete="off" data-sort="lastUpdate">
+                            <label class="btn btn-outline-secondary" for="sortByLastUpdateBtn"><i class="bi bi-calendar-event"></i> Last Update</label>
                           </div>
-                          <div class="tab-pane fade" id="dataTab" role="tabpanel" aria-labelledby="data-tab">
-                              <h6 class="mt-3">Recent Data Log:</h6>
-                              <div class="table-responsive mt-2">
-                                  <table class="table table-sm table-striped table-hover" id="deviceDataTable">
-                                      <thead>
-                                          <tr>
-                                              <th>Timestamp</th>
-                                              <th>Flow Rate</th>
-                                              <th>PPM</th>
-                                              <th>Injection</th>
-                                              <th>Error Code</th>
-                                              <th>Uploaded</th> <!-- Added Upload time column -->
-                                          </tr>
-                                      </thead>
-                                      <tbody>
-                                          <!-- Device data will be inserted here -->
-                                          <tr><td colspan="6" class="text-center text-muted">Loading data...</td></tr>
-                                      </tbody>
-                                  </table>
-                              </div>
-                          </div>
-                          <div class="tab-pane fade" id="settingsTab" role="tabpanel" aria-labelledby="settings-tab">
-                               <h6 class="mt-3">Device Information:</h6>
-                               <div class="table-responsive mt-2">
-                                  <table class="table table-sm table-striped" id="deviceSettingsTable">
-                                      <tbody>
-                                          <!-- Device settings will be inserted here -->
-                                          <tr><td colspan="2" class="text-muted">Loading settings...</td></tr>
-                                      </tbody>
-                                  </table>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-          </div>
-       </div>
-
-      <!-- ADDED Device Selection Modal -->
-      <div class="modal fade" id="deviceSelectModal" tabindex="-1" aria-labelledby="deviceSelectModalLabel" aria-hidden="true">
-          <div class="modal-dialog">
-              <div class="modal-content">
-                  <div class="modal-header">
-                      <h5 class="modal-title" id="deviceSelectModalLabel">Select Devices to Display</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body">
-                      <p>Choose which devices appear on the overview dashboard.</p>
-                      <!-- Container for the list of checkboxes -->
-                      <div id="deviceSelectList" class="device-select-list mb-3">
-                          <!-- Checkboxes will be loaded here dynamically -->
-                          <p class="text-muted">Loading available devices...</p>
-                      </div>
-                      <!-- Select/Deselect All checkbox -->
-                      <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="selectAllDevices">
-                          <label class="form-check-label" for="selectAllDevices">
-                              Select/Deselect All
-                          </label>
-                      </div>
-                  </div>
-                  <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                      <!-- Updated save button style -->
-                      <button type="button" class="btn btn-primary" id="saveDeviceSelectionBtn" style="background-color: var(--primary-color); border-color: var(--primary-color);">Save Selection</button>
-                  </div>
-              </div>
-          </div>
-      </div>
-      <!-- End Added Modal -->
-
-  </div> <!-- End Main Dashboard -->
-
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-      // API Configuration
-      const API_ENDPOINT = 'https://jolly-queen-8e6f.larry-schrimpfff6544.workers.dev';
-      let apiKey = ''; // Will be populated on login or from storage
-      let allDevices = []; // Stores *all* devices fetched from the API
-      let selectedDeviceIDs = null; // Stores IDs of devices selected for display. null means show all.
-      let deviceDetailModal; // Bootstrap modal instance for device details
-      let deviceSelectModal; // Bootstrap modal instance for device selection
-
-      // Chart instances (global to allow destruction)
-      let flowDetailChart, probeDetailChart, historyChart;
-
-      // LocalStorage Keys
-      const API_KEY_STORAGE_KEY = 'edieApiKey'; // Key for storing the API key
-      const SELECTED_DEVICES_STORAGE_KEY = 'edieSelectedDevices'; // Key for storing the user's device selection
-
-      // --- Initialization ---
-
-      // Initialize the application when the DOM is fully loaded
-      document.addEventListener('DOMContentLoaded', () => {
-          initializeApp();
-      });
-
-      // Core initialization function
-      function initializeApp() {
-          console.log("Initializing EDIE Dashboard...");
-          initializeTimezoneHandling(); // Set up timezone display
-
-          // Load saved API key and selected devices from localStorage
-          const savedKey = localStorage.getItem(API_KEY_STORAGE_KEY);
-          const savedSelection = localStorage.getItem(SELECTED_DEVICES_STORAGE_KEY);
-
-          // Parse the saved device selection JSON
-          if (savedSelection) {
-              try {
-                  selectedDeviceIDs = JSON.parse(savedSelection);
-                  // Ensure it's an array; if not (e.g., corrupted storage), reset to null (show all)
-                  if (!Array.isArray(selectedDeviceIDs)) {
-                      console.warn("Invalid device selection format in localStorage, resetting to show all.");
-                      selectedDeviceIDs = null;
-                      localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY); // Clear invalid entry
-                  }
-              } catch (e) {
-                  console.error("Error parsing saved device selection:", e);
-                  selectedDeviceIDs = null; // Reset to show all on error
-                  localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY); // Clear invalid entry
-              }
-          } else {
-              selectedDeviceIDs = null; // Default to showing all devices if nothing is saved
-          }
-          console.log("Initial selected devices state:", selectedDeviceIDs === null ? "Show All" : selectedDeviceIDs);
-
-          // Set up event listeners for buttons and inputs
-          setupEventListeners();
-
-          // Initialize Bootstrap modals
-          try {
-              deviceDetailModal = new bootstrap.Modal(document.getElementById('deviceDetailModal'));
-              deviceSelectModal = new bootstrap.Modal(document.getElementById('deviceSelectModal')); // Init the new modal
-          } catch (e) {
-              console.error("Error initializing Bootstrap modals:", e);
-              // Potentially show an error to the user if modals are critical
-          }
-
-
-          // Check for saved API key and attempt auto-login/show dashboard
-          if (savedKey) {
-              console.log("Found saved API key.");
-              document.getElementById('apiKey').value = savedKey; // Pre-fill input
-              document.getElementById('rememberKey').checked = true;
-              apiKey = savedKey; // Use the saved key for subsequent requests
-
-              // Directly show the main dashboard and fetch data
-              showMainDashboard();
-              refreshData(); // Fetch data immediately
-              startAutoRefresh(); // Start the refresh timer
-          } else {
-              // No saved key, ensure the login screen is visible
-              console.log("No saved API key found, showing auth screen.");
-              showAuthScreen();
-          }
-
-          // Handle browser tab visibility changes to pause/resume auto-refresh
-          document.addEventListener('visibilitychange', handleVisibilityChange);
-
-          // Hide loading indicator (it's now initially hidden via style, this is redundant but safe)
-          hideLoading();
-      }
-
-      // Central function to set up all event listeners
-      function setupEventListeners() {
-          document.getElementById('loginBtn').addEventListener('click', handleLogin);
-          document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-          document.getElementById('refreshBtn').addEventListener('click', refreshData);
-          document.getElementById('overviewLink').addEventListener('click', showOverviewSection);
-          document.getElementById('historyLink').addEventListener('click', showHistorySection);
-          document.getElementById('searchBtn').addEventListener('click', performSearch); // Renamed for clarity
-          document.getElementById('sortByName').addEventListener('click', () => sortDevices('name'));
-          document.getElementById('sortByStatus').addEventListener('click', () => sortDevices('status'));
-          document.getElementById('searchHistoryBtn').addEventListener('click', fetchHistoricalData);
-          document.getElementById('exportCSV').addEventListener('click', exportHistoryToCSV);
-
-          // Search on Enter key press in the device search input
-          document.getElementById('searchDevices').addEventListener('keyup', (event) => {
-              if (event.key === 'Enter') {
-                  performSearch();
-              }
-          });
-
-          // Listeners for the new Device Selection Modal
-          document.getElementById('selectDevicesBtn').addEventListener('click', openDeviceSelectionModal);
-          document.getElementById('saveDeviceSelectionBtn').addEventListener('click', saveDeviceSelection);
-          // Note: The 'Select All' checkbox listener is added dynamically in openDeviceSelectionModal
-      }
-
-      // --- Timezone & Date Formatting ---
-
-      // Sets the user's local timezone in the UI
-      function initializeTimezoneHandling() {
-          try {
-              const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-              document.getElementById('userTimezone').textContent = userTimezone;
-              document.getElementById('historyUserTimezone').textContent = userTimezone;
-          } catch (e) {
-              console.error("Could not determine timezone:", e);
-              document.getElementById('userTimezone').textContent = "Unknown";
-              document.getElementById('historyUserTimezone').textContent = "Unknown";
-          }
-      }
-
-      // Formats a date string into a locale-specific date and time string
-      function formatDateTime(dateString) {
-          if (!dateString) return 'N/A';
-          try {
-              const date = new Date(dateString);
-              // Check if the date is valid
-              if (isNaN(date.getTime())) return 'Invalid Date';
-              return date.toLocaleString(undefined, {
-                  year: 'numeric', month: 'short', day: 'numeric',
-                  hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true // Added hour12
-              });
-          } catch (e) {
-              console.error("Error formatting date/time:", dateString, e);
-              return 'Date Error';
-          }
-      }
-
-       // Formats a date string into a locale-specific date string
-      function formatDate(dateString) {
-          if (!dateString) return 'N/A';
-          try {
-              const date = new Date(dateString);
-              if (isNaN(date.getTime())) return 'Invalid Date';
-              return date.toLocaleDateString();
-          } catch (e) {
-              console.error("Error formatting date:", dateString, e);
-              return 'Date Error';
-          }
-      }
-
-      // Formats a date string into a locale-specific time string
-      function formatTime(dateString) {
-           if (!dateString) return 'N/A';
-           try {
-               const date = new Date(dateString);
-               if (isNaN(date.getTime())) return 'Invalid Time';
-               return date.toLocaleTimeString(undefined, {
-                   hour: '2-digit', minute: '2-digit', hour12: true // Added hour12
-               });
-           } catch (e) {
-               console.error("Error formatting time:", dateString, e);
-               return 'Time Error';
-           }
-      }
-
-      // Calculates the difference between a timestamp and now in minutes
-      function getTimeDifference(timestamp) {
-          if (!timestamp) return Infinity; // Treat missing timestamp as infinitely old
-          try {
-              const date = new Date(timestamp);
-              if (isNaN(date.getTime())) return Infinity;
-              const now = new Date();
-              return (now - date) / (1000 * 60); // Difference in minutes
-          } catch (e) {
-              console.error("Error calculating time difference:", timestamp, e);
-              return Infinity; // Return infinity on error
-          }
-      }
-
-      // Returns a human-readable relative time string (e.g., "5 minutes ago")
-      function getRelativeTimeString(dateString) {
-          if (!dateString) return 'never';
-          try {
-              const date = new Date(dateString);
-              if (isNaN(date.getTime())) return 'invalid date';
-
-              const now = new Date();
-              const diffMs = now - date;
-              const diffSec = Math.floor(diffMs / 1000);
-              const diffMin = Math.floor(diffSec / 60);
-              const diffHour = Math.floor(diffMin / 60);
-              const diffDay = Math.floor(diffHour / 24);
-
-              if (diffMin < 1) return 'just now';
-              if (diffMin === 1) return `1 minute ago`;
-              if (diffMin < 60) return `${diffMin} minutes ago`;
-              if (diffHour === 1) return `1 hour ago`;
-              if (diffHour < 24) return `${diffHour} hours ago`;
-              if (diffDay === 1) return `yesterday`;
-              if (diffDay < 7) return `${diffDay} days ago`;
-              return formatDate(dateString); // Fallback to full date if older than a week
-          } catch (e) {
-              console.error("Error formatting relative time:", dateString, e);
-              return 'time error';
-          }
-      }
-
-      // Formats a date object into YYYY-MM-DD for filenames
-      function formatDateForFilename(date) {
-          const year = date.getFullYear();
-          const month = (date.getMonth() + 1).toString().padStart(2, '0');
-          const day = date.getDate().toString().padStart(2, '0');
-          return `${year}-${month}-${day}`;
-      }
-
-
-      // --- Auto Refresh & Visibility ---
-
-      // Starts the auto-refresh interval timer
-      function startAutoRefresh() {
-          // Clear any existing interval first
-          if (window.autoRefreshInterval) {
-              clearInterval(window.autoRefreshInterval);
-              console.log("Cleared existing auto-refresh interval.");
-          }
-          // Set a new interval (e.g., every 60 seconds)
-          window.autoRefreshInterval = setInterval(() => {
-              // Only refresh if the main dashboard is visible and the tab is active
-              if (!document.getElementById('mainDashboard').classList.contains('d-none') && document.visibilityState === 'visible') {
-                  console.log("Auto-refreshing data...");
-                  refreshData();
-              } else {
-                  console.log("Auto-refresh skipped (Dashboard hidden or tab inactive).");
-              }
-          }, 60000); // Refresh every 60 seconds
-          console.log("Auto-refresh interval started (60 seconds).");
-      }
-
-       // Handles browser tab visibility changes
-       function handleVisibilityChange() {
-          if (document.visibilityState === 'visible') {
-              console.log("Tab became visible, restarting auto-refresh and refreshing data.");
-              startAutoRefresh(); // Restart timer when tab becomes visible
-              refreshData(); // Refresh immediately
-          } else {
-              console.log("Tab became hidden, pausing auto-refresh.");
-              if (window.autoRefreshInterval) {
-                  clearInterval(window.autoRefreshInterval); // Clear timer when tab is hidden
-              }
-          }
-      }
-
-      // --- Data Fetching and Rendering ---
-
-      // Fetches the list of all devices from the API
-      async function refreshData() {
-          if (!apiKey) {
-              console.log("Refresh skipped: No API key available.");
-              return; // Don't fetch if not logged in
-          }
-          showLoading("Refreshing device list..."); // Show indicator with message
-          try {
-              const response = await fetch(`${API_ENDPOINT}/devices`, {
-                  headers: { 'X-API-KEY': apiKey }
-              });
-
-              if (response.ok) {
-                  const data = await response.json();
-                  // Validate the response structure
-                  if (data && data.success && Array.isArray(data.devices)) {
-                      allDevices = data.devices; // Store all fetched devices
-                      console.log(`Fetched ${allDevices.length} devices successfully.`);
-                      renderDevices(); // Render based on the current selection
-                      populateDeviceDropdown(); // Update history dropdown with latest devices
-                  } else {
-                      console.error('Invalid data structure received:', data);
-                      showError('Failed to parse device data from server.');
-                      allDevices = []; // Clear local data on error
-                      renderDevices(); // Render the empty state
-                  }
-              } else if (response.status === 401) {
-                  console.error('Authentication failed (401). Forcing logout.');
-                  showError('Authentication failed. Your API key might be invalid or expired. Please log in again.');
-                  handleLogout(); // Force logout on authentication failure
-              } else {
-                  console.error(`Error fetching devices: ${response.status} ${response.statusText}`);
-                  showError(`Error fetching devices: Server returned status ${response.status}`);
-                  allDevices = []; // Clear local data
-                  renderDevices(); // Render empty state
-              }
-          } catch (error) {
-              console.error('Network or connection error during refresh:', error);
-              showError('Connection error. Could not reach the server. Please check your network.');
-              allDevices = []; // Clear local data
-              renderDevices(); // Render empty state
-          } finally {
-              hideLoading(); // Always hide indicator
-          }
-      }
-
-      // Renders device cards onto the overview grid based on the selectedDeviceIDs filter
-      function renderDevices(devicesToDisplay = null) {
-          const devicesGrid = document.getElementById('devicesGrid');
-          const noDevicesMessage = document.getElementById('noDevicesMessage');
-          devicesGrid.innerHTML = ''; // Clear previous cards
-          noDevicesMessage.style.display = 'none'; // Hide message initially
-
-          let devicesToRender;
-
-          // If specific devices were passed (e.g., from search), use those.
-          // Otherwise, filter based on the global selection.
-          if (devicesToDisplay) {
-              devicesToRender = devicesToDisplay;
-              console.log(`Rendering ${devicesToRender.length} devices from specific list (e.g., search results).`);
-          } else {
-              // Filter based on selection (if a selection exists and isn't null)
-              if (selectedDeviceIDs === null) {
-                  // null means show all
-                  devicesToRender = allDevices;
-                  console.log(`Rendering all ${devicesToRender.length} fetched devices.`);
-              } else if (Array.isArray(selectedDeviceIDs) && selectedDeviceIDs.length > 0) {
-                  // Filter allDevices based on the selected IDs
-                  devicesToRender = allDevices.filter(device => selectedDeviceIDs.includes(device.deviceId));
-                  console.log(`Rendering ${devicesToRender.length} selected devices out of ${allDevices.length}.`);
-              } else {
-                  // If selection is saved but empty array [], render nothing
-                  devicesToRender = [];
-                  console.log("No devices selected to render (selection is empty).");
-              }
-          }
-
-
-          // Show message if no devices end up being rendered
-          if (devicesToRender.length === 0) {
-              noDevicesMessage.style.display = 'block'; // Show the info message
-              return; // Stop execution, nothing more to render
-          }
-
-          // Sort devices before rendering (optional, could be based on last sort criteria)
-          // Example: devicesToRender.sort((a, b) => a.deviceId.localeCompare(b.deviceId));
-
-          // --- Create and append device cards ---
-          devicesToRender.forEach(device => {
-              // Determine the most reliable timestamp
-              let lastTimestamp = device.latestData?.timestamp || device.lastUpdated || null;
-
-              // Determine device status and associated data
-              let status = getDeviceStatus(device); // Calculate status based on logic
-              let statusClass = `status-${status}`; // CSS class for status indicator
-              // Safely access nested properties, providing defaults
-              let latestEntry = device.latestData || {};
-              let errorCode = (latestEntry.errorCode || 'UNKNOWN').replace(/_/g, ' '); // Make error code readable
-              let flowRate = latestEntry.flow?.actual ?? 0; // Use nullish coalescing for default
-              let ppm = latestEntry.ppm ?? 0;
-
-              // Create the device card element
-              const deviceCard = document.createElement('div');
-              // Use Bootstrap grid classes for responsiveness
-              deviceCard.className = 'col-md-6 col-lg-4 col-xl-3 mb-4'; // Adjusted grid classes
-              deviceCard.innerHTML = `
-                  <div class="card device-card h-100"> <!-- Use Bootstrap class for equal height cards -->
-                      <div class="card-header">
-                          <!-- Status indicator and Device ID -->
-                          <div class="d-flex align-items-center text-truncate"> <!-- Prevent long IDs from breaking layout -->
-                              <span class="status-indicator ${statusClass}" title="Status: ${status}"></span>
-                              <span class="fw-bold ms-1">${device.deviceId}</span>
-                          </div>
-                          <!-- Status/Error code badge -->
-                          <span class="badge ${getStatusBadgeClass(status)} ms-2">${errorCode}</span>
-                      </div>
-                      <div class="card-body d-flex flex-column"> <!-- Use flex column for better layout -->
-                          <!-- Mini chart placeholder -->
-                          <div class="chart-container mb-3">
-                              <canvas id="chart-${device.deviceId}"></canvas>
-                          </div>
-                          <!-- Metrics Area -->
-                          <div class="row text-center mt-auto"> <!-- Push metrics towards bottom -->
-                              <div class="col-6">
-                                  <div class="metric-label">Flow</div>
-                                  <div class="metric-value">${parseFloat(flowRate).toFixed(1)} <small>GPM</small></div>
-                              </div>
-                              <div class="col-6">
-                                  <div class="metric-label">PPM</div>
-                                  <div class="metric-value">${ppm}</div>
-                              </div>
-                          </div>
-                           <div class="row mt-2 text-center">
-                              <div class="col-12">
-                                  <div class="metric-label">Last Update</div>
-                                  <!-- Use relative time string for user-friendliness -->
-                                  <div class="fs-6" title="${formatDateTime(lastTimestamp)}">${getRelativeTimeString(lastTimestamp)}</div>
-                              </div>
-                          </div>
-                      </div>
-                      <div class="card-footer bg-light border-top-0 pt-2 pb-2"> <!-- Adjusted padding -->
-                          <!-- Button to view details -->
-                          <button class="btn btn-outline-secondary btn-sm w-100 view-details" data-device-id="${device.deviceId}">
-                              <i class="bi bi-search me-1"></i> View Details
-                          </button>
-                      </div>
-                  </div>
-              `;
-              devicesGrid.appendChild(deviceCard);
-
-              // Create the mini chart for this device card (pass minimal history if available)
-              // Assuming latestData might contain a small history array for the card
-              let historyForMiniChart = (device.latestData?.history || []).slice(0, 6); // Use limited history
-              createMiniChart(device.deviceId, historyForMiniChart);
-
-
-              // Add event listener to the 'View Details' button
-              const viewButton = deviceCard.querySelector('.view-details');
-              if (viewButton) {
-                  viewButton.addEventListener('click', () => {
-                      // Pass the full device object to the detail function
-                      showDeviceDetails(device);
-                  });
-              } else {
-                  console.warn(`Could not find view details button for device ${device.deviceId}`);
-              }
-          });
-      }
-
-      // --- Authentication ---
-
-      // Handles the login button click
-      async function handleLogin() {
-          const keyInput = document.getElementById('apiKey');
-          const rememberKeyCheckbox = document.getElementById('rememberKey');
-          const authError = document.getElementById('authError');
-          authError.classList.add('d-none'); // Hide previous errors
-
-          const inputKey = keyInput.value.trim();
-          if (!inputKey) {
-              showAuthError('Please enter your API key.');
-              return;
-          }
-
-          showLoading("Authenticating..."); // Show loading indicator
-          try {
-              // Test the API key by trying to fetch the device list
-              // A successful fetch (even if empty) means the key is valid
-              const response = await fetch(`${API_ENDPOINT}/devices?limit=1`, { // Fetch minimal data to test key
-                  headers: { 'X-API-KEY': inputKey }
-              });
-
-              if (response.ok) {
-                  // Authentication successful
-                  apiKey = inputKey; // Set the global API key for future requests
-                  console.log("Login successful.");
-
-                  // Save API key to localStorage if 'Remember me' is checked
-                  if (rememberKeyCheckbox.checked) {
-                      localStorage.setItem(API_KEY_STORAGE_KEY, apiKey);
-                      console.log("API Key saved to localStorage.");
-                  } else {
-                      // Otherwise, ensure it's removed
-                      localStorage.removeItem(API_KEY_STORAGE_KEY);
-                      console.log("API Key not saved (Remember me unchecked).");
-                  }
-
-                  // Switch UI to the main dashboard
-                  showMainDashboard();
-
-                  // Load initial data (await to ensure it finishes before hiding loading)
-                  await refreshData();
-                  startAutoRefresh(); // Start the auto-refresh cycle
-
-              } else if (response.status === 401) {
-                  // Specific handling for authentication failure
-                  showAuthError('Invalid API key. Please check your key and try again.');
-                  console.log("Login failed: Invalid API Key (401).");
-                  keyInput.focus(); // Set focus back to the input field
-              } else {
-                  // Handle other potential server errors during login test
-                   showAuthError(`Login failed: Server error (${response.status} ${response.statusText})`);
-                   console.log(`Login failed: Server error ${response.status}`);
-              }
-          } catch (error) {
-              // Handle network errors
-              showAuthError('Connection error: Could not reach the server. Please check your network.');
-              console.error('Login connection error:', error);
-          } finally {
-              hideLoading(); // Hide loading indicator regardless of outcome
-          }
-      }
-
-      // Displays an error message on the authentication screen
-      function showAuthError(message) {
-          const authError = document.getElementById('authError');
-          authError.textContent = message;
-          authError.classList.remove('d-none'); // Make the error visible
-      }
-
-      // Handles the logout button click
-      function handleLogout() {
-          console.log("Logging out...");
-          // Clear sensitive data
-          apiKey = '';
-          document.getElementById('apiKey').value = ''; // Clear API key from input field
-          // Optionally clear 'Remember me' checkbox state if desired
-          // document.getElementById('rememberKey').checked = false;
-
-          // Clear stored API key and device selection
-          localStorage.removeItem(API_KEY_STORAGE_KEY);
-          localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY); // Clear device selection on logout
-
-          // Reset application state
-          allDevices = []; // Clear device data
-          selectedDeviceIDs = null; // Reset selection to 'show all' (for next login)
-
-          // Stop auto-refresh
-          if (window.autoRefreshInterval) {
-              clearInterval(window.autoRefreshInterval);
-              window.autoRefreshInterval = null;
-              console.log("Auto-refresh interval stopped.");
-          }
-
-          // Switch UI back to the authentication screen
-          showAuthScreen();
-
-          // Clear the dashboard display
-          renderDevices(); // Render empty state
-          // Clear history section if needed
-          document.getElementById('historyTable').querySelector('tbody').innerHTML = '';
-          if (historyChart) historyChart.destroy();
-
-
-          console.log("User logged out successfully.");
-      }
-
-      // --- UI Navigation & State Management ---
-
-      // Shows the main dashboard and hides the auth screen
-      function showMainDashboard() {
-          document.getElementById('authScreen').classList.add('d-none');
-          document.getElementById('mainDashboard').classList.remove('d-none');
-          showOverviewSection(); // Default to overview section on login/load
-      }
-
-      // Shows the authentication screen and hides the main dashboard
-      function showAuthScreen() {
-          document.getElementById('mainDashboard').classList.add('d-none');
-          document.getElementById('authScreen').classList.remove('d-none');
-      }
-
-
-      // Shows the Overview section and hides History
-      function showOverviewSection(e) {
-          if (e) e.preventDefault(); // Prevent default link behavior if called from click
-          document.getElementById('overviewLink').classList.add('active');
-          document.getElementById('historyLink').classList.remove('active');
-          document.getElementById('overviewSection').classList.remove('d-none');
-          document.getElementById('historySection').classList.add('d-none');
-          console.log("Switched to Overview section.");
-          // Optional: Refresh data when switching to overview if desired
-          // refreshData();
-      }
-
-      // Shows the History section and hides Overview
-      function showHistorySection(e) {
-          if (e) e.preventDefault(); // Prevent default link behavior
-          document.getElementById('historyLink').classList.add('active');
-          document.getElementById('overviewLink').classList.remove('active');
-          document.getElementById('historySection').classList.remove('d-none');
-          document.getElementById('overviewSection').classList.add('d-none');
-          console.log("Switched to History section.");
-          // Populate the device dropdown for history filtering if needed
-          populateDeviceDropdown();
-      }
-
-      // Populates the device dropdown in the History section
-      function populateDeviceDropdown() {
-          const deviceSelect = document.getElementById('deviceSelect');
-          const currentSelectedValue = deviceSelect.value; // Remember current selection
-
-          // Store existing options temporarily to avoid flicker/re-adding duplicates
-          const existingOptions = {};
-          Array.from(deviceSelect.options).forEach(opt => {
-              if (opt.value) existingOptions[opt.value] = opt.textContent;
-          });
-
-          // Clear existing options except the placeholder
-           deviceSelect.innerHTML = '<option value="">Select Device</option>';
-
-          // Sort devices alphabetically for the dropdown
-          const sortedDevices = [...allDevices].sort((a, b) => a.deviceId.localeCompare(b.deviceId));
-
-          // Add sorted devices as options
-          sortedDevices.forEach(device => {
-              const option = document.createElement('option');
-              option.value = device.deviceId;
-              option.textContent = device.deviceId;
-              deviceSelect.appendChild(option);
-          });
-
-           // Restore previous selection if it still exists
-           if (currentSelectedValue && deviceSelect.querySelector(`option[value="${currentSelectedValue}"]`)) {
-               deviceSelect.value = currentSelectedValue;
-           }
-      }
-
-
-      // --- Device Card/Details/Charts ---
-
-      // Determines the status string ('online', 'warning', 'error', 'offline') for a device
-      function getDeviceStatus(device) {
-          // Use the most reliable timestamp available
-          const timestamp = device.latestData?.timestamp || device.lastUpdated;
-          const errorCode = device.latestData?.errorCode; // Get the error code
-
-          // Check if the device hasn't reported recently (e.g., > 15 minutes)
-          const timeDiffMinutes = getTimeDifference(timestamp);
-          // Increased threshold to 15 mins to be less sensitive to brief delays
-          if (timeDiffMinutes > 15) {
-              // If it's explicitly paused, keep it as warning, otherwise offline
-              return errorCode === 'SYSTEM_PAUSED' ? 'warning' : 'offline';
-          }
-
-          // If we have recent data, determine status based on error code
-          if (errorCode === null || typeof errorCode === 'undefined') return 'offline'; // Treat missing error code as offline/unknown
-          if (errorCode === 'NO_ERROR') return 'online';
-          // Define warning codes
-          if (['LOW_FLOW', 'SYSTEM_PAUSED', 'MISWEIGHTED', 'TANK_LEVEL_LOW'].includes(errorCode)) return 'warning'; // Added TANK_LEVEL_LOW
-          // Any other error code indicates an error state
-          return 'error';
-      }
-
-      // Creates a small line chart for the device card overview
-      function createMiniChart(deviceId, history) {
-          const chartId = `chart-${deviceId}`;
-          const canvas = document.getElementById(chartId);
-          if (!canvas) {
-              console.warn(`Canvas element not found for mini chart: ${chartId}`);
-              return;
-          }
-          const ctx = canvas.getContext('2d');
-
-          // Clear previous chart instance if it exists for this canvas
-          // (Chart.js doesn't automatically handle this well for dynamic content)
-          const existingChart = Chart.getChart(ctx);
-          if (existingChart) {
-              existingChart.destroy();
-          }
-
-          // Prepare data for the mini chart (e.g., last 6 flow rate points)
-          let labels = [];
-          let dataPoints = [];
-
-          if (Array.isArray(history) && history.length > 0) {
-              // Take the most recent entries (assuming history is time-sorted, newest first)
-              const recentHistory = history.slice(0, 6).reverse(); // Reverse to plot chronologically
-              labels = recentHistory.map(entry => formatTime(entry.timestamp));
-              dataPoints = recentHistory.map(entry => entry.flow?.actual ?? 0); // Use flow rate, default to 0
-          } else {
-              // Provide dummy data for an empty appearance if no history
-              labels = [' ', ' ', ' ', ' ', ' ']; // Empty labels
-              dataPoints = [null, null, null, null, null]; // Use null for gaps
-          }
-
-          // Create the new Chart.js instance
-          new Chart(ctx, {
-              type: 'line',
-              data: {
-                  labels: labels,
-                  datasets: [{
-                      label: 'Flow Rate',
-                      data: dataPoints,
-                      borderColor: 'rgba(203, 32, 38, 0.7)', // Primary color slightly transparent
-                      backgroundColor: 'rgba(203, 32, 38, 0.1)', // Lighter fill
-                      borderWidth: 1.5, // Thinner line for mini chart
-                      tension: 0.3, // Smoother curve
-                      fill: true,
-                      pointRadius: 0, // Hide points
-                  }]
-              },
-              options: {
-                  responsive: true,
-                  maintainAspectRatio: false, // Allow chart to fill container height
-                  animation: false, // Disable animation for performance
-                  plugins: {
-                      legend: { display: false }, // Hide legend
-                      tooltip: { enabled: false } // Disable tooltips
-                  },
-                  scales: {
-                      y: { display: false }, // Hide Y axis
-                      x: { display: false } // Hide X axis
-                  }
-              }
-          });
-      }
-
-      // Fetches detailed data for a specific device and shows the modal
-      async function showDeviceDetails(device) {
-          if (!apiKey) {
-              console.warn("Cannot show device details: No API key.");
-              showError("You seem to be logged out. Please log in again.");
-              return;
-          }
-          if (!device || !device.deviceId) {
-              console.error("Cannot show details: Invalid device object provided.");
-              return;
-          }
-
-          console.log(`Showing details for device: ${device.deviceId}`);
-          document.getElementById('deviceDetailTitle').textContent = `Device Details: ${device.deviceId}`;
-
-          // --- Reset Modal Content ---
-          // Show loading states in tabs
-          document.getElementById('deviceMetrics').innerHTML = '<p class="text-center text-muted p-3"><span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Loading metrics...</p>';
-          document.getElementById('deviceDataTable').querySelector('tbody').innerHTML = '<tr><td colspan="6" class="text-center text-muted p-3"><span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Loading data log...</td></tr>';
-          document.getElementById('deviceSettingsTable').querySelector('tbody').innerHTML = '<tr><td colspan="2" class="text-center text-muted p-3"><span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Loading info...</td></tr>';
-
-          // Reset charts by destroying previous instances if they exist
-          if (flowDetailChart) flowDetailChart.destroy();
-          if (probeDetailChart) probeDetailChart.destroy();
-          // Ensure chart canvases are visible (might be hidden if previous device had no data)
-           document.getElementById('flowChart').parentElement.style.display = 'block';
-           document.getElementById('probeChart').parentElement.style.display = 'block';
-
-
-          // Ensure the 'Overview' tab is active when the modal opens
-          const overviewTabElement = document.getElementById('overview-tab');
-          if (overviewTabElement) {
-               try {
-                    bootstrap.Tab.getOrCreateInstance(overviewTabElement).show();
-               } catch(e) {
-                    console.error("Error showing overview tab:", e);
-               }
-          } else {
-               console.warn("Overview tab element not found.");
-          }
-
-          // Show the modal
-          try {
-              deviceDetailModal.show();
-          } catch (e) {
-              console.error("Error showing device detail modal:", e);
-              showError("Could not open device details window.");
-              return;
-          }
-
-
-          // --- Fetch Detailed Data ---
-          showLoading(`Fetching details for ${device.deviceId}...`); // Use modal-specific loading if available, otherwise global
-          try {
-              // Fetch a reasonable number of recent data points for the modal
-              const limit = 50; // Fetch last 50 data points for detail view
-              const response = await fetch(`${API_ENDPOINT}/devices?deviceId=${device.deviceId}&limit=${limit}`, {
-                  headers: { 'X-API-KEY': apiKey }
-              });
-
-              if (response.ok) {
-                  const detailedData = await response.json();
-                  // Expecting { success: true, data: [ { logData: [...], uploaded: ... }, ... ] }
-                  if (detailedData.success && Array.isArray(detailedData.data)) {
-                      // Flatten the logData arrays from potentially multiple files/uploads
-                      let allLogEntries = [];
-                      detailedData.data.forEach(fileMeta => {
-                          if (Array.isArray(fileMeta.logData)) {
-                              // Add the upload timestamp from the file metadata to each log entry
-                              fileMeta.logData.forEach(entry => {
-                                  entry.uploaded = fileMeta.uploaded; // Add upload time
-                                  entry.deviceId = entry.deviceId || device.deviceId; // Ensure deviceId is present
-                              });
-                              allLogEntries = allLogEntries.concat(fileMeta.logData);
-                          }
-                      });
-
-                      // Sort all entries by timestamp (most recent first)
-                      allLogEntries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-                      console.log(`Found ${allLogEntries.length} log entries for device ${device.deviceId}`);
-
-                      // Store this detailed, sorted data temporarily with the device object (or pass directly)
-                      // We'll pass it to the population function
-                      populateDeviceDetailTabs(allLogEntries, device.deviceId); // Pass log entries and ID
-
-                  } else {
-                       console.warn(`No detailed data found or unexpected structure for device ${device.deviceId}:`, detailedData);
-                       showError(`No detailed data could be loaded for ${device.deviceId}.`);
-                       // Update tabs to show "No data" messages
-                       document.getElementById('deviceMetrics').innerHTML = '<p class="text-center text-muted p-3">No metrics available.</p>';
-                       document.getElementById('deviceDataTable').querySelector('tbody').innerHTML = '<tr><td colspan="6" class="text-center text-muted p-3">No data log entries found.</td></tr>';
-                       document.getElementById('deviceSettingsTable').querySelector('tbody').innerHTML = '<tr><td colspan="2" class="text-center text-muted p-3">No device information available.</td></tr>';
-                  }
-              } else if (response.status === 401) {
-                  // Handle auth error during detail fetch
-                  deviceDetailModal.hide(); // Hide modal first
-                  showError('Authentication failed while fetching details. Please log in again.');
-                  handleLogout();
-              } else {
-                   showError(`Error fetching device details: Server returned status ${response.status}`);
-                   // Leave "Loading..." or show specific error in tabs
-                   document.getElementById('deviceMetrics').innerHTML = `<p class="text-center text-danger p-3">Error loading metrics (${response.status}).</p>`;
-                   document.getElementById('deviceDataTable').querySelector('tbody').innerHTML = `<tr><td colspan="6" class="text-center text-danger p-3">Error loading data log (${response.status}).</td></tr>`;
-                   document.getElementById('deviceSettingsTable').querySelector('tbody').innerHTML = `<tr><td colspan="2" class="text-center text-danger p-3">Error loading info (${response.status}).</td></tr>`;
-              }
-          } catch (error) {
-              console.error('Network error fetching device details:', error);
-              showError('Connection error while fetching device details.');
-              // Show error in tabs
-              document.getElementById('deviceMetrics').innerHTML = `<p class="text-center text-danger p-3">Connection error loading metrics.</p>`;
-              document.getElementById('deviceDataTable').querySelector('tbody').innerHTML = `<tr><td colspan="6" class="text-center text-danger p-3">Connection error loading data log.</td></tr>`;
-              document.getElementById('deviceSettingsTable').querySelector('tbody').innerHTML = `<tr><td colspan="2" class="text-center text-danger p-3">Connection error loading info.</td></tr>`;
-          } finally {
-              hideLoading(); // Hide the global loading indicator
-          }
-      }
-
-      // Populates the different tabs in the device detail modal
-      function populateDeviceDetailTabs(logEntries, deviceId) {
-          // logEntries should be the flattened, sorted array (newest first)
-          const latestEntry = logEntries.length > 0 ? logEntries[0] : null; // Get the absolute latest entry
-
-          if (!latestEntry) {
-                console.warn(`No log entries found for device ${deviceId} to populate modal tabs.`);
-                // Update tabs to show "No data" - This might be redundant if fetch failed, but safe
-                document.getElementById('deviceMetrics').innerHTML = '<p class="text-center text-muted p-3">No metrics available.</p>';
-                document.getElementById('deviceDataTable').querySelector('tbody').innerHTML = '<tr><td colspan="6" class="text-center text-muted p-3">No data log entries found.</td></tr>';
-                document.getElementById('deviceSettingsTable').querySelector('tbody').innerHTML = '<tr><td colspan="2" class="text-center text-muted p-3">No device information available.</td></tr>';
-                // Hide chart containers if no data
-                document.getElementById('flowChart').parentElement.style.display = 'none';
-                document.getElementById('probeChart').parentElement.style.display = 'none';
+                    </div>
+                </div>
+                <div id="devicesGrid" class="row g-4">
+                    <!-- Device cards will be inserted here -->
+                    <div class="col-12 message-area" id="overviewMessageArea" style="display: none;">
+                        <p id="overviewMessageText" class="info-message">Loading devices...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Section -->
+            <div id="historySection" class="d-none">
+                <div class="timezone-info" id="historyTimezoneInfo">
+                     <i class="bi bi-clock"></i> All times shown in local timezone: <strong id="userTimezoneHistory"></strong>
+                </div>
+                 <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center bg-light">
+                        <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Historical Data</h5>
+                        <button id="exportCsvBtn" class="btn btn-sm btn-outline-primary" disabled>
+                            <i class="bi bi-download me-1"></i>Export CSV
+                        </button>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3 mb-3 align-items-end">
+                            <div class="col-md-4 col-lg-3">
+                                <label for="historyDeviceSelect" class="form-label">Device</label>
+                                <select id="historyDeviceSelect" class="form-select form-select-sm">
+                                    <option value="" selected>Select a device...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 col-lg-2">
+                                <label for="historyStartDateInput" class="form-label">Start Date</label>
+                                <input type="date" id="historyStartDateInput" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-3 col-lg-2">
+                                <label for="historyEndDateInput" class="form-label">End Date</label>
+                                <input type="date" id="historyEndDateInput" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-md-2 col-lg-2">
+                                <label for="historyLimitSelect" class="form-label">Max Entries</label>
+                                <select id="historyLimitSelect" class="form-select form-select-sm">
+                                    <option value="50">50</option>
+                                    <option value="100" selected>100</option>
+                                    <option value="250">250</option>
+                                    <option value="500">500</option>
+                                    <option value="1000">1000</option>
+                                </select>
+                            </div>
+                            <div class="col-md-12 col-lg-3">
+                                <button id="searchHistoryBtn" class="btn btn-primary btn-sm w-100">
+                                    <i class="bi bi-search me-1"></i>Search History
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="historyChartContainer" class="mb-4" style="height: 300px; display: none;">
+                            <canvas id="historyChart"></canvas>
+                        </div>
+
+                        <div id="historyTableContainer" class="table-responsive" style="display: none;">
+                            <table class="table table-striped table-hover table-sm" id="historyTable">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Flow (GPM)</th>
+                                        <th>PPM</th>
+                                        <th>Chem Inj (Gal)</th> <!-- Assuming Gallons from worker -->
+                                        <th>Acid Inj (Gal)</th> <!-- Assuming Gallons -->
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- History data rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-12 message-area" id="historyMessageArea">
+                            <p id="historyMessageText" class="info-message">Select criteria and search to view history.</p>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+
+        </div> <!-- End Container Fluid -->
+
+    </div> <!-- End Main Dashboard -->
+
+
+    <!-- Device Detail Modal -->
+    <div class="modal fade" id="deviceDetailModal" tabindex="-1" aria-labelledby="deviceDetailTitle" aria-hidden="true">
+        <div class="modal-dialog modal-xl"> <!-- Use modal-xl for more space -->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deviceDetailTitle">Device Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0"> <!-- Remove padding to allow tabs to fill -->
+                    <ul class="nav nav-tabs nav-fill" id="deviceDetailTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="detail-overview-tab" data-bs-toggle="tab" data-bs-target="#detailOverviewPane" type="button" role="tab" aria-controls="detailOverviewPane" aria-selected="true">
+                                <i class="bi bi-bar-chart-line-fill me-1"></i>Overview
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="detail-data-tab" data-bs-toggle="tab" data-bs-target="#detailDataPane" type="button" role="tab" aria-controls="detailDataPane" aria-selected="false">
+                                <i class="bi bi-table me-1"></i>Data Log
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="detail-info-tab" data-bs-toggle="tab" data-bs-target="#detailInfoPane" type="button" role="tab" aria-controls="detailInfoPane" aria-selected="false">
+                                <i class="bi bi-info-circle-fill me-1"></i>Info
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content p-4" id="deviceDetailTabContent"> <!-- Add padding back here -->
+                        <!-- Overview Tab Pane -->
+                        <div class="tab-pane fade show active" id="detailOverviewPane" role="tabpanel" aria-labelledby="detail-overview-tab" tabindex="0">
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="detail-chart-container">
+                                        <canvas id="detailFlowChart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                     <div class="detail-chart-container">
+                                        <canvas id="detailProbeChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <h6>Latest Metrics</h6>
+                            <div class="row g-3" id="detailMetricsContainer">
+                                <div class="col-12 message-area">
+                                    <p class="info-message">Loading metrics...</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Data Log Tab Pane -->
+                        <div class="tab-pane fade" id="detailDataPane" role="tabpanel" aria-labelledby="detail-data-tab" tabindex="0">
+                             <h6>Recent Data Log Entries</h6>
+                             <div class="table-responsive mt-2">
+                                <table class="table table-sm table-striped table-hover" id="detailDataTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Timestamp</th>
+                                            <th>Flow</th>
+                                            <th>PPM</th>
+                                            <th>Chem Inj</th>
+                                            <th>Acid Inj</th>
+                                            <th>Error Code</th>
+                                            <th>Uploaded</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                         <tr><td colspan="7" class="text-center text-muted p-3">Loading data...</td></tr>
+                                    </tbody>
+                                </table>
+                             </div>
+                        </div>
+                        <!-- Info Tab Pane -->
+                        <div class="tab-pane fade" id="detailInfoPane" role="tabpanel" aria-labelledby="detail-info-tab" tabindex="0">
+                            <h6>Device Information</h6>
+                             <div class="table-responsive mt-2">
+                                <table class="table table-sm table-striped" id="detailInfoTable">
+                                    <tbody>
+                                        <tr><td colspan="2" class="text-center text-muted p-3">Loading info...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                 <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Device Selection Modal -->
+    <div class="modal fade" id="deviceSelectModal" tabindex="-1" aria-labelledby="deviceSelectModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable"> <!-- Allow scrolling -->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deviceSelectModalLabel">Select Devices to Display</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">Choose which devices appear on the overview dashboard.</p>
+                    <div class="mb-3">
+                        <input type="text" id="filterDeviceSelectInput" class="form-control form-control-sm" placeholder="Filter devices...">
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" value="" id="selectAllDevicesCheckbox">
+                        <label class="form-check-label fw-bold" for="selectAllDevicesCheckbox">
+                            Select/Deselect All
+                        </label>
+                    </div>
+                    <div id="deviceSelectList" class="device-select-list">
+                        <p class="text-center text-muted p-3">Loading available devices...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveDeviceSelectionBtn">Save Selection</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        // --- Configuration ---
+        const API_ENDPOINT = 'https://jolly-queen-8e6f.larry-schrimpfff6544.workers.dev'; // Ensure this is correct
+        const API_KEY_STORAGE_KEY = 'edieApiKey';
+        const SELECTED_DEVICES_STORAGE_KEY = 'edieSelectedDevices';
+        const DEFAULT_API_KEY = "k32BWMByEJrCihED0YEmhs0AaUJCeontFUC_qbeB"; // Pre-fill for convenience
+        const AUTO_REFRESH_INTERVAL = 60000; // 60 seconds
+        const OFFLINE_THRESHOLD_MINUTES = 15; // Device considered offline after this many minutes
+
+        // --- State Variables ---
+        let apiKey = '';
+        let allDevices = []; // Holds the raw data for ALL devices fetched from API
+        let displayedDevices = []; // Holds the devices currently being displayed (filtered/sorted subset of allDevices)
+        let selectedDeviceIDs = null; // Array of IDs to show, or null to show all
+        let currentSortCriteria = 'name'; // Default sort
+        let currentSearchTerm = '';
+        let autoRefreshTimer = null;
+        let isTabVisible = true;
+
+        // Chart instances
+        let chartInstances = {}; // Store mini charts by deviceId
+        let detailFlowChart = null;
+        let detailProbeChart = null;
+        let historyChart = null;
+
+        // Modal instances
+        let deviceDetailModal = null;
+        let deviceSelectModal = null;
+        let errorToast = null;
+
+        // --- DOM Elements (Cache common ones) ---
+        const DOMElements = {
+            loadingIndicator: document.getElementById('loadingIndicator'),
+            loadingMessage: document.getElementById('loadingMessage'),
+            authScreen: document.getElementById('authScreen'),
+            mainDashboard: document.getElementById('mainDashboard'),
+            apiKeyInput: document.getElementById('apiKeyInput'),
+            rememberKeyCheckbox: document.getElementById('rememberKeyCheckbox'),
+            loginBtn: document.getElementById('loginBtn'),
+            authError: document.getElementById('authError'),
+            logoutBtn: document.getElementById('logoutBtn'),
+            navOverviewLink: document.getElementById('navOverviewLink'),
+            navHistoryLink: document.getElementById('navHistoryLink'),
+            overviewSection: document.getElementById('overviewSection'),
+            historySection: document.getElementById('historySection'),
+            userTimezoneOverview: document.getElementById('userTimezoneOverview'),
+            userTimezoneHistory: document.getElementById('userTimezoneHistory'),
+            searchDevicesInput: document.getElementById('searchDevicesInput'),
+            devicesGrid: document.getElementById('devicesGrid'),
+            overviewMessageArea: document.getElementById('overviewMessageArea'),
+            overviewMessageText: document.getElementById('overviewMessageText'),
+            historyDeviceSelect: document.getElementById('historyDeviceSelect'),
+            historyStartDateInput: document.getElementById('historyStartDateInput'),
+            historyEndDateInput: document.getElementById('historyEndDateInput'),
+            historyLimitSelect: document.getElementById('historyLimitSelect'),
+            searchHistoryBtn: document.getElementById('searchHistoryBtn'),
+            exportCsvBtn: document.getElementById('exportCsvBtn'),
+            historyChartContainer: document.getElementById('historyChartContainer'),
+            historyChartCanvas: document.getElementById('historyChart'),
+            historyTableContainer: document.getElementById('historyTableContainer'),
+            historyTableBody: document.getElementById('historyTable').querySelector('tbody'),
+            historyMessageArea: document.getElementById('historyMessageArea'),
+            historyMessageText: document.getElementById('historyMessageText'),
+            selectDevicesBtn: document.getElementById('selectDevicesBtn'),
+            refreshBtn: document.getElementById('refreshBtn'),
+            toastElement: document.getElementById('errorToast'),
+            toastMessage: document.getElementById('toastErrorMessage'),
+            deviceDetailModalElement: document.getElementById('deviceDetailModal'),
+            deviceSelectModalElement: document.getElementById('deviceSelectModal'),
+            deviceDetailTitle: document.getElementById('deviceDetailTitle'),
+            detailMetricsContainer: document.getElementById('detailMetricsContainer'),
+            detailFlowChartCanvas: document.getElementById('detailFlowChart'),
+            detailProbeChartCanvas: document.getElementById('detailProbeChart'),
+            detailDataTableBody: document.getElementById('detailDataTable').querySelector('tbody'),
+            detailInfoTableBody: document.getElementById('detailInfoTable').querySelector('tbody'),
+            deviceSelectList: document.getElementById('deviceSelectList'),
+            filterDeviceSelectInput: document.getElementById('filterDeviceSelectInput'),
+            selectAllDevicesCheckbox: document.getElementById('selectAllDevicesCheckbox'),
+            saveDeviceSelectionBtn: document.getElementById('saveDeviceSelectionBtn'),
+        };
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+        function initializeApp() {
+            console.log("Initializing EDIE Dashboard v2...");
+            setThemeColor(); // Apply CSS variables from primary color
+            initializeTimezone();
+            initializeModalsAndToast();
+            setupEventListeners();
+            loadStateFromStorage();
+
+            if (apiKey) {
+                console.log("API key found in storage. Attempting auto-login.");
+                DOMElements.apiKeyInput.value = apiKey;
+                DOMElements.rememberKeyCheckbox.checked = true;
+                showMainDashboard();
+                startAutoRefresh(); // Start refresh cycle
+                refreshDeviceList(); // Initial data load
+            } else {
+                console.log("No API key in storage. Showing login screen.");
+                DOMElements.apiKeyInput.value = DEFAULT_API_KEY; // Pre-fill default key
+                showAuthScreen();
+            }
+
+             document.addEventListener('visibilitychange', handleVisibilityChange);
+        }
+
+        function setThemeColor() {
+            // Optional: If you want to dynamically set theme colors based on --primary-color
+            // Example: document.documentElement.style.setProperty('--bs-primary', getComputedStyle(document.documentElement).getPropertyValue('--primary-color'));
+        }
+
+        function initializeTimezone() {
+            try {
+                const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                DOMElements.userTimezoneOverview.textContent = userTimezone;
+                DOMElements.userTimezoneHistory.textContent = userTimezone;
+            } catch (e) {
+                console.error("Could not determine timezone:", e);
+                DOMElements.userTimezoneOverview.textContent = "Unknown";
+                DOMElements.userTimezoneHistory.textContent = "Unknown";
+            }
+        }
+
+        function initializeModalsAndToast() {
+            try {
+                deviceDetailModal = new bootstrap.Modal(DOMElements.deviceDetailModalElement);
+                deviceSelectModal = new bootstrap.Modal(DOMElements.deviceSelectModalElement);
+                errorToast = new bootstrap.Toast(DOMElements.toastElement);
+            } catch(e) {
+                console.error("Error initializing Bootstrap components:", e);
+                // Consider disabling features that rely on modals if init fails
+            }
+        }
+
+        function setupEventListeners() {
+            DOMElements.loginBtn.addEventListener('click', handleLogin);
+            DOMElements.apiKeyInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
+            DOMElements.logoutBtn.addEventListener('click', handleLogout);
+            DOMElements.refreshBtn.addEventListener('click', () => refreshDeviceList(true)); // Force refresh
+            DOMElements.selectDevicesBtn.addEventListener('click', openDeviceSelectionModal);
+            DOMElements.navOverviewLink.addEventListener('click', showOverviewSection);
+            DOMElements.navHistoryLink.addEventListener('click', showHistorySection);
+
+            // Overview Search & Sort
+            DOMElements.searchDevicesInput.addEventListener('input', handleSearchInput);
+            document.querySelectorAll('input[name="sortOptions"]').forEach(radio => {
+                radio.addEventListener('change', handleSortChange);
+            });
+
+            // History Controls
+            DOMElements.searchHistoryBtn.addEventListener('click', fetchHistoricalData);
+            DOMElements.exportCsvBtn.addEventListener('click', exportHistoryToCSV);
+
+            // Device Selection Modal
+            DOMElements.saveDeviceSelectionBtn.addEventListener('click', saveDeviceSelection);
+            DOMElements.selectAllDevicesCheckbox.addEventListener('change', handleSelectAllToggle);
+            DOMElements.filterDeviceSelectInput.addEventListener('input', filterDeviceSelectionList);
+
+            // Device Detail Modal - Reset charts on close
+            DOMElements.deviceDetailModalElement.addEventListener('hidden.bs.modal', () => {
+                 destroyChart(detailFlowChart); detailFlowChart = null;
+                 destroyChart(detailProbeChart); detailProbeChart = null;
+                 console.log("Detail modal closed, charts destroyed.");
+            });
+        }
+
+        function loadStateFromStorage() {
+            const savedKey = localStorage.getItem(API_KEY_STORAGE_KEY);
+            if (savedKey) {
+                apiKey = savedKey;
+            }
+
+            const savedSelection = localStorage.getItem(SELECTED_DEVICES_STORAGE_KEY);
+            if (savedSelection) {
+                try {
+                    selectedDeviceIDs = JSON.parse(savedSelection);
+                    if (!Array.isArray(selectedDeviceIDs)) {
+                        console.warn("Invalid device selection in localStorage, resetting to show all.");
+                        selectedDeviceIDs = null;
+                        localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY);
+                    }
+                } catch (e) {
+                    console.error("Error parsing saved device selection:", e);
+                    selectedDeviceIDs = null;
+                    localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY);
+                }
+            } else {
+                selectedDeviceIDs = null; // Default: show all
+            }
+             console.log("Initial selected devices state:", selectedDeviceIDs === null ? "Show All" : selectedDeviceIDs);
+        }
+
+        // --- Authentication ---
+        async function handleLogin() {
+            const inputKey = DOMElements.apiKeyInput.value.trim();
+            const remember = DOMElements.rememberKeyCheckbox.checked;
+            DOMElements.authError.classList.add('d-none');
+
+            if (!inputKey) {
+                showAuthError("Please enter your API key.");
                 return;
             }
 
-            // Ensure chart containers are visible before trying to draw
-            document.getElementById('flowChart').parentElement.style.display = 'block';
-            document.getElementById('probeChart').parentElement.style.display = 'block';
+            showLoading("Authenticating...");
+            try {
+                // Test API key by fetching minimal data
+                const response = await fetchWithAuth(`${API_ENDPOINT}/devices?limit=1`);
 
+                if (response.ok) {
+                    apiKey = inputKey;
+                    if (remember) {
+                        localStorage.setItem(API_KEY_STORAGE_KEY, apiKey);
+                        console.log("API Key saved.");
+                    } else {
+                        localStorage.removeItem(API_KEY_STORAGE_KEY);
+                        console.log("API Key not saved.");
+                    }
+                    showMainDashboard();
+                    startAutoRefresh();
+                    await refreshDeviceList(); // Fetch initial data after login
 
-          // Populate the various parts of the modal
-          populateDeviceMetrics(latestEntry); // Uses the single latest entry
-          createDeviceCharts(logEntries); // Uses the array of log entries for trends
-          populateDeviceDataTab(logEntries); // Uses the array of log entries for the table
-          populateDeviceSettingsTab(latestEntry, deviceId); // Uses latest entry and device ID
-      }
+                } else if (response.status === 401) {
+                    showAuthError("Invalid API Key. Please check and try again.");
+                } else {
+                    const errorData = await response.json().catch(() => ({ message: response.statusText }));
+                    showAuthError(`Login failed: ${errorData.message || response.statusText} (Status: ${response.status})`);
+                }
+            } catch (error) {
+                console.error("Login network error:", error);
+                showAuthError("Connection error. Could not reach the server.");
+            } finally {
+                hideLoading();
+            }
+        }
 
-      // Populates the metrics overview in the device detail modal
-      function populateDeviceMetrics(latestEntry) {
-          const metricsContainer = document.getElementById('deviceMetrics');
-          metricsContainer.innerHTML = ''; // Clear previous/loading state
+        function handleLogout() {
+            console.log("Logging out...");
+            apiKey = '';
+            allDevices = [];
+            displayedDevices = [];
+            selectedDeviceIDs = null; // Reset selection state
+            localStorage.removeItem(API_KEY_STORAGE_KEY);
+            localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY); // Clear selection on logout
+            DOMElements.apiKeyInput.value = DEFAULT_API_KEY; // Reset to default
+            DOMElements.rememberKeyCheckbox.checked = false;
+            stopAutoRefresh();
+            clearAllCharts();
+            showAuthScreen();
+             // Reset history section
+            DOMElements.historyDeviceSelect.innerHTML = '<option value="" selected>Select a device...</option>';
+            resetHistoryView();
 
-          if (!latestEntry) {
-              metricsContainer.innerHTML = '<p class="text-center text-muted p-3">No metrics available.</p>';
-              return;
-          }
+            console.log("Logout complete.");
+        }
 
-          // Define the metrics to display, safely accessing data
-          const metrics = [
-              { label: 'Flow Rate', value: `${(latestEntry.flow?.actual ?? 0).toFixed(1)} GPM` },
-              { label: 'PPM Reading', value: latestEntry.ppm ?? 'N/A' },
-              { label: 'Status Code', value: (latestEntry.errorCode || 'UNKNOWN').replace(/_/g, ' ') },
-              { label: 'pH Reading', value: latestEntry.pH?.actual !== undefined ? latestEntry.pH.actual.toFixed(1) : 'N/A' },
-              { label: 'ORP Reading', value: latestEntry.orp?.actual !== undefined ? `${latestEntry.orp.actual.toFixed(0)} mV` : 'N/A' },
-              { label: 'Total Flow', value: `${(latestEntry.flow?.totalizer ?? 0).toFixed(1)} Gal` },
-              { label: 'Chem Inj. Total', value: `${(latestEntry.chemPump?.totalizer ?? 0).toFixed(4)} Gal` },
-              { label: 'Acid Inj. Total', value: `${(latestEntry.acidPump?.totalizer ?? 0).toFixed(4)} Gal` },
-              { label: 'Last Log Time', value: formatDateTime(latestEntry.timestamp) },
-              { label: 'Last Upload Time', value: formatDateTime(latestEntry.uploaded) }, // Show upload time
-          ];
+        function showAuthError(message) {
+            DOMElements.authError.textContent = message;
+            DOMElements.authError.classList.remove('d-none');
+        }
 
-          // Filter out metrics with 'N/A' values if desired (e.g., hide pH if not present)
-          const visibleMetrics = metrics.filter(metric => metric.value !== 'N/A');
+        // --- UI Navigation & State ---
+        function showAuthScreen() {
+            DOMElements.authScreen.classList.remove('d-none');
+            DOMElements.mainDashboard.classList.add('d-none');
+             document.body.style.overflow = 'auto'; // Restore scroll if needed
+        }
 
-          // Render metrics into columns
-          visibleMetrics.forEach(metric => {
-              const metricCol = document.createElement('div');
-              // Adjust grid classes for better spacing
-              metricCol.className = 'col-lg-3 col-md-4 col-sm-6 mb-3';
-              metricCol.innerHTML = `
-                  <div class="card h-100 shadow-sm">
-                      <div class="card-body p-2 text-center">
-                          <div class="metric-label small text-muted text-uppercase">${metric.label}</div>
-                          <div class="metric-value fw-bold">${metric.value}</div>
-                      </div>
-                  </div>
-              `;
-              metricsContainer.appendChild(metricCol);
-          });
-           if (visibleMetrics.length === 0) {
-                metricsContainer.innerHTML = '<p class="text-center text-muted p-3">No metrics available.</p>';
-           }
-      }
+        function showMainDashboard() {
+            DOMElements.authScreen.classList.add('d-none');
+            DOMElements.mainDashboard.classList.remove('d-none');
+            showOverviewSection(); // Default to overview
+        }
 
-      // Creates the Flow and Probe charts in the device detail modal
-      function createDeviceCharts(logEntries) {
-          if (!Array.isArray(logEntries) || logEntries.length === 0) {
-              console.log("Skipping chart creation: No log entries provided.");
-              // Optionally hide chart containers again if creation fails
-              document.getElementById('flowChart').parentElement.style.display = 'none';
-              document.getElementById('probeChart').parentElement.style.display = 'none';
-              return;
-          }
-          // Create Flow Chart
-          createFlowChart(logEntries);
-          // Create Probe Chart (pH/ORP)
-          createProbeChart(logEntries);
-      }
+        function showOverviewSection(e) {
+            if (e) e.preventDefault();
+            DOMElements.overviewSection.classList.remove('d-none');
+            DOMElements.historySection.classList.add('d-none');
+            DOMElements.navOverviewLink.classList.add('active');
+            DOMElements.navHistoryLink.classList.remove('active');
+            DOMElements.navOverviewLink.setAttribute('aria-current', 'page');
+            DOMElements.navHistoryLink.removeAttribute('aria-current');
+            console.log("Switched to Overview section.");
+            // Re-apply filtering/sorting if needed when switching back
+            // applyFiltersAndSort();
+            // renderDeviceCards();
+        }
 
-      // Creates the Flow Rate line chart
-      function createFlowChart(logEntries) {
-          const canvas = document.getElementById('flowChart');
-           if (!canvas) { console.error("Flow chart canvas not found"); return; }
-          const ctx = canvas.getContext('2d');
+        function showHistorySection(e) {
+            if (e) e.preventDefault();
+            DOMElements.overviewSection.classList.add('d-none');
+            DOMElements.historySection.classList.remove('d-none');
+            DOMElements.navOverviewLink.classList.remove('active');
+            DOMElements.navHistoryLink.classList.add('active');
+            DOMElements.navHistoryLink.setAttribute('aria-current', 'page');
+            DOMElements.navOverviewLink.removeAttribute('aria-current');
+            console.log("Switched to History section.");
+            populateHistoryDeviceDropdown(); // Ensure dropdown is populated
+        }
 
-          // Destroy existing chart instance on this canvas
-          if (flowDetailChart) flowDetailChart.destroy();
+        // --- API Interaction ---
+        async function fetchWithAuth(url, options = {}) {
+            if (!apiKey) {
+                console.error("Attempted fetch without API key.");
+                handleLogout(); // Force logout if key is missing
+                throw new Error("Authentication required.");
+            }
+            const headers = {
+                ...options.headers,
+                'X-API-KEY': apiKey, // Primarily use X-API-KEY based on worker code
+                // 'Authorization': `Bearer ${apiKey}` // Could add as fallback if needed
+            };
+            return fetch(url, { ...options, headers });
+        }
 
-          // Prepare data (reverse to plot chronologically LTR)
-          const reversedEntries = [...logEntries].reverse(); // Create a reversed copy
-          const labels = reversedEntries.map(item => formatTime(item.timestamp));
-          const flowData = reversedEntries.map(item => item.flow?.actual ?? null); // Use null for gaps
+        // --- Overview Page Logic ---
+        async function refreshDeviceList(force = false) {
+            if (!apiKey) return; // Don't refresh if not logged in
+            console.log("Refreshing device list...");
+            showLoading("Fetching devices...");
+            try {
+                const response = await fetchWithAuth(`${API_ENDPOINT}/devices`);
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        showToastError("Authentication failed. Please log in again.");
+                        handleLogout();
+                    } else {
+                        throw new Error(`Failed to fetch devices: ${response.status}`);
+                    }
+                    return; // Stop processing on error
+                }
 
-          // Create the chart
-          flowDetailChart = new Chart(ctx, {
-              type: 'line',
-              data: {
-                  labels: labels,
-                  datasets: [{
-                      label: 'Flow Rate (GPM)',
-                      data: flowData,
-                      borderColor: 'rgba(203, 32, 38, 0.8)', // Primary color
-                      backgroundColor: 'rgba(203, 32, 38, 0.2)',
-                      borderWidth: 2,
-                      tension: 0.1, // Less smoothing for detail
-                      fill: true,
-                      pointRadius: 1, // Show small points
-                      pointHoverRadius: 4,
-                      spanGaps: true // Connect lines across null data points
-                  }]
-              },
-              options: {
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                      title: { display: true, text: 'Flow Rate Trend (Recent)', padding: { bottom: 10 } },
-                      legend: { display: false }, // Keep legend simple
-                      tooltip: { mode: 'index', intersect: false } // Show tooltip for points near cursor
-                  },
-                  scales: {
-                      y: { beginAtZero: true, title: { display: true, text: 'GPM' } },
-                      x: { title: { display: true, text: 'Time' } }
-                  }
-              }
-          });
-      }
+                const data = await response.json();
+                if (data.success && Array.isArray(data.devices)) {
+                    console.log(`Fetched ${data.devices.length} devices.`);
+                    allDevices = data.devices;
+                    // Determine latest data point for each device (from customMetadata or newest file)
+                    // This part is tricky because worker returns list summary, not detailed last entry.
+                    // We'll use 'lastUpdated' from the worker for now. Need worker change for better summary.
+                     allDevices.forEach(dev => {
+                         dev._status = getDeviceStatus(dev); // Pre-calculate status
+                         dev._lastUpdateTimestamp = dev.lastUpdated; // Use this for sorting/display
+                     });
 
-      // Creates the pH/ORP line chart
-      function createProbeChart(logEntries) {
-           const canvas = document.getElementById('probeChart');
-           if (!canvas) { console.error("Probe chart canvas not found"); return; }
-           const ctx = canvas.getContext('2d');
+                    applyFiltersAndSort(); // Filter based on search/selection, then sort
+                    renderDeviceCards(); // Render the filtered/sorted list
+                    populateHistoryDeviceDropdown(); // Update history dropdown
+                } else {
+                    throw new Error("Invalid data structure received from server.");
+                }
+            } catch (error) {
+                console.error("Error refreshing device list:", error);
+                showToastError(`Error fetching devices: ${error.message}`);
+                allDevices = []; // Clear data on error
+                applyFiltersAndSort();
+                renderDeviceCards(); // Render empty state
+            } finally {
+                hideLoading();
+            }
+        }
 
-          // Destroy existing chart instance
-          if (probeDetailChart) probeDetailChart.destroy();
+         function handleSearchInput(event) {
+            currentSearchTerm = event.target.value.toLowerCase().trim();
+            applyFiltersAndSort();
+            renderDeviceCards();
+        }
 
-          // Prepare data (reverse for chronological)
-          const reversedEntries = [...logEntries].reverse();
-          const labels = reversedEntries.map(item => formatTime(item.timestamp));
+        function handleSortChange(event) {
+            currentSortCriteria = event.target.dataset.sort;
+            console.log("Sort criteria changed to:", currentSortCriteria);
+            applyFiltersAndSort();
+            renderDeviceCards();
+        }
 
-          // Check which datasets are available
-          const hasPH = reversedEntries.some(item => item.pH?.actual !== undefined && item.pH.actual !== null);
-          const hasORP = reversedEntries.some(item => item.orp?.actual !== undefined && item.orp.actual !== null);
+        function applyFiltersAndSort() {
+            let filtered = [...allDevices];
 
-          // If neither probe has data, hide the chart container and exit
-          if (!hasPH && !hasORP) {
-              console.log("No pH or ORP data found, hiding probe chart.");
-              document.getElementById('probeChart').parentElement.style.display = 'none';
-              return;
-          } else {
-              // Ensure container is visible if we have data
-              document.getElementById('probeChart').parentElement.style.display = 'block';
-          }
+            // 1. Filter by Selection (if applicable)
+            if (selectedDeviceIDs !== null && Array.isArray(selectedDeviceIDs)) {
+                 filtered = filtered.filter(device => selectedDeviceIDs.includes(device.deviceId));
+                 console.log(`Filtered by selection: ${filtered.length} devices remaining.`);
+            }
 
+            // 2. Filter by Search Term
+            if (currentSearchTerm) {
+                filtered = filtered.filter(device =>
+                    device.deviceId.toLowerCase().includes(currentSearchTerm)
+                );
+                console.log(`Filtered by search '${currentSearchTerm}': ${filtered.length} devices remaining.`);
+            }
 
-          const datasets = [];
-          // Add pH dataset if available
-          if (hasPH) {
-              datasets.push({
-                  label: 'pH',
-                  data: reversedEntries.map(item => item.pH?.actual ?? null),
-                  borderColor: 'rgba(66, 135, 245, 0.8)', // Blue for pH
-                  backgroundColor: 'rgba(66, 135, 245, 0.2)',
-                  borderWidth: 2,
-                  tension: 0.1,
-                  fill: false, // Often better not to fill multiple lines
-                  pointRadius: 1,
-                  pointHoverRadius: 4,
-                  yAxisID: 'yPH', // Assign to specific Y axis
-                  spanGaps: true
-              });
-          }
-          // Add ORP dataset if available
-          if (hasORP) {
-              datasets.push({
-                 label: 'ORP (mV)',
-                 data: reversedEntries.map(item => item.orp?.actual ?? null),
-                 borderColor: 'rgba(66, 245, 132, 0.8)', // Green for ORP
-                 backgroundColor: 'rgba(66, 245, 132, 0.2)',
-                 borderWidth: 2,
-                 tension: 0.1,
-                 fill: false,
-                 pointRadius: 1,
-                 pointHoverRadius: 4,
-                 yAxisID: 'yORP', // Assign to specific Y axis
-                 spanGaps: true
-             });
+            // 3. Sort
+            const statusPriority = { 'error': 0, 'warning': 1, 'online': 2, 'offline': 3 };
+            filtered.sort((a, b) => {
+                switch (currentSortCriteria) {
+                    case 'status':
+                         const priorityA = statusPriority[a._status] ?? 99;
+                         const priorityB = statusPriority[b._status] ?? 99;
+                         if (priorityA !== priorityB) return priorityA - priorityB;
+                         return a.deviceId.localeCompare(b.deviceId); // Secondary sort by name
+                    case 'lastUpdate':
+                        // Newest first (descending order)
+                        const dateA = a._lastUpdateTimestamp ? new Date(a._lastUpdateTimestamp) : new Date(0);
+                        const dateB = b._lastUpdateTimestamp ? new Date(b._lastUpdateTimestamp) : new Date(0);
+                        if (isNaN(dateA) || isNaN(dateB)) return 0; // Handle invalid dates
+                        return dateB - dateA;
+                    case 'name':
+                    default:
+                        return a.deviceId.localeCompare(b.deviceId);
+                }
+            });
+             console.log(`Sorted by ${currentSortCriteria}. Final count: ${filtered.length}`);
+
+            displayedDevices = filtered;
+        }
+
+        function renderDeviceCards() {
+            DOMElements.devicesGrid.innerHTML = ''; // Clear previous cards
+            destroyAllMiniCharts(); // Clear old charts
+
+            if (displayedDevices.length === 0) {
+                let message = "No devices found.";
+                if (allDevices.length > 0) {
+                    message = "No devices match your current search or selection. Try adjusting filters or use the 'Devices' button.";
+                } else if (apiKey) {
+                     message = "No devices associated with this API key, or fetching failed.";
+                } else {
+                     message = "Please log in to view devices."; // Should not happen if logged out
+                }
+                showOverviewMessage(message);
+                return;
+            }
+
+            hideOverviewMessage();
+            displayedDevices.forEach(device => {
+                // Note: Worker currently doesn't provide live metrics (flow, ppm) in the summary.
+                // We can only show ID, Status, Last Update.
+                // To show Flow/PPM, the worker's /devices endpoint needs enhancement
+                // or we need to make N+1 calls (inefficient).
+
+                const card = document.createElement('div');
+                card.className = `col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-4`; // Responsive grid
+                card.innerHTML = `
+                    <div class="card device-card h-100 shadow-sm status-${device._status}">
+                        <div class="card-header bg-light">
+                            <span class="device-id text-truncate" title="${device.deviceId}">${device.deviceId}</span>
+                            <span class="badge rounded-pill status-badge text-uppercase ${getStatusBadgeClass(device._status)}">${device._status}</span>
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                             <!-- Placeholder for Mini Chart - Needs Data -->
+                            <div class="mini-chart-container mb-3" id="mini-chart-container-${device.deviceId}">
+                                <canvas id="mini-chart-${device.deviceId}"></canvas>
+                                <!-- <small class="text-muted d-block text-center">Live data unavailable in summary</small> -->
+                            </div>
+
+                            <div class="mt-auto text-center"> <!-- Push to bottom -->
+                                <div class="metric-label">Last Seen</div>
+                                <div class="last-update-time" title="${formatDateTime(device._lastUpdateTimestamp)}">
+                                    ${getRelativeTimeString(device._lastUpdateTimestamp)}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white border-top-0 pt-0 pb-2">
+                            <button class="btn btn-sm btn-outline-secondary w-100 view-details-btn" data-device-id="${device.deviceId}">
+                                <i class="bi bi-search me-1"></i> View Details
+                            </button>
+                        </div>
+                    </div>
+                `;
+                DOMElements.devicesGrid.appendChild(card);
+
+                // Attempt to add mini chart (if data becomes available in future)
+                // createMiniChart(device.deviceId, device.recentHistory || []);
+
+                // Add listener for the details button
+                 card.querySelector('.view-details-btn').addEventListener('click', (e) => {
+                     const clickedDeviceId = e.currentTarget.dataset.deviceId;
+                     showDeviceDetails(clickedDeviceId);
+                 });
+            });
+        }
+
+         function getDeviceStatus(device) {
+             const timestamp = device.lastUpdated; // Using the summary timestamp from worker
+             // Enhancement: If worker provided latest error code in summary, use it here.
+             // const errorCode = device.latestErrorCode; // Hypothetical
+
+             const timeDiffMinutes = getTimeDifference(timestamp);
+
+             if (timeDiffMinutes > OFFLINE_THRESHOLD_MINUTES) {
+                 return 'offline';
+             }
+             // Without error code, assume 'online' if recent. Add 'warning'/'error' logic if worker provides codes.
+             /* Example if errorCode was available:
+             if (errorCode === 'NO_ERROR') return 'online';
+             if (['LOW_FLOW', 'SYSTEM_PAUSED', 'TANK_LEVEL_LOW'].includes(errorCode)) return 'warning';
+             if (errorCode && errorCode !== 'NO_ERROR') return 'error';
+             */
+             return 'online'; // Fallback if recent and no error info
          }
 
-         // Create the chart
-         probeDetailChart = new Chart(ctx, {
-             type: 'line',
-             data: {
-                 labels: labels,
-                 datasets: datasets
-             },
-             options: {
+         function getStatusBadgeClass(status) {
+             switch (status) {
+                 case 'online': return 'text-bg-success';
+                 case 'warning': return 'text-bg-warning';
+                 case 'error': return 'text-bg-danger';
+                 case 'offline':
+                 default: return 'text-bg-secondary';
+             }
+         }
+
+         function showOverviewMessage(message) {
+            DOMElements.overviewMessageText.textContent = message;
+            DOMElements.overviewMessageArea.style.display = 'block';
+         }
+
+         function hideOverviewMessage() {
+            DOMElements.overviewMessageArea.style.display = 'none';
+         }
+
+
+        // --- Device Details Modal ---
+        async function showDeviceDetails(deviceId) {
+            if (!apiKey) { showToastError("Authentication required."); return; }
+            console.log(`Fetching details for ${deviceId}...`);
+            DOMElements.deviceDetailTitle.textContent = `Device Details: ${deviceId}`;
+
+            // Reset modal content to loading state
+            resetDetailModal();
+            deviceDetailModal.show();
+            showLoading(`Loading details for ${deviceId}...`);
+
+            try {
+                // Fetch recent detailed data (e.g., last 50-100 entries)
+                const limit = 100;
+                const url = `${API_ENDPOINT}/devices?deviceId=${deviceId}&limit=${limit}`;
+                const response = await fetchWithAuth(url);
+
+                if (!response.ok) { throw new Error(`Failed to fetch details: ${response.status}`); }
+
+                const result = await response.json();
+                if (!result.success || !Array.isArray(result.data)) { throw new Error("Invalid data structure received."); }
+
+                // Worker returns data grouped by file upload. Flatten and sort.
+                let allLogEntries = [];
+                result.data.forEach(fileMeta => {
+                    if (Array.isArray(fileMeta.logData)) {
+                        fileMeta.logData.forEach(entry => {
+                            entry.uploaded = fileMeta.uploaded; // Add upload time from metadata
+                            entry.deviceId = entry.deviceId || deviceId; // Ensure deviceId
+                        });
+                        allLogEntries = allLogEntries.concat(fileMeta.logData);
+                    }
+                });
+
+                // Sort by timestamp, newest first
+                allLogEntries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                console.log(`Processed ${allLogEntries.length} log entries for detail view.`);
+
+                if (allLogEntries.length > 0) {
+                    populateDetailModal(allLogEntries, deviceId);
+                } else {
+                    showDetailMessage("No recent log entries found for this device.");
+                }
+
+            } catch (error) {
+                console.error(`Error fetching details for ${deviceId}:`, error);
+                showToastError(`Could not load details: ${error.message}`);
+                 showDetailMessage(`Error loading data: ${error.message}`, true); // Show error in modal body
+                 // Optionally hide modal on critical error: deviceDetailModal.hide();
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function resetDetailModal() {
+            // Clear metrics, tables, charts
+            DOMElements.detailMetricsContainer.innerHTML = '<p class="text-muted text-center p-3">Loading metrics...</p>';
+            DOMElements.detailDataTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted p-3">Loading data log...</td></tr>';
+            DOMElements.detailInfoTableBody.innerHTML = '<tr><td colspan="2" class="text-center text-muted p-3">Loading info...</td></tr>';
+
+             // Destroy previous charts if they exist
+             destroyChart(detailFlowChart); detailFlowChart = null;
+             destroyChart(detailProbeChart); detailProbeChart = null;
+
+             // Ensure chart canvases are visible
+             DOMElements.detailFlowChartCanvas.parentElement.style.display = 'block';
+             DOMElements.detailProbeChartCanvas.parentElement.style.display = 'block';
+
+            // Reset to overview tab
+            const overviewTab = document.getElementById('detail-overview-tab');
+            if (overviewTab) {
+                try { bootstrap.Tab.getOrCreateInstance(overviewTab).show(); }
+                catch (e) { console.error("Error showing overview tab:", e); }
+            }
+        }
+
+         function showDetailMessage(message, isError = false) {
+            const messageHtml = `<div class="col-12 message-area text-center p-3 ${isError ? 'error-message' : 'info-message'}">${message}</div>`;
+            DOMElements.detailMetricsContainer.innerHTML = messageHtml;
+            DOMElements.detailDataTableBody.innerHTML = `<tr><td colspan="${DOMElements.detailDataTableBody.parentElement.rows[0].cells.length}" class="text-center p-3 ${isError ? 'text-danger' : 'text-muted'}">${message}</td></tr>`;
+            DOMElements.detailInfoTableBody.innerHTML = `<tr><td colspan="2" class="text-center p-3 ${isError ? 'text-danger' : 'text-muted'}">${message}</td></tr>`;
+            // Hide charts if there's an error or no data
+            DOMElements.detailFlowChartCanvas.parentElement.style.display = 'none';
+            DOMElements.detailProbeChartCanvas.parentElement.style.display = 'none';
+        }
+
+
+        function populateDetailModal(logEntries, deviceId) {
+            const latestEntry = logEntries[0]; // Newest entry
+
+            // Populate Overview Tab
+            populateDetailMetrics(latestEntry);
+            createDetailCharts(logEntries); // Create charts using the list
+
+            // Populate Data Log Tab
+            populateDetailDataTable(logEntries);
+
+            // Populate Info Tab
+            populateDetailInfoTable(latestEntry, deviceId);
+        }
+
+        function populateDetailMetrics(entry) {
+            DOMElements.detailMetricsContainer.innerHTML = ''; // Clear loading
+            if (!entry) {
+                DOMElements.detailMetricsContainer.innerHTML = '<p class="text-muted text-center col-12">No metrics available.</p>';
+                return;
+            }
+             const metrics = [
+                { label: 'Flow Rate', value: `${(entry.flow?.actual ?? 0).toFixed(1)} GPM` },
+                { label: 'PPM Reading', value: entry.ppm ?? 'N/A' },
+                { label: 'pH Reading', value: entry.pH?.actual !== undefined ? entry.pH.actual.toFixed(1) : 'N/A' },
+                { label: 'ORP Reading', value: entry.orp?.actual !== undefined ? `${entry.orp.actual.toFixed(0)} mV` : 'N/A' },
+                { label: 'Status Code', value: (entry.errorCode || 'N/A').replace(/_/g, ' ') },
+                { label: 'Total Flow', value: `${(entry.flow?.totalizer ?? 0).toFixed(1)} Gal` },
+                { label: 'Chem Inj. Total', value: `${(entry.chemPump?.totalizer ?? 0).toFixed(4)} Gal` },
+                { label: 'Acid Inj. Total', value: `${(entry.acidPump?.totalizer ?? 0).toFixed(4)} Gal` },
+             ];
+
+             metrics.forEach(metric => {
+                 if (metric.value === 'N/A') return; // Skip N/A values
+                 const col = document.createElement('div');
+                 col.className = 'col-lg-3 col-md-4 col-sm-6'; // Responsive columns
+                 col.innerHTML = `
+                     <div class="card card-body p-2 text-center h-100 shadow-sm">
+                         <div class="metric-label small text-muted">${metric.label}</div>
+                         <div class="metric-value">${metric.value}</div>
+                     </div>
+                 `;
+                 DOMElements.detailMetricsContainer.appendChild(col);
+             });
+             if (DOMElements.detailMetricsContainer.children.length === 0) {
+                 DOMElements.detailMetricsContainer.innerHTML = '<p class="text-muted text-center col-12">No metrics available.</p>';
+             }
+        }
+
+        function createDetailCharts(logEntries) {
+            // Reverse log entries for chronological plotting (oldest first)
+            const chronologicalEntries = [...logEntries].reverse();
+
+            createDetailFlowChart(chronologicalEntries);
+            createDetailProbeChart(chronologicalEntries);
+        }
+
+        function createDetailFlowChart(entries) {
+            destroyChart(detailFlowChart); // Ensure old chart is gone
+            const labels = entries.map(e => formatTime(e.timestamp));
+            const data = entries.map(e => e.flow?.actual ?? null);
+
+             if (data.every(d => d === null)) {
+                 console.log("No flow data for detail chart.");
+                 DOMElements.detailFlowChartCanvas.parentElement.style.display = 'none'; // Hide if no data
+                 return;
+             }
+             DOMElements.detailFlowChartCanvas.parentElement.style.display = 'block'; // Show if data exists
+
+            detailFlowChart = new Chart(DOMElements.detailFlowChartCanvas, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Flow Rate (GPM)', data: data,
+                        borderColor: 'rgba(203, 32, 38, 0.8)', backgroundColor: 'rgba(203, 32, 38, 0.2)',
+                        borderWidth: 1.5, tension: 0.1, fill: true, pointRadius: 1, pointHoverRadius: 4, spanGaps: true
+                    }]
+                },
+                options: commonChartOptions('Flow Rate Trend (Recent)', 'Time', 'GPM')
+            });
+        }
+
+        function createDetailProbeChart(entries) {
+             destroyChart(detailProbeChart);
+             const labels = entries.map(e => formatTime(e.timestamp));
+             const phData = entries.map(e => e.pH?.actual ?? null);
+             const orpData = entries.map(e => e.orp?.actual ?? null);
+
+             const hasPH = phData.some(d => d !== null);
+             const hasORP = orpData.some(d => d !== null);
+
+             if (!hasPH && !hasORP) {
+                console.log("No pH or ORP data for detail chart.");
+                DOMElements.detailProbeChartCanvas.parentElement.style.display = 'none';
+                return;
+             }
+             DOMElements.detailProbeChartCanvas.parentElement.style.display = 'block';
+
+             const datasets = [];
+             if (hasPH) datasets.push({
+                 label: 'pH', data: phData, yAxisID: 'yPH', spanGaps: true,
+                 borderColor: 'rgba(66, 135, 245, 0.8)', backgroundColor: 'rgba(66, 135, 245, 0.2)',
+                 borderWidth: 1.5, tension: 0.1, fill: false, pointRadius: 1, pointHoverRadius: 4,
+             });
+             if (hasORP) datasets.push({
+                 label: 'ORP (mV)', data: orpData, yAxisID: 'yORP', spanGaps: true,
+                 borderColor: 'rgba(66, 245, 132, 0.8)', backgroundColor: 'rgba(66, 245, 132, 0.2)',
+                 borderWidth: 1.5, tension: 0.1, fill: false, pointRadius: 1, pointHoverRadius: 4,
+             });
+
+             detailProbeChart = new Chart(DOMElements.detailProbeChartCanvas, {
+                 type: 'line',
+                 data: { labels: labels, datasets: datasets },
+                 options: commonChartOptions('Probe Readings Trend (Recent)', 'Time', null, { // Pass scales config directly
+                     yPH: { type: 'linear', display: hasPH, position: 'left', title: { display: hasPH, text: 'pH' } },
+                     yORP: { type: 'linear', display: hasORP, position: 'right', title: { display: hasORP, text: 'ORP (mV)' }, grid: { drawOnChartArea: !hasPH } }
+                 })
+             });
+        }
+
+
+        function populateDetailDataTable(logEntries) {
+             DOMElements.detailDataTableBody.innerHTML = ''; // Clear loading/previous
+             if (logEntries.length === 0) {
+                 DOMElements.detailDataTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted p-3">No data log entries found.</td></tr>';
+                 return;
+             }
+
+             logEntries.forEach(entry => {
+                 const row = DOMElements.detailDataTableBody.insertRow();
+                 row.innerHTML = `
+                     <td>${formatDateTime(entry.timestamp)}</td>
+                     <td>${entry.flow?.actual?.toFixed(1) ?? 'N/A'}</td>
+                     <td>${entry.ppm ?? 'N/A'}</td>
+                     <td>${entry.chemPump?.totalizer?.toFixed(4) ?? 'N/A'}</td>
+                     <td>${entry.acidPump?.totalizer?.toFixed(4) ?? 'N/A'}</td>
+                     <td>${(entry.errorCode || 'N/A').replace(/_/g, ' ')}</td>
+                     <td>${formatDateTime(entry.uploaded)}</td>
+                 `;
+             });
+        }
+
+        function populateDetailInfoTable(entry, deviceId) {
+             DOMElements.detailInfoTableBody.innerHTML = ''; // Clear loading/previous
+              if (!entry) {
+                 DOMElements.detailInfoTableBody.innerHTML = '<tr><td colspan="2" class="text-center text-muted p-3">No device information available.</td></tr>';
+                 return;
+             }
+             const info = [
+                 { name: 'Device ID', value: deviceId },
+                 { name: 'Last Log Timestamp', value: formatDateTime(entry.timestamp) },
+                 { name: 'Last Data Upload', value: formatDateTime(entry.uploaded) },
+                 { name: 'Latest Status Code', value: (entry.errorCode || 'N/A').replace(/_/g, ' ') },
+                 // Add Firmware version if worker/device provides it
+                 // { name: 'Firmware Version', value: entry.firmwareVersion || 'N/A' },
+             ];
+
+             info.forEach(item => {
+                 const row = DOMElements.detailInfoTableBody.insertRow();
+                 row.innerHTML = `
+                     <td><strong>${item.name}</strong></td>
+                     <td>${item.value}</td>
+                 `;
+             });
+        }
+
+        // --- History Page Logic ---
+        function populateHistoryDeviceDropdown() {
+            const currentVal = DOMElements.historyDeviceSelect.value;
+            DOMElements.historyDeviceSelect.innerHTML = '<option value="" selected>Select a device...</option>'; // Reset
+
+            const sorted = [...allDevices].sort((a, b) => a.deviceId.localeCompare(b.deviceId));
+            sorted.forEach(dev => {
+                const option = document.createElement('option');
+                option.value = dev.deviceId;
+                option.textContent = dev.deviceId;
+                DOMElements.historyDeviceSelect.appendChild(option);
+            });
+
+            // Restore selection if possible
+            if (sorted.some(d => d.deviceId === currentVal)) {
+                DOMElements.historyDeviceSelect.value = currentVal;
+            }
+        }
+
+         function resetHistoryView() {
+             DOMElements.historyMessageText.textContent = "Select criteria and search to view history.";
+             DOMElements.historyMessageArea.style.display = 'block';
+             DOMElements.historyChartContainer.style.display = 'none';
+             DOMElements.historyTableContainer.style.display = 'none';
+             DOMElements.historyTableBody.innerHTML = '';
+             DOMElements.exportCsvBtn.disabled = true;
+             destroyChart(historyChart); historyChart = null;
+         }
+
+        async function fetchHistoricalData() {
+            const deviceId = DOMElements.historyDeviceSelect.value;
+            const startDate = DOMElements.historyStartDateInput.value;
+            const endDate = DOMElements.historyEndDateInput.value;
+            const limit = DOMElements.historyLimitSelect.value;
+
+            if (!deviceId) {
+                showToastError("Please select a device.");
+                return;
+            }
+
+            resetHistoryView(); // Clear previous results and show loading message implicitly
+            showLoading("Fetching history...");
+
+            try {
+                let url = `${API_ENDPOINT}/devices?deviceId=${deviceId}&limit=${limit}`;
+                if (startDate) url += `&startDate=${startDate}`;
+                if (endDate) {
+                    // Make end date inclusive by adding one day (server-side logic might vary)
+                    const end = new Date(endDate);
+                    end.setDate(end.getDate() + 1);
+                    url += `&endDate=${end.toISOString().split('T')[0]}`;
+                }
+
+                console.log("Fetching history URL:", url);
+                const response = await fetchWithAuth(url);
+                if (!response.ok) { throw new Error(`Failed to fetch history: ${response.status}`); }
+
+                const result = await response.json();
+                 if (!result.success || !Array.isArray(result.data)) { throw new Error("Invalid data structure received."); }
+
+                // Flatten and sort chronologically (oldest first for table/chart)
+                let historicalEntries = [];
+                 result.data.forEach(fileMeta => {
+                    if (Array.isArray(fileMeta.logData)) {
+                        historicalEntries = historicalEntries.concat(fileMeta.logData);
+                    }
+                 });
+                 historicalEntries.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                 console.log(`Processed ${historicalEntries.length} historical log entries.`);
+
+                 if (historicalEntries.length > 0) {
+                    renderHistoricalData(historicalEntries);
+                    DOMElements.historyMessageArea.style.display = 'none'; // Hide placeholder message
+                    DOMElements.exportCsvBtn.disabled = false;
+                 } else {
+                    DOMElements.historyMessageText.textContent = "No data found for the selected criteria.";
+                    DOMElements.historyMessageArea.style.display = 'block';
+                    DOMElements.exportCsvBtn.disabled = true;
+                 }
+
+            } catch (error) {
+                 console.error("Error fetching historical data:", error);
+                 showToastError(`Could not load history: ${error.message}`);
+                 DOMElements.historyMessageText.textContent = `Error loading history: ${error.message}`;
+                 DOMElements.historyMessageArea.style.display = 'block';
+                 DOMElements.exportCsvBtn.disabled = true;
+            } finally {
+                 hideLoading();
+            }
+        }
+
+        function renderHistoricalData(entries) {
+             // Populate Table
+             DOMElements.historyTableBody.innerHTML = ''; // Clear
+             entries.forEach(entry => {
+                 const row = DOMElements.historyTableBody.insertRow();
+                 row.innerHTML = `
+                     <td>${formatDateTime(entry.timestamp)}</td>
+                     <td>${entry.flow?.actual?.toFixed(1) ?? 'N/A'}</td>
+                     <td>${entry.ppm ?? 'N/A'}</td>
+                     <td>${entry.chemPump?.totalizer?.toFixed(4) ?? 'N/A'}</td>
+                     <td>${entry.acidPump?.totalizer?.toFixed(4) ?? 'N/A'}</td>
+                     <td>${(entry.errorCode || 'N/A').replace(/_/g, ' ')}</td>
+                 `;
+             });
+             DOMElements.historyTableContainer.style.display = 'block';
+
+             // Create Chart
+             createHistoryChart(entries);
+             DOMElements.historyChartContainer.style.display = 'block';
+        }
+
+        function createHistoryChart(entries) {
+            destroyChart(historyChart);
+            const labels = entries.map(e => formatDateTime(e.timestamp)); // Use full date/time
+            const flowData = entries.map(e => e.flow?.actual ?? null);
+            const ppmData = entries.map(e => e.ppm ?? null);
+
+            const hasFlow = flowData.some(d => d !== null);
+            const hasPPM = ppmData.some(d => d !== null);
+
+            if (!hasFlow && !hasPPM) {
+                console.log("No data for history chart.");
+                DOMElements.historyChartContainer.style.display = 'none';
+                return;
+            }
+             DOMElements.historyChartContainer.style.display = 'block';
+
+
+            const datasets = [];
+            if (hasFlow) datasets.push({
+                label: 'Flow Rate (GPM)', data: flowData, yAxisID: 'yFlow', spanGaps: true,
+                borderColor: 'rgba(203, 32, 38, 0.8)', backgroundColor: 'rgba(203, 32, 38, 0.1)',
+                borderWidth: 1.5, tension: 0.1, fill: false, pointRadius: 0, pointHoverRadius: 3,
+            });
+             if (hasPPM) datasets.push({
+                label: 'PPM Reading', data: ppmData, yAxisID: 'yPPM', spanGaps: true,
+                borderColor: 'rgba(66, 135, 245, 0.8)', backgroundColor: 'rgba(66, 135, 245, 0.1)',
+                borderWidth: 1.5, tension: 0.1, fill: false, pointRadius: 0, pointHoverRadius: 3,
+            });
+
+            historyChart = new Chart(DOMElements.historyChartCanvas, {
+                type: 'line',
+                data: { labels: labels, datasets: datasets },
+                options: commonChartOptions('Historical Data Trend', 'Timestamp', null, { // Pass scales config
+                    yFlow: { type: 'linear', display: hasFlow, position: 'left', title: { display: hasFlow, text: 'Flow Rate (GPM)' }, beginAtZero: true },
+                    yPPM: { type: 'linear', display: hasPPM, position: 'right', title: { display: hasPPM, text: 'PPM' }, grid: { drawOnChartArea: !hasFlow } },
+                    x: { ticks: { autoSkip: true, maxTicksLimit: 20 } } // Adjust x-axis ticks for readability
+                })
+            });
+        }
+
+        function exportHistoryToCSV() {
+            const table = document.getElementById('historyTable'); // Get table element directly
+            const rows = table.querySelectorAll('tr');
+            if (rows.length <= 1) { // Header only or empty
+                showToastError("No data in table to export.");
+                return;
+            }
+
+            let csvContent = "";
+
+            // Get headers
+            const headers = Array.from(rows[0].querySelectorAll('th')).map(th => `"${th.textContent.replace(/"/g, '""')}"`).join(',');
+            csvContent += headers + "\r\n";
+
+            // Get rows
+             for (let i = 1; i < rows.length; i++) {
+                const cells = Array.from(rows[i].querySelectorAll('td')).map(td => {
+                    let cellData = td.textContent.replace(/"/g, '""'); // Escape double quotes
+                    // Quote if contains comma, newline, or quote
+                    return (cellData.includes(',') || cellData.includes('\n') || cellData.includes('"')) ? `"${cellData}"` : cellData;
+                }).join(',');
+                csvContent += cells + "\r\n";
+            }
+
+            // Create download link
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const filename = `EDIE_History_${DOMElements.historyDeviceSelect.value || 'Export'}_${formatDateForFilename(new Date())}.csv`;
+            const link = document.createElement("a");
+
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            console.log("CSV Exported:", filename);
+        }
+
+        // --- Device Selection Modal Logic ---
+        function openDeviceSelectionModal() {
+            console.log("Opening device selection modal.");
+            populateDeviceSelectionList();
+            deviceSelectModal.show();
+             DOMElements.filterDeviceSelectInput.value = ''; // Clear filter on open
+             filterDeviceSelectionList(); // Apply empty filter initially
+        }
+
+        function populateDeviceSelectionList() {
+             DOMElements.deviceSelectList.innerHTML = ''; // Clear
+             const sortedDevices = [...allDevices].sort((a, b) => a.deviceId.localeCompare(b.deviceId));
+
+            if (sortedDevices.length === 0) {
+                DOMElements.deviceSelectList.innerHTML = '<p class="text-muted text-center p-3">No devices available.</p>';
+                DOMElements.selectAllDevicesCheckbox.disabled = true;
+                DOMElements.selectAllDevicesCheckbox.checked = false;
+                return;
+            }
+
+             DOMElements.selectAllDevicesCheckbox.disabled = false;
+             sortedDevices.forEach(device => {
+                 const isSelected = selectedDeviceIDs === null || selectedDeviceIDs.includes(device.deviceId);
+                 const div = document.createElement('div');
+                 div.className = 'form-check device-select-item';
+                 div.innerHTML = `
+                    <input class="form-check-input device-select-checkbox" type="checkbox" value="${device.deviceId}" id="select-${device.deviceId}" ${isSelected ? 'checked' : ''}>
+                    <label class="form-check-label" for="select-${device.deviceId}">
+                        ${device.deviceId}
+                    </label>
+                 `;
+                 // Add listener to each checkbox AFTER creating it
+                 div.querySelector('.device-select-checkbox').addEventListener('change', checkSelectAllState);
+                 DOMElements.deviceSelectList.appendChild(div);
+             });
+
+             checkSelectAllState(); // Set initial state of "Select All" checkbox
+        }
+
+         function filterDeviceSelectionList() {
+            const filterText = DOMElements.filterDeviceSelectInput.value.toLowerCase();
+            const items = DOMElements.deviceSelectList.querySelectorAll('.device-select-item');
+            items.forEach(item => {
+                const label = item.querySelector('label').textContent.toLowerCase();
+                item.style.display = label.includes(filterText) ? 'block' : 'none';
+            });
+        }
+
+
+        function handleSelectAllToggle(event) {
+            const isChecked = event.target.checked;
+            console.log(`Select All toggled: ${isChecked}`);
+            // Only affect VISIBLE checkboxes if filtering is applied
+             DOMElements.deviceSelectList.querySelectorAll('.device-select-checkbox').forEach(checkbox => {
+                 if (checkbox.parentElement.style.display !== 'none') { // Check if the item is visible
+                    checkbox.checked = isChecked;
+                 }
+             });
+        }
+
+        function checkSelectAllState() {
+            // Check state based on VISIBLE checkboxes
+            const allCheckboxes = DOMElements.deviceSelectList.querySelectorAll('.device-select-checkbox');
+            const visibleCheckboxes = Array.from(allCheckboxes).filter(cb => cb.parentElement.style.display !== 'none');
+
+            if (visibleCheckboxes.length === 0) {
+                 DOMElements.selectAllDevicesCheckbox.checked = false; // No visible items to select/deselect
+                 DOMElements.selectAllDevicesCheckbox.indeterminate = false;
+                 return;
+            }
+
+            const checkedVisibleCount = visibleCheckboxes.filter(cb => cb.checked).length;
+
+            if (checkedVisibleCount === 0) {
+                DOMElements.selectAllDevicesCheckbox.checked = false;
+                DOMElements.selectAllDevicesCheckbox.indeterminate = false;
+            } else if (checkedVisibleCount === visibleCheckboxes.length) {
+                DOMElements.selectAllDevicesCheckbox.checked = true;
+                DOMElements.selectAllDevicesCheckbox.indeterminate = false;
+            } else {
+                DOMElements.selectAllDevicesCheckbox.checked = false; // Show as unchecked
+                DOMElements.selectAllDevicesCheckbox.indeterminate = true; // Indicate partial selection
+            }
+        }
+
+
+        function saveDeviceSelection() {
+             console.log("Saving device selection...");
+             const allCheckboxes = DOMElements.deviceSelectList.querySelectorAll('.device-select-checkbox');
+             const checkedCheckboxes = DOMElements.deviceSelectList.querySelectorAll('.device-select-checkbox:checked');
+
+             // Important: Consider all checkboxes, not just visible ones, for the final selection state
+             const newlySelectedIDs = Array.from(checkedCheckboxes).map(cb => cb.value);
+
+             // If the number selected equals the total number available, treat as "Show All"
+             if (newlySelectedIDs.length === allDevices.length && allDevices.length > 0) {
+                 selectedDeviceIDs = null; // Use null for "Show All"
+                 localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY);
+                 console.log("Selection saved as 'Show All'.");
+             } else {
+                 selectedDeviceIDs = newlySelectedIDs;
+                 localStorage.setItem(SELECTED_DEVICES_STORAGE_KEY, JSON.stringify(selectedDeviceIDs));
+                 console.log("Saved specific device selection:", selectedDeviceIDs);
+             }
+
+             deviceSelectModal.hide();
+             applyFiltersAndSort(); // Re-filter based on new selection
+             renderDeviceCards(); // Re-render the overview
+        }
+
+
+        // --- Charting Utilities ---
+        function createMiniChart(deviceId, history) {
+            // Placeholder - needs actual data structure from worker/device detail
+            // const canvas = document.getElementById(`mini-chart-${deviceId}`);
+            // if (!canvas || !Array.isArray(history) || history.length === 0) return;
+            // destroyChart(chartInstances[deviceId]); // Destroy old if exists
+            // const ctx = canvas.getContext('2d');
+            // // ... prepare labels/data from history ...
+            // chartInstances[deviceId] = new Chart(ctx, { /* ... mini chart config ... */ });
+             const container = document.getElementById(`mini-chart-container-${deviceId}`);
+             if (container) {
+                container.innerHTML = '<small class="text-muted d-block text-center pt-3">Mini-chart data not available</small>';
+             }
+        }
+
+         function commonChartOptions(titleText, xLabel, yLabel, scalesOverride = {}) {
+             const options = {
                  responsive: true,
                  maintainAspectRatio: false,
-                 interaction: { // Improved interaction for multiple lines
-                    mode: 'index',
-                    intersect: false,
-                 },
-                 stacked: false, // Lines should not be stacked
+                 interaction: { mode: 'index', intersect: false },
                  plugins: {
-                     title: { display: true, text: 'Probe Readings Trend (Recent)', padding: { bottom: 10 } },
-                     legend: { display: true, position: 'top' }, // Show legend if multiple lines
+                     title: { display: !!titleText, text: titleText, padding: { bottom: 10 } },
+                     legend: { display: true, position: 'top' }, // Default legend display
                      tooltip: { mode: 'index', intersect: false }
                  },
                  scales: {
-                     // Define Y axis for pH (only if pH data exists)
-                     yPH: {
-                         type: 'linear',
-                         display: hasPH, // Show only if pH data is present
-                         position: 'left',
-                         title: { display: hasPH, text: 'pH' },
-                         // Suggest min/max if desired, e.g., suggestedMin: 0, suggestedMax: 14
+                     x: { title: { display: !!xLabel, text: xLabel } },
+                     y: { // Default Y-axis (can be overridden)
+                         title: { display: !!yLabel, text: yLabel },
+                         beginAtZero: false // Default, often overridden
                      },
-                     // Define Y axis for ORP (only if ORP data exists)
-                     yORP: {
-                         type: 'linear',
-                         display: hasORP, // Show only if ORP data is present
-                         position: 'right',
-                         title: { display: hasORP, text: 'ORP (mV)' },
-                         // Ensure grid lines don't overlap if both axes are shown
-                         grid: { drawOnChartArea: !hasPH } // Only draw grid if it's the only axis
-                     },
-                     x: { title: { display: true, text: 'Time' } }
+                     // Merge in overrides
+                     ...scalesOverride
                  }
+             };
+             // Adjust legend display based on number of datasets
+             options.plugins.legend.display = (options.data?.datasets?.length ?? 0) > 1;
+             return options;
+         }
+
+
+        function destroyChart(chartInstance) {
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+        }
+
+        function destroyAllMiniCharts() {
+            Object.values(chartInstances).forEach(chart => destroyChart(chart));
+            chartInstances = {};
+        }
+
+        function clearAllCharts() {
+             destroyAllMiniCharts();
+             destroyChart(detailFlowChart); detailFlowChart = null;
+             destroyChart(detailProbeChart); detailProbeChart = null;
+             destroyChart(historyChart); historyChart = null;
+        }
+
+        // --- Auto Refresh & Visibility ---
+        function startAutoRefresh() {
+            stopAutoRefresh(); // Clear any existing timer first
+            if (!AUTO_REFRESH_INTERVAL || AUTO_REFRESH_INTERVAL < 10000) { // Safety check
+                 console.log("Auto-refresh disabled or interval too short.");
+                 return;
+            }
+            console.log(`Starting auto-refresh interval: ${AUTO_REFRESH_INTERVAL / 1000} seconds.`);
+            autoRefreshTimer = setInterval(() => {
+                if (isTabVisible && apiKey && DOMElements.overviewSection.classList.contains('d-none') === false) { // Only refresh overview when visible
+                    console.log("Auto-refreshing device list...");
+                    refreshDeviceList();
+                } else {
+                    console.log("Auto-refresh skipped (Tab hidden, logged out, or not on overview).");
+                }
+            }, AUTO_REFRESH_INTERVAL);
+        }
+
+        function stopAutoRefresh() {
+            if (autoRefreshTimer) {
+                clearInterval(autoRefreshTimer);
+                autoRefreshTimer = null;
+                console.log("Auto-refresh stopped.");
+            }
+        }
+
+        function handleVisibilityChange() {
+            isTabVisible = document.visibilityState === 'visible';
+            console.log(`Tab visibility changed: ${isTabVisible ? 'Visible' : 'Hidden'}`);
+            if (isTabVisible && apiKey) {
+                console.log("Tab visible, potentially refreshing data...");
+                startAutoRefresh(); // Restart timer just in case
+                // Optional: Force refresh immediately on becoming visible
+                // if (DOMElements.overviewSection.classList.contains('d-none') === false) {
+                //    refreshDeviceList(true);
+                // }
+            } else if (!isTabVisible) {
+                // Don't stop the timer, just let it skip refreshes while hidden
+                // stopAutoRefresh(); // Or stop it completely if preferred
+            }
+        }
+
+
+        // --- Utilities ---
+        function formatDateTime(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return 'Invalid Date';
+                // Example format: Jan 5, 2024, 2:30 PM
+                return date.toLocaleString(undefined, {
+                    year: 'numeric', month: 'short', day: 'numeric',
+                    hour: 'numeric', minute: '2-digit', hour12: true
+                });
+            } catch (e) { return 'Date Error'; }
+        }
+
+        function formatTime(dateString) {
+             if (!dateString) return 'N/A';
+             try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return 'Invalid Time';
+                return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true });
+            } catch (e) { return 'Time Error'; }
+        }
+
+         function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return 'Invalid Date';
+                return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+            } catch (e) { return 'Date Error'; }
+        }
+
+        function getTimeDifference(timestamp) {
+            if (!timestamp) return Infinity;
+            try {
+                const date = new Date(timestamp);
+                if (isNaN(date.getTime())) return Infinity;
+                return (Date.now() - date.getTime()) / (1000 * 60); // Difference in minutes
+            } catch (e) { return Infinity; }
+        }
+
+        function getRelativeTimeString(dateString) {
+            if (!dateString) return 'never';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return 'invalid date';
+                const diffMin = getTimeDifference(dateString);
+
+                if (diffMin < 1) return 'just now';
+                if (diffMin < 60) return `${Math.floor(diffMin)} min ago`;
+                const diffHour = Math.floor(diffMin / 60);
+                if (diffHour === 1) return `1 hour ago`;
+                if (diffHour < 24) return `${diffHour} hours ago`;
+                const diffDay = Math.floor(diffHour / 24);
+                if (diffDay === 1) return `yesterday`;
+                if (diffDay < 7) return `${diffDay} days ago`;
+                return formatDate(dateString); // Fallback for older dates
+            } catch (e) { return 'time error'; }
+        }
+
+        function formatDateForFilename(date) {
+            return date.toISOString().split('T')[0]; // YYYY-MM-DD
+        }
+
+        function showLoading(message = "Loading...") {
+            DOMElements.loadingMessage.textContent = message;
+            DOMElements.loadingIndicator.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            DOMElements.loadingIndicator.style.display = 'none';
+        }
+
+        function showToastError(message) {
+            console.error("Toast Error:", message);
+            DOMElements.toastMessage.textContent = message;
+             if (errorToast) { // Check if toast was initialized
+                errorToast.show();
+             } else { // Fallback if toast init failed
+                alert("Error: " + message);
              }
-         });
-     }
+        }
 
-     // Populates the data table in the device detail modal
-     function populateDeviceDataTab(logEntries) {
-         const tableBody = document.getElementById('deviceDataTable').querySelector('tbody');
-         tableBody.innerHTML = ''; // Clear previous data or loading state
-
-         if (!Array.isArray(logEntries) || logEntries.length === 0) {
-             tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted p-3">No data log entries found.</td></tr>';
-             return;
-         }
-
-         // logEntries is already sorted newest first, display in that order
-         logEntries.forEach(entry => {
-             const row = document.createElement('tr');
-             row.innerHTML = `
-                 <td>${formatDateTime(entry.timestamp)}</td>
-                 <td>${(entry.flow?.actual ?? 0).toFixed(1)}</td>
-                 <td>${entry.ppm ?? 'N/A'}</td>
-                 <td>${(entry.chemPump?.totalizer ?? 0).toFixed(4)}</td> <!-- Display chemical totalizer -->
-                 <td>${(entry.errorCode || 'UNKNOWN').replace(/_/g, ' ')}</td>
-                 <td>${formatDateTime(entry.uploaded)}</td> <!-- Display upload time -->
-             `;
-             tableBody.appendChild(row);
-         });
-     }
-
-     // Populates the settings/info table in the device detail modal
-     function populateDeviceSettingsTab(latestEntry, deviceId) {
-         const tableBody = document.getElementById('deviceSettingsTable').querySelector('tbody');
-         tableBody.innerHTML = ''; // Clear previous data or loading state
-
-         if (!latestEntry) {
-             tableBody.innerHTML = '<tr><td colspan="2" class="text-center text-muted p-3">No device information available.</td></tr>';
-             return;
-         }
-
-         // Define settings/info fields using data from the latest log entry
-         // These are derived from the log, not true 'settings' from the device itself
-         const settings = [
-             { name: 'Device ID', value: deviceId }, // Use the passed deviceId
-             { name: 'Last Log Timestamp', value: formatDateTime(latestEntry.timestamp) },
-             { name: 'Last Data Upload', value: formatDateTime(latestEntry.uploaded) },
-             { name: 'Latest Status Code', value: (latestEntry.errorCode || 'UNKNOWN').replace(/_/g, ' ') },
-             // Add other relevant info derived from the log if available
-             { name: 'Current PPM Reading', value: latestEntry.ppm ?? 'N/A' },
-             { name: 'Flow Totalizer', value: `${(latestEntry.flow?.totalizer ?? 0).toFixed(1)} Gal` },
-             // Add Firmware version if available in data structure later:
-             // { name: 'Firmware Version', value: latestEntry.firmwareVersion || 'N/A' },
-         ];
-
-         // Render the settings/info into the table
-         settings.forEach(setting => {
-             const row = document.createElement('tr');
-             row.innerHTML = `
-                 <td><strong>${setting.name}</strong></td>
-                 <td>${setting.value}</td>
-             `;
-             tableBody.appendChild(row);
-         });
-     }
-
-
-      // --- Search/Sort (Overview) ---
-
-      // Performs search based on the input field
-      function performSearch() {
-          const searchTerm = document.getElementById('searchDevices').value.toLowerCase().trim();
-          console.log(`Searching for: "${searchTerm}"`);
-
-          // Filter the *entire* list of devices based on the search term
-          const filteredDevices = allDevices.filter(device => {
-              // Search in device ID (add more fields if needed, e.g., device name if available)
-              return device.deviceId.toLowerCase().includes(searchTerm);
-          });
-
-          console.log(`Found ${filteredDevices.length} devices matching search.`);
-          // Render only the filtered devices, respecting the current selection logic within renderDevices if searchTerm is empty
-          if (searchTerm) {
-            renderDevices(filteredDevices); // Pass the explicitly filtered list
-          } else {
-            renderDevices(); // Re-render based on selection if search is cleared
-          }
-
-      }
-
-      // Sorts the `allDevices` array and re-renders the visible devices
-      function sortDevices(criteria) {
-          if (!allDevices || allDevices.length === 0) return; // Nothing to sort
-
-          console.log(`Sorting devices by: ${criteria}`);
-
-          // Sort the main `allDevices` array in place
-          if (criteria === 'name') {
-              allDevices.sort((a, b) => a.deviceId.localeCompare(b.deviceId));
-          } else if (criteria === 'status') {
-              // Define the priority order for statuses
-              const statusPriority = { 'error': 0, 'warning': 1, 'online': 2, 'offline': 3 };
-              allDevices.sort((a, b) => {
-                  const statusA = getDeviceStatus(a);
-                  const statusB = getDeviceStatus(b);
-                  // Compare priorities, then sort by name as a secondary criterion
-                  if (statusPriority[statusA] !== statusPriority[statusB]) {
-                    return statusPriority[statusA] - statusPriority[statusB];
-                  } else {
-                    return a.deviceId.localeCompare(b.deviceId); // Secondary sort by name
-                  }
-              });
-          } else {
-              console.warn(`Unsupported sort criteria: ${criteria}`);
-              return;
-          }
-
-          // Re-render the dashboard; renderDevices will apply the current selection filter
-          renderDevices();
-      }
-
-      // Returns the appropriate Bootstrap background color class for a status badge
-      function getStatusBadgeClass(status) {
-          switch (status) {
-              case 'online': return 'bg-success';
-              case 'warning': return 'bg-warning text-dark'; // Ensure text is readable on yellow
-              case 'error': return 'bg-danger';
-              case 'offline': return 'bg-secondary';
-              default: return 'bg-secondary'; // Default fallback
-          }
-      }
-
-
-      // --- History Section ---
-
-      // Fetches historical data based on selected criteria
-      async function fetchHistoricalData() {
-          const deviceId = document.getElementById('deviceSelect').value;
-          const startDate = document.getElementById('startDate').value;
-          const endDate = document.getElementById('endDate').value;
-          const limit = document.getElementById('entriesLimit').value;
-
-          if (!deviceId) {
-              showError('Please select a device from the dropdown.');
-              return;
-          }
-
-          showLoading("Fetching historical data...");
-          const tableBody = document.getElementById('historyTable').querySelector('tbody');
-          tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted p-3"><span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Loading history...</td></tr>';
-           if (historyChart) historyChart.destroy(); // Clear previous chart
-
-          try {
-              // Construct the API query URL
-              let url = `${API_ENDPOINT}/devices?deviceId=${deviceId}&limit=${limit}`;
-              if (startDate) url += `&startDate=${startDate}`;
-              // Add 1 day to end date to include the whole day
-              if (endDate) {
-                 const end = new Date(endDate);
-                 end.setDate(end.getDate() + 1); // Make it inclusive of the selected end date
-                 url += `&endDate=${end.toISOString().split('T')[0]}`;
-              }
-
-              console.log(`Fetching history from: ${url}`);
-
-              const response = await fetch(url, {
-                  headers: { 'X-API-KEY': apiKey }
-              });
-
-              if (response.ok) {
-                  const data = await response.json();
-                   // Expecting { success: true, data: [ { logData: [...] }, ... ] }
-                   if (data.success && Array.isArray(data.data)) {
-                       // Flatten log data similar to device details
-                       let historicalEntries = [];
-                       data.data.forEach(fileMeta => {
-                           if (Array.isArray(fileMeta.logData)) {
-                               // Add necessary info if missing (though less likely needed for history table)
-                               fileMeta.logData.forEach(entry => {
-                                  entry.deviceId = entry.deviceId || deviceId;
-                                  entry.uploaded = fileMeta.uploaded;
-                               });
-                               historicalEntries = historicalEntries.concat(fileMeta.logData);
-                           }
-                       });
-                       // Sort history chronologically (oldest first for table/chart)
-                       historicalEntries.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-                       console.log(`Fetched ${historicalEntries.length} historical log entries.`);
-                       renderHistoricalData(historicalEntries); // Render table and chart
-                   } else {
-                        console.warn("No historical data found or unexpected structure:", data);
-                        showError(`No historical data found for ${deviceId} within the selected criteria.`);
-                        tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted p-3">No data found for the selected criteria.</td></tr>';
-                        if (historyChart) historyChart.destroy(); // Ensure chart is cleared
-                   }
-              } else if (response.status === 401) {
-                   showError('Authentication failed while fetching history. Please log in again.');
-                   handleLogout();
-              } else {
-                   showError(`Failed to fetch historical data: Server error (${response.status})`);
-                   tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger p-3">Error loading history (${response.status}).</td></tr>`;
-              }
-          } catch (error) {
-              console.error('Error fetching historical data:', error);
-              showError('Connection error while loading historical data.');
-               tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger p-3">Connection error loading history.</td></tr>';
-          } finally {
-              hideLoading();
-          }
-      }
-
-      // Renders historical data into the table and chart
-      function renderHistoricalData(historicalEntries) { // Accepts the sorted (oldest first) log entries
-          const tableBody = document.getElementById('historyTable').querySelector('tbody');
-          tableBody.innerHTML = ''; // Clear previous data
-
-          if (historicalEntries.length === 0) {
-              tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted p-3">No data available for the selected criteria.</td></tr>';
-              if (historyChart) historyChart.destroy(); // Clear chart if no data
-              return;
-          }
-
-          // Populate the history table (oldest first)
-          historicalEntries.forEach(entry => {
-              const row = document.createElement('tr');
-              row.innerHTML = `
-                  <td>${formatDateTime(entry.timestamp)}</td>
-                  <td>${(entry.flow?.actual ?? 0).toFixed(1)}</td>
-                  <td>${entry.ppm ?? 'N/A'}</td>
-                  <td>${(entry.chemPump?.totalizer ?? 0).toFixed(4)}</td>
-                  <td>${(entry.acidPump?.totalizer ?? 0).toFixed(4)}</td>
-                  <td>${(entry.errorCode || 'UNKNOWN').replace(/_/g, ' ')}</td>
-              `;
-              tableBody.appendChild(row);
-          });
-
-          // Create the history chart using the same sorted data
-          createHistoryChart(historicalEntries);
-      }
-
-      // Creates the main chart in the History section
-      function createHistoryChart(historicalEntries) { // Accepts sorted (oldest first) log entries
-          const canvas = document.getElementById('historyChart');
-          if (!canvas) { console.error("History chart canvas not found"); return; }
-          const ctx = canvas.getContext('2d');
-
-          // Destroy existing chart instance
-          if (historyChart) historyChart.destroy();
-
-          // Prepare data for the chart (already sorted oldest first)
-          const labels = historicalEntries.map(item => formatDateTime(item.timestamp)); // Use full date/time for history
-          const flowData = historicalEntries.map(item => item.flow?.actual ?? null);
-          const ppmData = historicalEntries.map(item => item.ppm ?? null);
-
-          // Check if we actually have data to plot
-          const hasFlow = flowData.some(d => d !== null);
-          const hasPPM = ppmData.some(d => d !== null);
-
-          if (!hasFlow && !hasPPM) {
-            console.log("No numeric data to plot in history chart.");
-            return; // Don't create an empty chart
-          }
-
-          const datasets = [];
-          if (hasFlow) {
-            datasets.push({
-              label: 'Flow Rate (GPM)',
-              data: flowData,
-              borderColor: 'rgba(203, 32, 38, 0.8)', // Primary color
-              backgroundColor: 'rgba(203, 32, 38, 0.1)',
-              borderWidth: 1.5,
-              tension: 0.1,
-              fill: false,
-              pointRadius: 0, // Hide points for cleaner history chart
-              pointHoverRadius: 3,
-              yAxisID: 'yFlow',
-              spanGaps: true
-            });
-          }
-          if (hasPPM) {
-             datasets.push({
-              label: 'PPM Reading',
-              data: ppmData,
-              borderColor: 'rgba(66, 135, 245, 0.8)', // Blue
-              backgroundColor: 'rgba(66, 135, 245, 0.1)',
-              borderWidth: 1.5,
-              tension: 0.1,
-              fill: false,
-              pointRadius: 0,
-              pointHoverRadius: 3,
-              yAxisID: 'yPPM',
-              spanGaps: true
-            });
-          }
-
-
-          // Create the chart
-          historyChart = new Chart(ctx, {
-              type: 'line',
-              data: {
-                  labels: labels,
-                  datasets: datasets
-              },
-              options: {
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  interaction: { mode: 'index', intersect: false },
-                  stacked: false,
-                  plugins: {
-                      title: { display: true, text: 'Historical Data Trend' },
-                      legend: { display: true, position: 'top' },
-                       tooltip: { mode: 'index', intersect: false }
-                  },
-                  scales: {
-                      yFlow: {
-                          type: 'linear',
-                          display: hasFlow,
-                          position: 'left',
-                          title: { display: hasFlow, text: 'Flow Rate (GPM)' },
-                          beginAtZero: true
-                      },
-                      yPPM: {
-                          type: 'linear',
-                          display: hasPPM,
-                          position: 'right',
-                          title: { display: hasPPM, text: 'PPM' },
-                          grid: { drawOnChartArea: !hasFlow } // Grid only for this axis if flow axis is hidden
-                          // Add suggested min/max if ppm range is known
-                      },
-                      x: {
-                          title: { display: true, text: 'Timestamp' },
-                          ticks: {
-                             autoSkip: true, // Automatically skip labels to prevent overlap
-                             maxTicksLimit: 15 // Limit number of visible ticks on time axis
-                          }
-                      }
-                  }
-              }
-          });
-      }
-
-      // Exports the currently displayed historical data table to a CSV file
-      function exportHistoryToCSV() {
-          const table = document.getElementById('historyTable');
-          const tableBody = table.querySelector('tbody');
-          const deviceId = document.getElementById('deviceSelect').value || "UnknownDevice";
-
-          if (!tableBody || tableBody.rows.length === 0 || tableBody.rows[0].cells.length <= 1) {
-              showError("No historical data available in the table to export.");
-              return;
-          }
-
-          let csv = [];
-
-          // Get headers from table thead
-          const headers = [];
-          table.querySelectorAll('thead th').forEach(th => headers.push(`"${th.textContent.replace(/"/g, '""')}"`)); // Quote headers
-          csv.push(headers.join(','));
-
-          // Get data rows from table tbody
-          tableBody.querySelectorAll('tr').forEach(row => {
-              const rowData = [];
-              row.querySelectorAll('td').forEach(cell => {
-                  // Clean and quote cell data to handle commas, quotes, etc.
-                  let cellData = cell.textContent.replace(/"/g, '""'); // Escape double quotes
-                  // Quote fields containing commas, newlines, or quotes
-                  if (cellData.includes(',') || cellData.includes('\n') || cellData.includes('"')) {
-                      cellData = `"${cellData}"`;
-                  }
-                  rowData.push(cellData);
-              });
-              // Only add row if it has data (skip placeholder rows)
-              if (rowData.some(cell => cell.trim() !== '')) {
-                 csv.push(rowData.join(','));
-              }
-          });
-
-          if (csv.length <= 1) { // Only header row found
-             showError("No data rows found in the table to export.");
-             return;
-          }
-
-
-          // Create CSV file and trigger download
-          const csvContent = csv.join('\n');
-          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-          const filename = `EDIE_History_${deviceId}_${formatDateForFilename(new Date())}.csv`;
-
-          // Use browser download mechanism
-          const link = document.createElement('a');
-          if (link.download !== undefined) { // Feature detection
-              const url = URL.createObjectURL(blob);
-              link.setAttribute('href', url);
-              link.setAttribute('download', filename);
-              link.style.visibility = 'hidden';
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-              URL.revokeObjectURL(url); // Clean up
-              console.log(`Exported history to ${filename}`);
-          } else {
-               showError("CSV export is not supported by your browser.");
-          }
-      }
-
-
-      // --- Loading Indicator ---
-
-      // Shows the global loading indicator, optionally with a message
-      function showLoading(message = "Loading...") {
-          const indicator = document.getElementById('loadingIndicator');
-          // Optional: Update message if indicator has a text element
-          // const messageElement = indicator.querySelector('.loading-message');
-          // if (messageElement) messageElement.textContent = message;
-          indicator.style.display = 'flex'; // Use flex to center spinner
-      }
-
-      // Hides the global loading indicator
-      function hideLoading() {
-          document.getElementById('loadingIndicator').style.display = 'none';
-      }
-
-
-      // --- ADDED: Device Selection Modal Logic ---
-
-      // Opens the modal to select which devices to display
-      function openDeviceSelectionModal() {
-          console.log("Opening device selection modal.");
-          const listElement = document.getElementById('deviceSelectList');
-          const selectAllCheckbox = document.getElementById('selectAllDevices');
-          listElement.innerHTML = ''; // Clear previous list
-
-          if (allDevices.length === 0) {
-              listElement.innerHTML = '<p class="text-center text-muted p-3">No devices found. Please refresh the data first.</p>';
-              selectAllCheckbox.disabled = true; // Disable "Select All" if no devices
-              selectAllCheckbox.checked = false;
-          } else {
-              selectAllCheckbox.disabled = false; // Enable checkbox
-              // Sort devices alphabetically for the modal list
-              const sortedDevices = [...allDevices].sort((a, b) => a.deviceId.localeCompare(b.deviceId));
-
-              // Populate the list with checkboxes
-              sortedDevices.forEach(device => {
-                  // Determine if this device should be checked based on current selection
-                  // Checked if: showing all (null) OR if its ID is in the selectedDeviceIDs array
-                  const isSelected = selectedDeviceIDs === null || selectedDeviceIDs.includes(device.deviceId);
-                  const itemHtml = `
-                      <div class="form-check device-select-item">
-                          <input class="form-check-input device-select-checkbox" type="checkbox" value="${device.deviceId}" id="select-${device.deviceId}" ${isSelected ? 'checked' : ''}>
-                          <label class="form-check-label" for="select-${device.deviceId}">
-                              ${device.deviceId}
-                          </label>
-                      </div>
-                  `;
-                  listElement.insertAdjacentHTML('beforeend', itemHtml); // More efficient than innerHTML +=
-              });
-
-              // Set the state of the "Select/Deselect All" checkbox
-              // Checked if currently showing all (null) OR if all devices happen to be selected individually
-              const allCurrentlySelected = selectedDeviceIDs !== null && selectedDeviceIDs.length === allDevices.length;
-              selectAllCheckbox.checked = (selectedDeviceIDs === null || allCurrentlySelected);
-
-              // Remove previous listener to prevent duplicates, then add new one
-              selectAllCheckbox.removeEventListener('change', handleSelectAllDevices);
-              selectAllCheckbox.addEventListener('change', handleSelectAllDevices);
-
-              // Add listeners to individual checkboxes to potentially uncheck "Select All"
-              document.querySelectorAll('.device-select-checkbox').forEach(checkbox => {
-                 checkbox.removeEventListener('change', handleIndividualDeviceSelect); // Prevent duplicates
-                 checkbox.addEventListener('change', handleIndividualDeviceSelect);
-              });
-          }
-
-          try {
-              deviceSelectModal.show(); // Show the Bootstrap modal
-          } catch(e) {
-              console.error("Error showing device selection modal:", e);
-              showError("Could not open device selection window.");
-          }
-      }
-
-      // Handles the 'change' event of the "Select/Deselect All" checkbox
-      function handleSelectAllDevices(event) {
-          const isChecked = event.target.checked;
-          console.log(`Select All toggled: ${isChecked}`);
-          document.querySelectorAll('.device-select-checkbox').forEach(checkbox => {
-              checkbox.checked = isChecked;
-          });
-      }
-
-      // Handles the 'change' event of an individual device checkbox
-      function handleIndividualDeviceSelect() {
-           const allCheckboxes = document.querySelectorAll('.device-select-checkbox');
-           const checkedCheckboxes = document.querySelectorAll('.device-select-checkbox:checked');
-           const selectAllCheckbox = document.getElementById('selectAllDevices');
-
-           // If all individual boxes are checked, check "Select All". Otherwise, uncheck it.
-           selectAllCheckbox.checked = allCheckboxes.length === checkedCheckboxes.length;
-      }
-
-      // Saves the user's device selection from the modal
-      function saveDeviceSelection() {
-          console.log("Saving device selection...");
-          const selectedCheckboxes = document.querySelectorAll('.device-select-checkbox:checked');
-          const allCheckboxes = document.querySelectorAll('.device-select-checkbox'); // Get total count
-
-          // Create an array of the selected device IDs from the checked boxes
-          const newlySelectedIDs = Array.from(selectedCheckboxes).map(cb => cb.value);
-
-          // Determine if "Show All" should be the effective state
-          // This happens if the user checked "Select All" OR if they manually checked every single device
-          if (newlySelectedIDs.length === allCheckboxes.length && allCheckboxes.length > 0) {
-              // If all devices are selected, store null to represent "show all"
-              selectedDeviceIDs = null;
-              localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY); // Remove the key from storage
-              console.log("Selection saved as 'Show All' (all devices selected).");
-          } else {
-              // Otherwise, save the specific array of selected IDs
-              selectedDeviceIDs = newlySelectedIDs;
-              localStorage.setItem(SELECTED_DEVICES_STORAGE_KEY, JSON.stringify(selectedDeviceIDs));
-              console.log("Saved specific device selection:", selectedDeviceIDs);
-          }
-
-          try {
-              deviceSelectModal.hide(); // Hide the modal
-          } catch(e) {
-              console.error("Error hiding device selection modal:", e);
-          }
-
-          renderDevices(); // Re-render the overview dashboard with the new selection applied
-      }
-
-      // --- Generic Error Display ---
-
-      // Shows a simple error message to the user (can be enhanced later)
-      function showError(message) {
-          console.error("Error Displayed:", message);
-          // Using alert for now, could be replaced with a Bootstrap toast or modal
-          alert(`Error: ${message}`);
-          // Example using a Bootstrap Toast (requires Toast HTML in the body and initialization)
-          // const toastElement = document.getElementById('errorToast');
-          // const toastBody = toastElement.querySelector('.toast-body');
-          // toastBody.textContent = message;
-          // const toast = bootstrap.Toast.getOrCreateInstance(toastElement);
-          // toast.show();
-      }
-
-  </script>
+    </script>
 </body>
 </html>
