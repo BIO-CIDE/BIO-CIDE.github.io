@@ -850,10 +850,7 @@
                             <span class="badge rounded-pill status-badge text-uppercase ${getStatusBadgeClass(device._status)}">${errorCode !== 'N/A' ? errorCode.replace(/_/g,' ') : device._status}</span>
                         </div>
                         <div class="card-body d-flex flex-column">
-                            <div class="mini-chart-container mb-3" id="mini-chart-container-${device.deviceId}">
-                                <canvas id="mini-chart-${device.deviceId}"></canvas>
-                            </div>
-                            <div class="row text-center">
+                               <div class="row text-center">
                                <div class="col-6">
                                    <div class="metric-label">Flow</div>
                                    <div class="metric-value">${typeof flowRate === 'number' ? flowRate.toFixed(1) : 'N/A'} <small>GPM</small></div>
@@ -878,7 +875,6 @@
                     </div>
                 `;
                 DOMElements.devicesGrid.appendChild(card);
-                createMiniChart(device.deviceId, latestData.history || []);
                 card.querySelector('.view-details-btn').addEventListener('click', (e) => {
                     showDeviceDetails(e.currentTarget.dataset.deviceId);
                 });
@@ -1239,18 +1235,13 @@
         }
 
         // --- Chart Utilities ---
-        function createMiniChart(deviceId, history) {
-            const container=document.getElementById(`mini-chart-container-${deviceId}`);
-            if(container)container.innerHTML='<small class="text-muted d-block text-center pt-3">Mini-chart data not available</small>';
-        }
         function commonChartOptions(titleText,xLabel,yLabel,scalesOverride={}){
             const opts={responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{title:{display:!!titleText,text:titleText,padding:{bottom:10}},legend:{display:true,position:'top'},tooltip:{mode:'index',intersect:false}},scales:{x:{title:{display:!!xLabel,text:xLabel}},y:{title:{display:!!yLabel,text:yLabel},beginAtZero:false},...scalesOverride}};
             opts.plugins.legend.display=(opts.data?.datasets?.length??0)>1;
             return opts;
         }
         function destroyChart(chart){if(chart)chart.destroy();}
-        function destroyAllMiniCharts(){Object.values(chartInstances).forEach(destroyChart);chartInstances={};}
-        function clearAllCharts(){destroyAllMiniCharts();destroyChart(detailFlowChart);detailFlowChart=null;destroyChart(detailProbeChart);detailProbeChart=null;destroyChart(historyChart);historyChart=null;}
+        function clearAllCharts(){destroyChart(detailFlowChart);detailFlowChart=null;destroyChart(detailProbeChart);detailProbeChart=null;destroyChart(historyChart);historyChart=null;}
 
         // --- Auto Refresh & Visibility ---
         function startAutoRefresh(){stopAutoRefresh();if(AUTO_REFRESH_INTERVAL<10000)return;autoRefreshTimer=setInterval(()=>{if(isTabVisible&&loggedInUser&&DOMElements.overviewSection.classList.contains('d-none')===false){refreshDeviceList();}},AUTO_REFRESH_INTERVAL);}        
