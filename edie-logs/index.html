@@ -157,8 +157,8 @@
           <div class="card-body">
               <div class="mb-3">
                   <label for="apiKey" class="form-label">API Key</label>
-                  {/* Input type changed back to password as requested */}
-                  {/* Added default API key value as requested */}
+                  <!-- Input type changed back to password as requested -->
+                  <!-- Added default API key value as requested -->
                   <input type="password" class="form-control" id="apiKey" placeholder="Enter your API key" value="k32BWMByEJrCihED0YEmhs0AaUJCeontFUC_qbeB">
               </div>
               <div class="form-check mb-3">
@@ -167,7 +167,7 @@
                       Remember API key
                   </label>
               </div>
-              {/* Updated button style to match primary color */}
+              <!-- Updated button style to match primary color -->
               <button id="loginBtn" class="btn btn-primary w-100" style="background-color: var(--primary-color); border-color: var(--primary-color);">Login</button>
               <div id="authError" class="alert alert-danger mt-3 d-none"></div>
           </div>
@@ -192,13 +192,13 @@
                           <a class="nav-link" href="#" id="historyLink">History</a>
                       </li>
                   </ul>
-                  {/* Updated structure for alignment */}
+                  <!-- Updated structure for alignment -->
                   <div class="d-flex align-items-center">
-                      {/* ADDED Select Devices Button */}
+                      <!-- ADDED Select Devices Button -->
                       <button id="selectDevicesBtn" class="btn btn-outline-light me-2" title="Select Devices to Display">
                           <i class="bi bi-list-check"></i> Devices
                       </button>
-                      {/* Changed Refresh button text back */}
+                      <!-- Changed Refresh button text back -->
                       <button id="refreshBtn" class="btn btn-outline-light me-2">Refresh</button>
                       <button id="logoutBtn" class="btn btn-outline-light">Logout</button>
                   </div>
@@ -208,12 +208,12 @@
 
       <!-- Overview Section -->
       <div id="overviewSection" class="container mt-4">
-          {/* Timezone info remains the same */}
+          <!-- Timezone info remains the same -->
           <div class="timezone-info" id="overviewTimezoneInfo">
               <i class="bi bi-clock"></i> All times are shown in your local timezone:
               <strong id="userTimezone"></strong>
           </div>
-          {/* Search/Sort controls remain the same */}
+          <!-- Search/Sort controls remain the same -->
            <div class="row mb-4">
               <div class="col-md-6">
                   <div class="input-group">
@@ -230,8 +230,8 @@
           </div>
 
           <div class="row" id="devicesGrid">
-              {/* Devices will be inserted here */}
-              {/* ADDED Initial message for when no devices are selected/found */}
+              <!-- Devices will be inserted here -->
+              <!-- ADDED Initial message for when no devices are selected/found -->
               <div class="col-12" id="noDevicesMessage" style="display: none;">
                   <div class="alert alert-info">No devices selected or found. Use the 'Devices' button above to select which devices to display.</div>
               </div>
@@ -250,7 +250,7 @@
                   <button id="exportCSV" class="btn btn-sm btn-outline-primary" style="--bs-btn-color: var(--primary-color); --bs-btn-border-color: var(--primary-color); --bs-btn-hover-bg: var(--primary-color); --bs-btn-hover-border-color: var(--primary-color);">Export CSV</button>
               </div>
               <div class="card-body">
-                  {/* Filters remain the same */}
+                  <!-- Filters remain the same -->
                   <div class="row mb-4">
                       <div class="col-md-3">
                           <label for="deviceSelect" class="form-label">Device</label>
@@ -271,9 +271,9 @@
                           <select id="entriesLimit" class="form-select">
                               <option value="10">10</option>
                               <option value="25">25</option>
-                              <option value="50" selected>50</option> {/* Defaulted to 50 */}
+                              <option value="50" selected>50</option> <!-- Defaulted to 50 -->
                               <option value="100">100</option>
-                              <option value="250">250</option> {/* Added more options */}
+                              <option value="250">250</option> <!-- Added more options -->
                               <option value="500">500</option>
                           </select>
                       </div>
@@ -284,14 +284,14 @@
                       </div>
                   </div>
 
-                  {/* History chart container remains */}
+                  <!-- History chart container remains -->
                   <div class="mt-4">
                       <div class="chart-container" style="height: 300px;">
                           <canvas id="historyChart"></canvas>
                       </div>
                   </div>
 
-                  {/* History table remains */}
+                  <!-- History table remains -->
                   <div class="table-responsive mt-4">
                       <table class="table table-striped table-hover" id="historyTable">
                           <thead>
@@ -305,7 +305,7 @@
                               </tr>
                           </thead>
                           <tbody>
-                              {/* History data will be inserted here */}
+                              <!-- History data will be inserted here -->
                               <tr><td colspan="6" class="text-center text-muted">Select criteria and search to view history.</td></tr>
                           </tbody>
                       </table>
@@ -325,7 +325,7 @@
                   <div class="modal-body">
                       <ul class="nav nav-tabs" id="deviceDetailTabs" role="tablist">
                           <li class="nav-item" role="presentation">
-                              {/* Added role and controls attributes for accessibility */}
+                              <!-- Added role and controls attributes for accessibility -->
                               <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overviewTab" type="button" role="tab" aria-controls="overviewTab" aria-selected="true">Overview</button>
                           </li>
                           <li class="nav-item" role="presentation">
@@ -336,11 +336,11 @@
                           </li>
                       </ul>
                       <div class="tab-content" id="deviceDetailTabContent">
-                          {/* Added roles and labelledby attributes for accessibility */}
+                          <!-- Added roles and labelledby attributes for accessibility -->
                           <div class="tab-pane fade show active" id="overviewTab" role="tabpanel" aria-labelledby="overview-tab">
                               <div class="row mt-3">
                                   <div class="col-md-6">
-                                      {/* Increased height for detail charts */}
+                                      <!-- Increased height for detail charts -->
                                       <div class="chart-container" style="height: 250px;">
                                           <canvas id="flowChart"></canvas>
                                       </div>
@@ -353,7 +353,7 @@
                               </div>
                               <h6 class="mt-4">Latest Metrics:</h6>
                               <div class="row mt-2" id="deviceMetrics">
-                                  {/* Metrics will be inserted here */}
+                                  <!-- Metrics will be inserted here -->
                                   <p class="text-muted">Loading metrics...</p>
                               </div>
                           </div>
@@ -368,11 +368,11 @@
                                               <th>PPM</th>
                                               <th>Injection</th>
                                               <th>Error Code</th>
-                                              <th>Uploaded</th> {/* Added Upload time column */}
+                                              <th>Uploaded</th> <!-- Added Upload time column -->
                                           </tr>
                                       </thead>
                                       <tbody>
-                                          {/* Device data will be inserted here */}
+                                          <!-- Device data will be inserted here -->
                                           <tr><td colspan="6" class="text-center text-muted">Loading data...</td></tr>
                                       </tbody>
                                   </table>
@@ -383,7 +383,7 @@
                                <div class="table-responsive mt-2">
                                   <table class="table table-sm table-striped" id="deviceSettingsTable">
                                       <tbody>
-                                          {/* Device settings will be inserted here */}
+                                          <!-- Device settings will be inserted here -->
                                           <tr><td colspan="2" class="text-muted">Loading settings...</td></tr>
                                       </tbody>
                                   </table>
@@ -405,12 +405,12 @@
                   </div>
                   <div class="modal-body">
                       <p>Choose which devices appear on the overview dashboard.</p>
-                      {/* Container for the list of checkboxes */}
+                      <!-- Container for the list of checkboxes -->
                       <div id="deviceSelectList" class="device-select-list mb-3">
-                          {/* Checkboxes will be loaded here dynamically */}
+                          <!-- Checkboxes will be loaded here dynamically -->
                           <p class="text-muted">Loading available devices...</p>
                       </div>
-                      {/* Select/Deselect All checkbox */}
+                      <!-- Select/Deselect All checkbox -->
                       <div class="form-check">
                           <input class="form-check-input" type="checkbox" value="" id="selectAllDevices">
                           <label class="form-check-label" for="selectAllDevices">
@@ -420,15 +420,15 @@
                   </div>
                   <div class="modal-footer">
                       <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                      {/* Updated save button style */}
+                      <!-- Updated save button style -->
                       <button type="button" class="btn btn-primary" id="saveDeviceSelectionBtn" style="background-color: var(--primary-color); border-color: var(--primary-color);">Save Selection</button>
                   </div>
               </div>
           </div>
       </div>
-      {/* End Added Modal */}
+      <!-- End Added Modal -->
 
-  </div> {/* End Main Dashboard */}
+  </div> <!-- End Main Dashboard -->
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -803,23 +803,23 @@
               // Use Bootstrap grid classes for responsiveness
               deviceCard.className = 'col-md-6 col-lg-4 col-xl-3 mb-4'; // Adjusted grid classes
               deviceCard.innerHTML = `
-                  <div class="card device-card h-100"> {/* Use Bootstrap class for equal height cards */}
+                  <div class="card device-card h-100"> <!-- Use Bootstrap class for equal height cards -->
                       <div class="card-header">
-                          {/* Status indicator and Device ID */}
-                          <div class="d-flex align-items-center text-truncate"> {/* Prevent long IDs from breaking layout */}
+                          <!-- Status indicator and Device ID -->
+                          <div class="d-flex align-items-center text-truncate"> <!-- Prevent long IDs from breaking layout -->
                               <span class="status-indicator ${statusClass}" title="Status: ${status}"></span>
                               <span class="fw-bold ms-1">${device.deviceId}</span>
                           </div>
-                          {/* Status/Error code badge */}
+                          <!-- Status/Error code badge -->
                           <span class="badge ${getStatusBadgeClass(status)} ms-2">${errorCode}</span>
                       </div>
-                      <div class="card-body d-flex flex-column"> {/* Use flex column for better layout */}
-                          {/* Mini chart placeholder */}
+                      <div class="card-body d-flex flex-column"> <!-- Use flex column for better layout -->
+                          <!-- Mini chart placeholder -->
                           <div class="chart-container mb-3">
                               <canvas id="chart-${device.deviceId}"></canvas>
                           </div>
-                          {/* Metrics Area */}
-                          <div class="row text-center mt-auto"> {/* Push metrics towards bottom */}
+                          <!-- Metrics Area -->
+                          <div class="row text-center mt-auto"> <!-- Push metrics towards bottom -->
                               <div class="col-6">
                                   <div class="metric-label">Flow</div>
                                   <div class="metric-value">${parseFloat(flowRate).toFixed(1)} <small>GPM</small></div>
@@ -832,13 +832,13 @@
                            <div class="row mt-2 text-center">
                               <div class="col-12">
                                   <div class="metric-label">Last Update</div>
-                                  {/* Use relative time string for user-friendliness */}
+                                  <!-- Use relative time string for user-friendliness -->
                                   <div class="fs-6" title="${formatDateTime(lastTimestamp)}">${getRelativeTimeString(lastTimestamp)}</div>
                               </div>
                           </div>
                       </div>
-                      <div class="card-footer bg-light border-top-0 pt-2 pb-2"> {/* Adjusted padding */}
-                          {/* Button to view details */}
+                      <div class="card-footer bg-light border-top-0 pt-2 pb-2"> <!-- Adjusted padding -->
+                          <!-- Button to view details -->
                           <button class="btn btn-outline-secondary btn-sm w-100 view-details" data-device-id="${device.deviceId}">
                               <i class="bi bi-search me-1"></i> View Details
                           </button>
@@ -1514,9 +1514,9 @@
                  <td>${formatDateTime(entry.timestamp)}</td>
                  <td>${(entry.flow?.actual ?? 0).toFixed(1)}</td>
                  <td>${entry.ppm ?? 'N/A'}</td>
-                 <td>${(entry.chemPump?.totalizer ?? 0).toFixed(4)}</td> {/* Display chemical totalizer */}
+                 <td>${(entry.chemPump?.totalizer ?? 0).toFixed(4)}</td> <!-- Display chemical totalizer -->
                  <td>${(entry.errorCode || 'UNKNOWN').replace(/_/g, ' ')}</td>
-                 <td>${formatDateTime(entry.uploaded)}</td> {/* Display upload time */}
+                 <td>${formatDateTime(entry.uploaded)}</td> <!-- Display upload time -->
              `;
              tableBody.appendChild(row);
          });
