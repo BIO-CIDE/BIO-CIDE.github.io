@@ -52,20 +52,20 @@
       const { useState } = React;
 
       // Simple SVG Icon components (can be expanded)
-      const WifiIcon = () => (
+      const WifiIcon = () =&gt; (
         <svg className="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071a10 10 0 0114.142 0M1.394 9.393a15 15 0 0121.213 0"></path></svg>
       );
-      const SettingsIcon = () => (
+      const SettingsIcon = () =&gt; (
         <svg className="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
       );
-      const WarningIcon = () => (
+      const WarningIcon = () =&gt; (
         <svg className="icon text-red-500" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
       );
-      const InfoIcon = () => (
+      const InfoIcon = () =&gt; (
           <svg className="icon text-blue-500" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
       );
 
-      const EdieControllerInstructions = () => {
+      const EdieControllerInstructions = () =&gt; {
         const [activeSection, setActiveSection] = useState('initial');
 
         const sections = [
@@ -109,10 +109,10 @@
                   <div className="bg-white rounded-lg shadow-lg p-4 sticky top-6">
                     <h2 className="text-xl font-bold mb-4 text-blue-800 border-b border-gray-200 pb-2">Navigation</h2>
                     <ul className="space-y-1">
-                      {sections.map(section => (
+                      {sections.map(section =&gt; (
                         <li key={section.id}>
                           <button
-                            onClick={() => setActiveSection(section.id)}
+                            onClick={() =&gt; setActiveSection(section.id)}
                             className={`w-full text-left p-3 rounded-md hover:bg-blue-100 hover:text-blue-800 transition-colors duration-150 ${
                               activeSection === section.id ? 'bg-blue-600 text-white font-semibold shadow-sm' : 'text-gray-700'
                             }`}
@@ -134,41 +134,41 @@
 
                         <div className="space-y-6">
                           <div className="prose max-w-none">
-                            <h3 className="text-lg font-semibold text-gray-800 flex items-center"><span className="text-3xl font-bold text-blue-600 mr-3">①</span> Power Up</h3>
+                            <h3 className="text-lg font-semibold text-gray-800 flex items-center"><span className="text-3xl font-bold text-blue-600 mr-3">①</span&gt; Power Up</h3>
                             <p>Connect the controller to a suitable power source. The LCD will display "EDIE Controller", followed by its Serial ID (e.g., <code>EM1001</code>) and "Initializing...".</p>
                           </div>
 
                           <div className="prose max-w-none">
-                              <h3 className="text-lg font-semibold text-gray-800 flex items-center"><span className="text-3xl font-bold text-blue-600 mr-3">②</span> Connect via Wi-Fi (AP Mode)</h3>
+                              <h3 className="text-lg font-semibold text-gray-800 flex items-center"><span className="text-3xl font-bold text-blue-600 mr-3">②</span&gt; Connect via Wi-Fi (AP Mode)</h3>
                               <p>By default, the controller starts in Access Point (AP) mode. Use your computer or mobile device to:</p>
                               <ul className="list-disc pl-5 space-y-1">
                                   <li>Scan for Wi-Fi networks.</li>
-                                  <li>Find the network named after the controller's <strong>Serial ID</strong> (Default: <code>EM1001</code>).</li>
-                                  <li>Connect to this network using the default password: <code>PASSWORD</code> (case-sensitive).</li>
+                                  <li>Find the network named after the controller's <strong>Serial ID</strong&gt; (Default: <code>EM1001</code>).</li>
+                                  <li>Connect to this network using the default password: <code>PASSWORD</code&gt; (case-sensitive).</li>
                               </ul>
                           </div>
 
                            <div className="prose max-w-none">
-                              <h3 className="text-lg font-semibold text-gray-800 flex items-center"><span className="text-3xl font-bold text-blue-600 mr-3">③</span> Access the Web Interface (Captive Portal)</h3>
+                              <h3 className="text-lg font-semibold text-gray-800 flex items-center"><span className="text-3xl font-bold text-blue-600 mr-3">③</span&gt; Access the Web Interface (Captive Portal)</h3>
                               <p>Once connected to the controller's Wi-Fi:</p>
                               <ul className="list-disc pl-5 space-y-1">
                                   <li>Open a web browser (like Chrome, Firefox, Safari).</li>
-                                  <li>Try to navigate to <strong>any external website</strong> (e.g., <code>http://google.com</code>).</li>
-                                  <li>The controller's <strong>Captive Portal</strong> should automatically redirect your browser to its setup page.</li>
+                                  <li>Try to navigate to <strong>any external website</strong&gt; (e.g., <code>http://google.com</code>).</li>
+                                  <li>The controller's <strong>Captive Portal</strong&gt; should automatically redirect your browser to its setup page.</li>
                                   <li>If automatic redirection fails, manually navigate to the controller's IP address: <code>http://192.168.4.1</code></li>
-                                  <li>Alternatively, try the mDNS address (if your device supports it): <code>http://[serialid].local</code> (e.g., <code>http://EM1001.local</code>)</li>
+                                  <li>Alternatively, try the mDNS address (if your device supports it): <code>http://[serialid].local</code&gt; (e.g., <code>http://EM1001.local</code>)</li>
                                   <li>The EDIE Controller dashboard web interface should load.</li>
                               </ul>
                            </div>
 
                           {/* Quick Reference Box */}
                           <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg shadow-sm">
-                            <h4 className="font-semibold text-blue-700 flex items-center"><InfoIcon /> Default PINs (Passwords)</h4>
+                            <h4 className="font-semibold text-blue-700 flex items-center"><InfoIcon /&gt; Default PINs (Passwords)</h4>
                             <p className="text-sm text-gray-600 mb-2">These are the initial 4-digit PINs required to access protected sections of the web interface.</p>
                             <ul className="mt-1 space-y-1 text-sm">
-                              <li><span className="font-medium text-gray-800">User Level PIN:</span> <code>1111</code></li>
-                              <li><span className="font-medium text-gray-800">Tech Level PIN:</span> <code>2222</code></li>
-                              <li><span className="font-medium text-gray-800">Master Level PIN:</span> <code>9999</code></li>
+                              <li><span className="font-medium text-gray-800">User Level PIN:</span&gt; <code>1111</code></li>
+                              <li><span className="font-medium text-gray-800">Tech Level PIN:</span&gt; <code>2222</code></li>
+                              <li><span className="font-medium text-gray-800">Master Level PIN:</span&gt; <code>9999</code></li>
                             </ul>
                             <p className="mt-2 text-xs text-gray-500">It is strongly recommended to change these default PINs in the Settings tab for security.</p>
                           </div>
@@ -184,8 +184,8 @@
                         <div className="space-y-8">
                           {/* Parameters Section */}
                           <div className="border rounded-lg p-4 shadow-sm">
-                            <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center"><SettingsIcon /> System Parameters <span className="text-sm font-normal text-gray-500 ml-2">(User PIN: <code>1111</code> required)</span></h3>
-                            <p className="text-sm text-gray-600 mb-4">Navigate to the <strong className="text-blue-700">Parameters</strong> tab and enter the User PIN when prompted. Adjust the following settings based on your specific application:</p>
+                            <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center"><SettingsIcon /&gt; System Parameters <span className="text-sm font-normal text-gray-500 ml-2">(User PIN: <code>1111</code&gt; required)</span></h3>
+                            <p className="text-sm text-gray-600 mb-4">Navigate to the <strong className="text-blue-700">Parameters</strong&gt; tab and enter the User PIN when prompted. Adjust the following settings based on your specific application:</p>
                             <div className="overflow-x-auto">
                               <table className="min-w-full border border-gray-200 text-sm">
                                 <thead className="bg-gray-100">
@@ -199,7 +199,7 @@
                                   <tr>
                                     <td className="px-4 py-2 border font-medium">Desired PPM</td>
                                     <td className="px-4 py-2 border">Target chemical concentration</td>
-                                    <td className="px-4 py-2 border"><code>3</code> - <code>500</code></td>
+                                    <td className="px-4 py-2 border"><code>3</code&gt; - <code>500</code></td>
                                   </tr>
                                   <tr className="bg-gray-50">
                                     <td className="px-4 py-2 border font-medium">Product Selection</td>
@@ -209,17 +209,17 @@
                                   <tr>
                                     <td className="px-4 py-2 border font-medium">Product Acid Ratio</td>
                                     <td className="px-4 py-2 border">Chemical:Acid ratio (e.g., 5.0 means 5 parts Chem to 1 part Acid)</td>
-                                    <td className="px-4 py-2 border"><code>0.1</code> - <code>50.0</code></td>
+                                    <td className="px-4 py-2 border"><code>0.1</code&gt; - <code>50.0</code></td>
                                   </tr>
                                    <tr className="bg-gray-50">
                                     <td className="px-4 py-2 border font-medium">Chem Pump Weight</td>
                                     <td className="px-4 py-2 border">Max capacity of the primary chemical pump (GPH)</td>
-                                    <td className="px-4 py-2 border"><code>0.1</code> - <code>10.0</code></td>
+                                    <td className="px-4 py-2 border"><code>0.1</code&gt; - <code>10.0</code></td>
                                   </tr>
                                   <tr>
                                     <td className="px-4 py-2 border font-medium">Acid Stroke Volume</td>
                                     <td className="px-4 py-2 border">Volume dosed per acid pump pulse (mL)</td>
-                                    <td className="px-4 py-2 border"><code>0.01</code> - <code>20.0</code></td>
+                                    <td className="px-4 py-2 border"><code>0.01</code&gt; - <code>20.0</code></td>
                                   </tr>
                                 </tbody>
                               </table>
@@ -229,8 +229,8 @@
 
                           {/* Network & Security Section */}
                           <div className="border rounded-lg p-4 shadow-sm">
-                             <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center"><WifiIcon /> Network & Security <span className="text-sm font-normal text-gray-500 ml-2">(Tech PIN: <code>2222</code> / Master PIN: <code>9999</code> required)</span></h3>
-                             <p className="text-sm text-gray-600 mb-4">Navigate to the <strong className="text-blue-700">Settings</strong> tab. Enter the Tech or Master PIN when prompted.</p>
+                             <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center"><WifiIcon /&gt; Network & Security <span className="text-sm font-normal text-gray-500 ml-2">(Tech PIN: <code>2222</code&gt; / Master PIN: <code>9999</code&gt; required)</span></h3>
+                             <p className="text-sm text-gray-600 mb-4">Navigate to the <strong className="text-blue-700">Settings</strong&gt; tab. Enter the Tech or Master PIN when prompted.</p>
 
                              <div className="space-y-4">
                                 <div>
@@ -249,8 +249,8 @@
                                                 <li>Enter your network's SSID and Password accurately.</li>
                                             </ul>
                                         </li>
-                                         <li>Enter the <span className="font-medium">Master PIN</span> (<code>9999</code>) to save network changes.</li>
-                                        <li><strong className="text-red-600">Important:</strong> Saving network changes <span className="font-medium">will restart</span> the controller. Reconnect accordingly.</li>
+                                         <li>Enter the <span className="font-medium">Master PIN</span&gt; (<code>9999</code>) to save network changes.</li>
+                                        <li><strong className="text-red-600">Important:</strong&gt; Saving network changes <span className="font-medium">will restart</span&gt; the controller. Reconnect accordingly.</li>
                                     </ul>
                                     <button className="mt-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors">Save Network Settings</button>
                                 </div>
@@ -259,7 +259,7 @@
                                     <h4 className="font-medium text-gray-700">Security PINs (Master Access Only)</h4>
                                     <ul className="list-disc pl-5 text-sm text-gray-600 mt-2 space-y-1">
                                         <li>You can change the User, Tech, and Master PINs here.</li>
-                                        <li>Enter the <span className="font-medium">Current Master PIN</span> (<code>9999</code> by default) to authorize changes.</li>
+                                        <li>Enter the <span className="font-medium">Current Master PIN</span&gt; (<code>9999</code&gt; by default) to authorize changes.</li>
                                         <li>Enter the new 4-digit PIN and confirm it for each level you wish to change.</li>
                                         <li>Master PIN cannot be <code>0000</code>.</li>
                                     </ul>
@@ -275,7 +275,7 @@
                      {activeSection === 'calibration' && (
                       <section>
                         <h2 className="text-2xl font-bold text-blue-800 mb-6 border-b pb-2">3. Sensor & Output Calibration</h2>
-                        <p className="mb-6 text-gray-600">Accurate calibration is crucial for proper operation. Navigate to the <strong className="text-blue-700">Calibration</strong> tab. <span className="font-medium">(Tech PIN: <code>2222</code> required)</span></p>
+                        <p className="mb-6 text-gray-600">Accurate calibration is crucial for proper operation. Navigate to the <strong className="text-blue-700">Calibration</strong&gt; tab. <span className="font-medium">(Tech PIN: <code>2222</code&gt; required)</span></p>
 
                         <div className="space-y-8">
                           {/* Flow Sensor Calibration */}
@@ -283,9 +283,9 @@
                             <h3 className="text-lg font-semibold text-gray-800 mb-3">Flow Sensor Calibration</h3>
                              <p className="text-sm text-gray-600 mb-4">Ensure the flow meter is installed correctly and water is flowing at known rates for calibration.</p>
                             <ul className="list-disc pl-5 text-sm text-gray-600 space-y-2">
-                               <li><strong>Set Max Flow Rate (GPM):</strong> Enter the highest flow rate your system will experience (e.g., <code>100</code> GPM). This sets the upper range for display and calculations.</li>
-                              <li><strong>Set Min Calibrate Flow (Raw):</strong> While running water at the lowest typical operating flow, note the "Raw ADC" value shown on the gauge and enter it here.</li>
-                              <li><strong>Set Max Calibrate Flow (Raw):</strong> While running water at the highest typical operating flow, note the "Raw ADC" value shown on the gauge and enter it here.</li>
+                               <li><strong>Set Max Flow Rate (GPM):</strong&gt; Enter the highest flow rate your system will experience (e.g., <code>100</code&gt; GPM). This sets the upper range for display and calculations.</li>
+                              <li><strong>Set Min Calibrate Flow (Raw):</strong&gt; While running water at the lowest typical operating flow, note the "Raw ADC" value shown on the gauge and enter it here.</li>
+                              <li><strong>Set Max Calibrate Flow (Raw):</strong&gt; While running water at the highest typical operating flow, note the "Raw ADC" value shown on the gauge and enter it here.</li>
                             </ul>
                              <button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors">Save Flow Calibration</button>
                           </div>
@@ -319,9 +319,9 @@
                             <h3 className="text-lg font-semibold text-gray-800 mb-3">Probe Calibration (Probe One / Probe Two)</h3>
                             <p className="text-sm text-gray-600 mb-4">Calibrate connected analog probes (pH, ORP, ClO2, etc.). Requires appropriate standard calibration solutions.</p>
                             <ul className="list-disc pl-5 text-sm text-gray-600 space-y-2">
-                                <li><strong>Select Probe Type:</strong> Choose the type (pH, ORP, ClO2, Other, None). Default engineering ranges will populate based on type.</li>
-                                <li><strong>Set Cal Low (Raw) & Low Eng Value:</strong> Place the probe in the low standard solution. Note the "Raw ADC" value and enter it in "Calibration Low (Raw)". Enter the known value of the low standard in "Engineering Value at Low Cal".</li>
-                               <li><strong>Set Cal High (Raw) & High Eng Value:</strong> Place the probe in the high standard solution. Note the "Raw ADC" value and enter it in "Calibration High (Raw)". Enter the known value of the high standard in "Engineering Value at High Cal".</li>
+                                <li><strong>Select Probe Type:</strong&gt; Choose the type (pH, ORP, ClO2, Other, None). Default engineering ranges will populate based on type.</li>
+                                <li><strong>Set Cal Low (Raw) & Low Eng Value:</strong&gt; Place the probe in the low standard solution. Note the "Raw ADC" value and enter it in "Calibration Low (Raw)". Enter the known value of the low standard in "Engineering Value at Low Cal".</li>
+                               <li><strong>Set Cal High (Raw) & High Eng Value:</strong&gt; Place the probe in the high standard solution. Note the "Raw ADC" value and enter it in "Calibration High (Raw)". Enter the known value of the high standard in "Engineering Value at High Cal".</li>
                                 {/* ***** CORRECTED LINE BELOW ***** */}
                                 <li>Ensure Low Eng Value &lt; High Eng Value and Low Raw &lt; High Raw.</li>
                             </ul>
@@ -331,7 +331,7 @@
 
                           {/* Calibration Tips */}
                            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg shadow-sm">
-                             <h4 className="font-semibold text-blue-700 flex items-center"><InfoIcon /> Calibration Tips</h4>
+                             <h4 className="font-semibold text-blue-700 flex items-center"><InfoIcon /&gt; Calibration Tips</h4>
                              <ul className="mt-2 space-y-1 text-sm text-gray-700 list-disc list-inside">
                                <li>Allow sensors and system to stabilize before taking calibration readings.</li>
                                <li>Use certified calibration standards for probes.</li>
@@ -347,19 +347,19 @@
                     {activeSection === 'serialId' && (
                       <section>
                         <h2 className="text-2xl font-bold text-blue-800 mb-6 border-b pb-2">4. Changing the Device Serial ID</h2>
-                        <p className="mb-6 text-gray-600">The Serial ID is the unique identifier for the controller. Changing it affects network identification and logging. <span className="font-medium">(Master PIN: <code>9999</code> required)</span></p>
+                        <p className="mb-6 text-gray-600">The Serial ID is the unique identifier for the controller. Changing it affects network identification and logging. <span className="font-medium">(Master PIN: <code>9999</code&gt; required)</span></p>
 
                         <div className="space-y-6">
                           <div className="border rounded-lg p-4 shadow-sm">
                              <h3 className="text-lg font-semibold text-gray-800 mb-3">Procedure</h3>
                              <ol className="list-decimal pl-5 text-sm text-gray-600 space-y-2">
-                                 <li>Navigate to the <strong className="text-blue-700">Settings</strong> tab.</li>
-                                 <li>Enter the Master PIN (<code>9999</code> by default) when prompted.</li>
+                                 <li>Navigate to the <strong className="text-blue-700">Settings</strong&gt; tab.</li>
+                                 <li>Enter the Master PIN (<code>9999</code&gt; by default) when prompted.</li>
                                  <li>Locate the "Device Serial ID" section.</li>
                                  <li>Enter the desired <span className="font-medium">New Serial ID</span>. It must be 3-16 characters long and contain only letters (a-z, A-Z), numbers (0-9), hyphens (-), and underscores (_).</li>
-                                 <li>Enter the <span className="font-medium">Verification Code:</span> <code>1123</code>. This is a safety check.</li>
+                                 <li>Enter the <span className="font-medium">Verification Code:</span&gt; <code>1123</code>. This is a safety check.</li>
                                  <li>Re-enter the <span className="font-medium">Master PIN</span>.</li>
-                                 <li>Click the <span className="font-medium text-red-600">Update Serial ID & Restart</span> button.</li>
+                                 <li>Click the <span className="font-medium text-red-600">Update Serial ID & Restart</span&gt; button.</li>
                              </ol>
                           </div>
 
@@ -372,7 +372,7 @@
                                    <div className="ml-3">
                                        <p className="font-bold">Important Consequences of Changing Serial ID:</p>
                                        <ul className="list-disc pl-5 text-sm mt-1">
-                                           <li>The controller <span className="font-medium">will restart</span> immediately after saving.</li>
+                                           <li>The controller <span className="font-medium">will restart</span&gt; immediately after saving.</li>
                                            <li>If in <span className="font-medium">AP Mode</span>, the Wi-Fi Network Name (SSID) will change to the <span className="font-medium">new Serial ID</span>. You must reconnect your devices.</li>
                                            <li>The mDNS address (e.g., <code>http://[new-id].local</code>) will change.</li>
                                            <li>Future log files will use the new Serial ID.</li>
@@ -387,18 +387,18 @@
                     {activeSection === 'data' && (
                        <section>
                         <h2 className="text-2xl font-bold text-blue-800 mb-6 border-b pb-2">5. Data Logging & Management</h2>
-                        <p className="mb-6 text-gray-600">The controller logs operational data periodically. Access these features on the <strong className="text-blue-700">History</strong> tab. <span className="font-medium">(User PIN: <code>1111</code> / Tech PIN: <code>2222</code> required)</span></p>
+                        <p className="mb-6 text-gray-600">The controller logs operational data periodically. Access these features on the <strong className="text-blue-700">History</strong&gt; tab. <span className="font-medium">(User PIN: <code>1111</code&gt; / Tech PIN: <code>2222</code&gt; required)</span></p>
 
                         <div className="space-y-6">
                            {/* Data Storage */}
                            <div className="border rounded-lg p-4 shadow-sm">
                                <h3 className="text-lg font-semibold text-gray-800 mb-3">Data Storage</h3>
                                <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-                                   <li><strong>Primary Storage (SD Card):</strong> If an SD card is inserted and functional, logs are written here in CSV format (<code>datalog.csv</code>).</li>
-                                   <li><strong>Backup Storage (Internal SPIFFS):</strong> If no SD card is present, logs are written to internal flash memory in JSON Lines format (<code>datalog.log</code>). Storage is limited.</li>
-                                   <li><strong>Memory Buffer:</strong> The most recent log entries are always kept in RAM.</li>
-                                   <li><strong>Log Interval:</strong> Data is typically logged every 60 seconds. Significant events (like errors or setting changes) are logged immediately.</li>
-                                   <li><strong>Log Rotation:</strong> SD card logs are rotated (renamed) when they exceed ~5MB. SPIFFS logs rotate at ~100KB.</li>
+                                   <li><strong>Primary Storage (SD Card):</strong&gt; If an SD card is inserted and functional, logs are written here in CSV format (<code>datalog.csv</code>).</li>
+                                   <li><strong>Backup Storage (Internal SPIFFS):</strong&gt; If no SD card is present, logs are written to internal flash memory in JSON Lines format (<code>datalog.log</code>). Storage is limited.</li>
+                                   <li><strong>Memory Buffer:</strong&gt; The most recent log entries are always kept in RAM.</li>
+                                   <li><strong>Log Interval:</strong&gt; Data is typically logged every 60 seconds. Significant events (like errors or setting changes) are logged immediately.</li>
+                                   <li><strong>Log Rotation:</strong&gt; SD card logs are rotated (renamed) when they exceed &approx;5MB. SPIFFS logs rotate at &approx;100KB.</li>
                                </ul>
                            </div>
 
@@ -407,9 +407,9 @@
                                <h3 className="text-lg font-semibold text-gray-800 mb-3">Downloading Logs (User Access)</h3>
                                <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
                                    <li>Click <span className="font-medium">Download CSV Log</span>.</li>
-                                   <li>If an SD card is used, this downloads the current <code>datalog.csv</code> file.</li>
+                                   <li>If an SD card is used, this downloads the current <code>datalog.csv</code&gt; file.</li>
                                    <li>If SPIFFS is used (or SD fails), this downloads the contents of the RAM buffer as a CSV file (limited history).</li>
-                                   <li>You can also download the raw SPIFFS log (JSON Lines format) via the <a href="/download-json" target="_blank" className="text-blue-600 hover:underline">/download-json</a> endpoint.</li>
+                                   <li>You can also download the raw SPIFFS log (JSON Lines format) via the <a href="/download-json" target="_blank" className="text-blue-600 hover:underline">/download-json</a&gt; endpoint.</li>
                                </ul>
                            </div>
 
@@ -417,15 +417,15 @@
                            <div className="border rounded-lg p-4 shadow-sm">
                                <h3 className="text-lg font-semibold text-gray-800 mb-3">Deleting Logs (Tech Access)</h3>
                                <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-                                   <li>Click <span className="font-medium text-red-600">Delete All Logs</span> (Requires Tech PIN <code>2222</code>).</li>
-                                   <li><strong className="text-red-600">Warning:</strong> This permanently deletes the current log file from both SD card and SPIFFS, and clears the RAM buffer. This action cannot be undone.</li>
+                                   <li>Click <span className="font-medium text-red-600">Delete All Logs</span&gt; (Requires Tech PIN <code>2222</code>).</li>
+                                   <li><strong className="text-red-600">Warning:</strong&gt; This permanently deletes the current log file from both SD card and SPIFFS, and clears the RAM buffer. This action cannot be undone.</li>
                                    <li>A new, empty log file (with header if applicable) will be created.</li>
                                </ul>
                            </div>
 
                            {/* Logged Data Fields */}
                            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg shadow-sm">
-                             <h4 className="font-semibold text-blue-700 flex items-center"><InfoIcon /> Logged Data Fields</h4>
+                             <h4 className="font-semibold text-blue-700 flex items-center"><InfoIcon /&gt; Logged Data Fields</h4>
                              <p className="text-xs text-gray-600 mt-1 mb-2">Key fields included in each log entry:</p>
                              <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1 text-xs">
                                <span>Timestamp</span>
@@ -461,11 +461,11 @@
                                <h3 className="text-lg font-semibold text-gray-800 mb-3">I2C Bus (via TCA9548A MUX @ 0x74)</h3>
                                <p className="text-sm text-gray-600 mb-3">Multiple devices share the I2C bus, selected via the multiplexer:</p>
                                <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-                                   <li><span className="font-medium">LCD Display:</span> <code>0x27</code> (Typical, verify) - MUX Channel N/A (Direct?) <span className="text-xs text-gray-500 italic">(Verify MUX usage for LCD if applicable)</span></li>
-                                   <li><span className="font-medium">MCP23017 I/O Expander & Chem Pump DAC:</span> <code>0x20</code> (MCP) / <code>0x58</code> (DAC) - MUX Channel <code>0</code></li>
-                                   <li><span className="font-medium">Flow Mirror DAC (GP8302):</span> <code>0x58</code> - MUX Channel <code>2</code></li>
-                                   <li><span className="font-medium">Desired PPM DAC (GP8302):</span> <code>0x58</code> - MUX Channel <code>3</code></li>
-                                   <li><span className="font-medium">ADS1115 ADC:</span> <code>0x49</code> (Verify) - MUX Channel <code>4</code></li>
+                                   <li><span className="font-medium">LCD Display:</span&gt; <code>0x27</code&gt; (Typical, verify) - MUX Channel N/A (Direct?) <span className="text-xs text-gray-500 italic">(Verify MUX usage for LCD if applicable)</span></li>
+                                   <li><span className="font-medium">MCP23017 I/O Expander & Chem Pump DAC:</span&gt; <code>0x20</code&gt; (MCP) / <code>0x58</code&gt; (DAC) - MUX Channel <code>0</code></li>
+                                   <li><span className="font-medium">Flow Mirror DAC (GP8302):</span&gt; <code>0x58</code&gt; - MUX Channel <code>2</code></li>
+                                   <li><span className="font-medium">Desired PPM DAC (GP8302):</span&gt; <code>0x58</code&gt; - MUX Channel <code>3</code></li>
+                                   <li><span className="font-medium">ADS1115 ADC:</span&gt; <code>0x49</code&gt; (Verify) - MUX Channel <code>4</code></li>
                                </ul>
                            </div>
 
@@ -473,11 +473,11 @@
                            <div className="border rounded-lg p-4 shadow-sm">
                                <h3 className="text-lg font-semibold text-gray-800 mb-3">Analog Inputs (ADS1115 on MUX Ch 4)</h3>
                                <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-                                   <li><span className="font-medium">Flow Meter Signal:</span> ADC Channel <code>1</code></li>
-                                   <li><span className="font-medium">Probe One Signal:</span> ADC Channel <code>0</code></li>
-                                   <li><span className="font-medium">Probe Two Signal:</span> ADC Channel <code>2</code></li>
+                                   <li><span className="font-medium">Flow Meter Signal:</span&gt; ADC Channel <code>1</code></li>
+                                   <li><span className="font-medium">Probe One Signal:</span&gt; ADC Channel <code>0</code></li>
+                                   <li><span className="font-medium">Probe Two Signal:</span&gt; ADC Channel <code>2</code></li>
                                    {/* Probe Three was mentioned in previous hardware list but not used in code? Clarify.
-                                   <li><span className="font-medium">Probe Three Signal:</span> ADC Channel <code>3</code></li> */}
+                                   <li><span className="font-medium">Probe Three Signal:</span&gt; ADC Channel <code>3</code></li&gt; */}
                                </ul>
                            </div>
 
@@ -509,9 +509,9 @@
                            <div className="border rounded-lg p-4 shadow-sm">
                                <h3 className="text-lg font-semibold text-gray-800 mb-3">Other Connections</h3>
                                 <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-                                    <li><span className="font-medium">Status Relays (Direct ESP32 Pins):</span> Error (Pin 25), Warning (Pin 26), Normal (Pin 32) - Verify Colors/Labels</li>
-                                    <li><span className="font-medium">LCD Buttons (Direct ESP32 Pins):</span> Up (34), Down (35), Enter (33), Exit (27)</li>
-                                    <li><span className="font-medium">SD Card (SPI):</span> CS Pin <code>5</code> (MOSI, MISO, SCK standard SPI pins)</li>
+                                    <li><span className="font-medium">Status Relays (Direct ESP32 Pins):</span&gt; Error (Pin 25), Warning (Pin 26), Normal (Pin 32) - Verify Colors/Labels</li>
+                                    <li><span className="font-medium">LCD Buttons (Direct ESP32 Pins):</span&gt; Up (34), Down (35), Enter (33), Exit (27)</li>
+                                    <li><span className="font-medium">SD Card (SPI):</span&gt; CS Pin <code>5</code&gt; (MOSI, MISO, SCK standard SPI pins)</li>
                                 </ul>
                            </div>
                         </div>
@@ -532,19 +532,19 @@
                                    <div className="p-3 bg-red-50 rounded border border-red-200">
                                        <p className="font-semibold text-red-700">NO FLOW</p>
                                        <p className="text-xs text-gray-600">(State 0)</p>
-                                       <p className="text-sm font-mono mt-1">< ~0.04 GPM</p>
+                                       <p className="text-sm font-mono mt-1">&lt; &approx;0.04 GPM</p>
                                        <p className="text-xs text-gray-600 mt-1">Pumps Paused</p>
                                    </div>
                                    <div className="p-3 bg-yellow-50 rounded border border-yellow-200">
                                        <p className="font-semibold text-yellow-700">LOW FLOW</p>
                                         <p className="text-xs text-gray-600">(State 1)</p>
-                                       <p className="text-sm font-mono mt-1">~0.09 - 0.27 GPM</p>
+                                       <p className="text-sm font-mono mt-1">&approx;0.09 - 0.27 GPM</p>
                                        <p className="text-xs text-gray-600 mt-1">Pumps Run (Warning)</p>
                                    </div>
                                     <div className="p-3 bg-green-50 rounded border border-green-200">
                                        <p className="font-semibold text-green-700">NORMAL FLOW</p>
                                        <p className="text-xs text-gray-600">(State 2)</p>
-                                       <p className="text-sm font-mono mt-1">> ~0.33 GPM</p>
+                                       <p className="text-sm font-mono mt-1">&gt; &approx;0.33 GPM</p>
                                        <p className="text-xs text-gray-600 mt-1">Pumps Run</p>
                                    </div>
                                </div>
@@ -560,29 +560,29 @@
                                         <p className="font-semibold text-red-600 mb-1">Errors (Pump Operation Halted):</p>
                                         <ul className="list-disc pl-5 space-y-1 text-gray-700">
                                             <li><code>NO_FLOW</code></li>
-                                            <li><code>PUMP_ALARM</code> (From external pump input)</li>
+                                            <li><code>PUMP_ALARM</code&gt; (From external pump input)</li>
                                         </ul>
                                     </div>
                                      <div>
                                         <p className="font-semibold text-yellow-600 mb-1">Warnings (Pump Operation Continues):</p>
                                         <ul className="list-disc pl-5 space-y-1 text-gray-700">
                                              <li><code>LOW_FLOW</code></li>
-                                            <li><code>PUMP_WARNING</code> (From external pump input)</li>
-                                            <li><code>MISWEIGHTED</code> (Calculated dose > Pump Max GPH)</li>
-                                            <li><code>SYSTEM_PAUSED</code> (Manual switch active, pump stopped)</li>
+                                            <li><code>PUMP_WARNING</code&gt; (From external pump input)</li>
+                                            <li><code>MISWEIGHTED</code&gt; (Calculated dose &gt; Pump Max GPH)</li>
+                                            <li><code>SYSTEM_PAUSED</code&gt; (Manual switch active, pump stopped)</li>
                                         </ul>
                                     </div>
                                </div>
-                               <p className="text-xs text-gray-500 mt-3 italic">Error/Warning state can be seen on the Dashboard tab and LCD. Some errors can be cleared via the LCD menu (Status > Errors > Enter).</p>
+                               <p className="text-xs text-gray-500 mt-3 italic">Error/Warning state can be seen on the Dashboard tab and LCD. Some errors can be cleared via the LCD menu (Status &gt; Errors &gt; Enter).</p>
                            </div>
 
                            {/* Dosing Logic */}
                             <div className="border rounded-lg p-4 shadow-sm">
                                <h3 className="text-lg font-semibold text-gray-800 mb-3">Chemical Dosing Logic</h3>
                                <ul className="list-disc pl-5 text-sm text-gray-600 space-y-2">
-                                   <li><span className="font-medium">Chemical Pump (4-20mA):</span> Output current is calculated based on Flow Rate, Desired PPM, and Product Concentration. The signal (4mA=0 GPH, 20mA=Max Pump GPH) drives the primary chemical pump.</li>
-                                   <li><span className="font-medium">Acid Pump (Digital Pulse):</span> Required acid rate is calculated based on the chemical rate and the Product:Acid Ratio. The controller generates digital pulses (HIGH on Pin 6) at the required frequency, based on the configured Acid Stroke Volume (mL/pulse).</li>
-                                   <li><span className="font-medium">Flow Pulse Output:</span> A digital pulse (HIGH on Pin 14) is generated for every gallon of flow measured by the flow meter, useful for external totalizers or PLCs.</li>
+                                   <li><span className="font-medium">Chemical Pump (4-20mA):</span&gt; Output current is calculated based on Flow Rate, Desired PPM, and Product Concentration. The signal (4mA=0 GPH, 20mA=Max Pump GPH) drives the primary chemical pump.</li>
+                                   <li><span className="font-medium">Acid Pump (Digital Pulse):</span&gt; Required acid rate is calculated based on the chemical rate and the Product:Acid Ratio. The controller generates digital pulses (HIGH on Pin 6) at the required frequency, based on the configured Acid Stroke Volume (mL/pulse).</li>
+                                   <li><span className="font-medium">Flow Pulse Output:</span&gt; A digital pulse (HIGH on Pin 14) is generated for every gallon of flow measured by the flow meter, useful for external totalizers or PLCs.</li>
                                    <li>Dosing only occurs when the system is in a 'Run' state (Normal Flow, Low Flow, Pump Warning, Misweighted) and not manually paused.</li>
                                </ul>
                            </div>
@@ -591,12 +591,12 @@
                            <div className="border rounded-lg p-4 shadow-sm">
                                <h3 className="text-lg font-semibold text-gray-800 mb-3">LCD Menu System</h3>
                                <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-                                    <li><span className="font-medium">Home Screen:</span> Displays key status (ID, Pump State, Flow, Time, Probes/Errors).</li>
-                                   <li><span className="font-medium">Navigation:</span> Use Up/Down buttons to scroll, Enter to select, Exit to go back.</li>
-                                    <li><span className="font-medium">Menus:</span> Main Menu provides access to Status, Settings, Calibration, and System Info.</li>
-                                    <li><span className="font-medium">Editing Values:</span> Use Up/Down to adjust, Enter to set the value (temporary), Exit to cancel. Calibration values require an explicit "Save Cal" action.</li>
-                                    <li><span className="font-medium">PIN Entry:</span> Use Up/Down to select digits 0-9, Enter to add the digit, Exit to backspace or cancel.</li>
-                                    <li><span className="font-medium">Inactivity Timeout:</span> The menu returns to the Home Screen after 30 seconds of inactivity.</li>
+                                    <li><span className="font-medium">Home Screen:</span&gt; Displays key status (ID, Pump State, Flow, Time, Probes/Errors).</li>
+                                   <li><span className="font-medium">Navigation:</span&gt; Use Up/Down buttons to scroll, Enter to select, Exit to go back.</li>
+                                    <li><span className="font-medium">Menus:</span&gt; Main Menu provides access to Status, Settings, Calibration, and System Info.</li>
+                                    <li><span className="font-medium">Editing Values:</span&gt; Use Up/Down to adjust, Enter to set the value (temporary), Exit to cancel. Calibration values require an explicit "Save Cal" action.</li>
+                                    <li><span className="font-medium">PIN Entry:</span&gt; Use Up/Down to select digits 0-9, Enter to add the digit, Exit to backspace or cancel.</li>
+                                    <li><span className="font-medium">Inactivity Timeout:</span&gt; The menu returns to the Home Screen after 30 seconds of inactivity.</li>
                                </ul>
                            </div>
                         </div>
@@ -617,7 +617,7 @@
                                         <strong>Solutions:</strong><br/>
                                         - Ensure your device is connected to the correct Wi-Fi network (SSID = Controller Serial ID).<br/>
                                         - Verify the Wi-Fi password (default: <code>PASSWORD</code>).<br/>
-                                        - Try accessing <code>http://192.168.4.1</code> directly.<br/>
+                                        - Try accessing <code>http://192.168.4.1</code&gt; directly.<br/>
                                         - Check if another device is already monopolizing the connection (ESP32 AP has limited client capacity).<br/>
                                         - Restart the controller and your connecting device.
                                     </p>
@@ -626,9 +626,9 @@
                                 <div>
                                     <p className="font-semibold text-gray-800">Issue: Controller keeps reverting to AP Mode.</p>
                                      <p className="text-sm text-gray-600 mt-1 pl-4">
-                                        <strong>Explanation:</strong> This happens after 3 failed attempts to connect to the configured Station (STA) mode network.<br/>
+                                        <strong>Explanation:</strong&gt; This happens after 3 failed attempts to connect to the configured Station (STA) mode network.<br/>
                                         <strong>Solutions:</strong><br/>
-                                        - Verify the STA mode SSID and Password are correct in Settings > Network Settings.<br/>
+                                        - Verify the STA mode SSID and Password are correct in Settings &gt; Network Settings.<br/>
                                         - Ensure the target Wi-Fi network is operational and within range.<br/>
                                         - Check for MAC address filtering on the target Wi-Fi network.<br/>
                                         - Connect to the controller in AP mode (SSID=Serial ID, Pass=PASSWORD) and reconfigure STA settings.
@@ -674,9 +674,9 @@
                                  <div>
                                     <p className="font-semibold text-gray-800">Issue: Forgot PIN / Locked out.</p>
                                      <p className="text-sm text-gray-600 mt-1 pl-4">
-                                        <strong>Solution:</strong> Perform a Factory Reset.<br/>
+                                        <strong>Solution:</strong&gt; Perform a Factory Reset.<br/>
                                         - Access the web interface (you might need AP mode if STA connection fails).<br/>
-                                        - Go to Settings > System Reset.<br/>
+                                        - Go to Settings &gt; System Reset.<br/>
                                         - This requires the <span className="font-medium">Master PIN</span>. If the Master PIN is also forgotten, physical reflashing of the firmware might be necessary (Contact Support). Performing a reset will revert all PINs to their defaults (<code>1111</code>, <code>2222</code>, <code>9999</code>).
                                     </p>
                                 </div>
@@ -686,10 +686,10 @@
                             <div className="border rounded-lg p-4 shadow-sm">
                                <h3 className="text-lg font-semibold text-gray-800 mb-3">Debugging Tools</h3>
                                <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-                                    <li><span className="font-medium">Web UI Debug Console:</span> Press <kbd className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">Ctrl</kbd> + <kbd className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">Shift</kbd> + <kbd className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">D</kbd> to toggle live status messages.</li>
-                                   <li><span className="font-medium">Diagnostics Endpoint:</span> Access <code>/diag</code> in your browser (e.g., <code>http://192.168.4.1/diag</code>) for a plain text summary of system status, network info, and memory.</li>
-                                    <li><span className="font-medium">Serial Monitor:</span> Connect via USB and use a serial terminal (like Arduino IDE Serial Monitor, Putty, etc.) at 115200 baud for detailed boot messages and debug logs.</li>
-                                    <li><span className="font-medium">LCD Display:</span> Check for error messages on the primary display.</li>
+                                    <li><span className="font-medium">Web UI Debug Console:</span&gt; Press <kbd className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">Ctrl</kbd&gt; + <kbd className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">Shift</kbd&gt; + <kbd className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">D</kbd&gt; to toggle live status messages.</li>
+                                   <li><span className="font-medium">Diagnostics Endpoint:</span&gt; Access <code>/diag</code&gt; in your browser (e.g., <code>http://192.168.4.1/diag</code>) for a plain text summary of system status, network info, and memory.</li>
+                                    <li><span className="font-medium">Serial Monitor:</span&gt; Connect via USB and use a serial terminal (like Arduino IDE Serial Monitor, Putty, etc.) at 115200 baud for detailed boot messages and debug logs.</li>
+                                    <li><span className="font-medium">LCD Display:</span&gt; Check for error messages on the primary display.</li>
                                </ul>
                            </div>
                         </div>
@@ -723,14 +723,14 @@
                            {/* Known Issue Item */}
                            <div className="bg-yellow-50 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-r-lg shadow-sm">
                             <p className="font-bold">Data Storage Limitations (SPIFFS)</p>
-                            <p className="mt-1 text-sm">When an SD card is not used, data logging falls back to the internal SPIFFS memory. This memory is limited in size and write endurance. Log rotation happens frequently (~100KB), meaning only a relatively short history is retained on the device itself in this mode.</p>
+                            <p className="mt-1 text-sm">When an SD card is not used, data logging falls back to the internal SPIFFS memory. This memory is limited in size and write endurance. Log rotation happens frequently (&approx;100KB), meaning only a relatively short history is retained on the device itself in this mode.</p>
                           </div>
 
                           {/* General Disclaimer */}
                           <div className="bg-gray-100 border border-gray-300 p-4 rounded-lg mt-6">
-                            <h4 className="font-semibold text-gray-700 flex items-center"><WarningIcon /> Final System Verification</h4>
+                            <h4 className="font-semibold text-gray-700 flex items-center"><WarningIcon /&gt; Final System Verification</h4>
                             <p className="mt-1 text-sm text-gray-600">
-                              This controller is a component within a larger chemical dosing system. <strong className="font-medium">Always perform independent verification</strong> of the final water quality and chemical residuals using appropriate test kits or laboratory analysis after installation and calibration. Do not rely solely on the controller's readings or settings. Ensure all safety protocols for handling chemicals are strictly followed.
+                              This controller is a component within a larger chemical dosing system. <strong className="font-medium">Always perform independent verification</strong&gt; of the final water quality and chemical residuals using appropriate test kits or laboratory analysis after installation and calibration. Do not rely solely on the controller's readings or settings. Ensure all safety protocols for handling chemicals are strictly followed.
                             </p>
                           </div>
                         </div>
