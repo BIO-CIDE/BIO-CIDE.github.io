@@ -1599,9 +1599,14 @@
         function hideLoading() { DOMElements.loadingIndicator.style.display = 'none'; }
         function showToastError(message) { console.error("Toast Error:", message); DOMElements.toastMessage.textContent = message; if (errorToast) errorToast.show(); else alert("Error: " + message); }
         function escapeHtml(unsafe) {
-            if (typeof unsafe !== 'string') return unsafe;
-            return unsafe.replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">").replace(/"/g, """).replace(/'/g, "'");
-        }
+    if (typeof unsafe !== 'string') return unsafe;
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
 
     </script>
 </body>
