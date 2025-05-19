@@ -1990,39 +1990,84 @@ function createDetailCharts(logEntries) {
 }
 
 function createDetailFlowChart(entries) {
-    destroyChart(detailFlowChart);
-    const labels = entries.map(e => formatTime(e.timestamp));
-    const flowData = entries.map(e => e.flow?.actual ?? null);
-    
-    // Enhanced flow chart with annotation line for avg
-    if (flowData.every(d => d === null)) {
-        DOMElements.detailFlowChartCanvas.parentElement.style.display = 'none'; 
+    destroyChart(detailFlowChart); // Destroy any existing chart instance
+
+    if (!entries || entries.length === 0) {
+        console.warn("createDetailFlowChart: No entries provided.");
+        DOMElements.detailFlowChartCanvas.parentElement.style.display = 'none';
         return;
     }
-    
-    DOMElements.detailFlowChartCanvas.parentElement.style.display = 'block';
-    
-    // Calculate average for annotation
-    const validFlowValues = flowData.filter(d => d !== null);
-    const avgFlow = validFlowValues.length > 0 ? 
-        validFlowValues.reduce((sum, val) => sum + val, 0) / validFlowValues.length : 0;
-    
-    // Create dataset with area fill and smooth curves
+
+    // Map entries to {x, y} data points, parsing timestamps robustly
+    const chartDataPoints = entries.map(e => {
+        let dateObj = null;
+        const originalTimestamp = e.timestamp;
+
+        if (originalTimestamp) {
+            dateObj = new Date(originalTimestamp); // Try direct parsing first
+
+            // If direct parsing fails, try custom formats
+            if (isNaN(dateObj.getTime()) && typeof originalTimestamp === 'string') {
+                if (originalTimestamp.match(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}-\d{3}$/)) { // YYYY-MM-DD_HH-MM-SS-mmm
+                    const isoString = originalTimestamp.replace('_', 'T').replace(/-(\d{2})-(\d{2})-(\d{3})$/, ':$1:$2.$3') + 'Z';
+                    dateObj = new Date(isoString);
+                } else if (originalTimestamp.match(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/)) { // YYYY-MM-DD_HH-MM-SS
+                    const isoString = originalTimestamp.replace('_', 'T').replace(/-(\d{2})-(\d{2})$/, ':$1:$2') + 'Z';
+                    dateObj = new Date(isoString);
+                }
+            }
+        }
+
+        return {
+            x: (dateObj && !isNaN(dateObj.getTime())) ? dateObj.getTime() : null, // Milliseconds for x-axis
+            y: e.flow?.actual ?? null                                            // Flow value for y-axis
+        };
+    }).filter(dp => dp.x !== null); // Filter out entries with unparseable timestamps
+
+    // Further filter to ensure we only plot points that have a valid flow value (y)
+    // This prevents Chart.js from trying to connect distant points if there are many nulls in between.
+    // However, 'spanGaps: true' can handle this visually if you prefer to show gaps.
+    // For this example, let's keep points with null 'y' if 'spanGaps' is true, as it's often desired.
+    // const validFlowDataPoints = chartDataPoints.filter(dp => dp.y !== null);
+
+    if (chartDataPoints.length < 2) { // Need at least two points to draw a line
+        console.warn("createDetailFlowChart: Not enough valid data points (after timestamp parsing) to draw a flow chart.");
+        DOMElements.detailFlowChartCanvas.parentElement.style.display = 'none';
+        return;
+    }
+
+    // Check if there's any actual flow data to plot
+    const hasActualFlowData = chartDataPoints.some(dp => dp.y !== null);
+    if (!hasActualFlowData) {
+        console.warn("createDetailFlowChart: No actual flow data (all y values are null).");
+        DOMElements.detailFlowChartCanvas.parentElement.style.display = 'none';
+        return;
+    }
+
+
+    DOMElements.detailFlowChartCanvas.parentElement.style.display = 'block'; // Show the chart container
+
+    const avgFlow = (() => {
+        const validValues = chartDataPoints.filter(dp => dp.y !== null).map(dp => dp.y);
+        return validValues.length > 0 ?
+            validValues.reduce((sum, val) => sum + val, 0) / validValues.length : 0;
+    })();
+
+
     detailFlowChart = new Chart(DOMElements.detailFlowChartCanvas, {
         type: 'line',
         data: {
-            labels: labels,
             datasets: [{
-                label: 'Flow Rate (GPM)', 
-                data: flowData,
-                borderColor: 'rgba(203, 32, 38, 0.8)', 
+                label: 'Flow Rate (GPM)',
+                data: chartDataPoints, // Array of {x, y} objects
+                borderColor: 'rgba(203, 32, 38, 0.8)',
                 backgroundColor: 'rgba(203, 32, 38, 0.2)',
-                borderWidth: 2, 
-                tension: 0.3, 
-                fill: true, 
-                pointRadius: 1, 
-                pointHoverRadius: 4, 
-                spanGaps: true
+                borderWidth: 2,
+                tension: 0.3,       // For smooth curves
+                fill: true,         // Fill area under the line
+                pointRadius: 1,     // Smaller points
+                pointHoverRadius: 5,// Larger points on hover
+                spanGaps: true      // Connect lines even if there are null data points in between
             }]
         },
         options: {
@@ -2032,42 +2077,50 @@ function createDetailFlowChart(entries) {
                 title: {
                     display: true,
                     text: 'Flow Rate Trend',
-                    font: {
-                        size: 16,
-                        weight: 'bold'
-                    },
-                    padding: {
-                        top: 10,
-                        bottom: 20
-                    }
+                    font: { size: 16, weight: 'bold' },
+                    padding: { top: 10, bottom: 20 }
                 },
                 tooltip: {
-                    mode: 'index',
+                    mode: 'index', // Show tooltips for all datasets at that index
                     intersect: false,
-                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                    titleFont: {
-                        weight: 'bold'
-                    },
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleFont: { weight: 'bold' },
                     bodySpacing: 6,
-                    padding: 10
+                    padding: 10,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += context.parsed.y.toFixed(1) + ' GPM';
+                            }
+                            return label;
+                        }
+                    }
                 },
-                annotation: { // For Chart.js Annotation Plugin (if installed/enabled)
+                legend: {
+                    display: true, // Usually good to show legend for single dataset too
+                    position: 'top',
+                },
+                annotation: { // Requires chartjs-plugin-annotation if you want to use this
                     annotations: {
-                        line1: {
+                        avgLine: {
                             type: 'line',
                             yMin: avgFlow,
                             yMax: avgFlow,
-                            borderColor: 'rgba(0, 0, 0, 0.5)',
-                            borderWidth: 1,
-                            borderDash: [5, 5],
+                            borderColor: 'rgba(0, 128, 0, 0.7)', // Green for average line
+                            borderWidth: 1.5,
+                            borderDash: [6, 6],
                             label: {
                                 enabled: true,
                                 content: `Avg: ${avgFlow.toFixed(1)} GPM`,
                                 position: 'end',
-                                backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                                font: {
-                                    size: 10
-                                }
+                                backgroundColor: 'rgba(0, 128, 0, 0.7)',
+                                font: { size: 10, weight: 'normal' },
+                                color: 'white',
+                                yAdjust: -10 // Adjust label position
                             }
                         }
                     }
@@ -2075,100 +2128,136 @@ function createDetailFlowChart(entries) {
             },
             scales: {
                 x: {
+                    type: 'time', // CRITICAL: Set x-axis type to 'time'
+                    time: {
+                        parser: ' επίπεδο', // Not strictly needed if x is milliseconds
+                        tooltipFormat: 'MMM d, yyyy, h:mm a', // Format for tooltips
+                        displayFormats: { // How ticks are displayed
+                            millisecond: 'h:mm:ss.SSS a',
+                            second: 'h:mm:ss a',
+                            minute: 'h:mm a',
+                            hour: 'hA', // e.g., 5PM
+                            day: 'MMM d', // e.g., Jan 5
+                            week: 'MMM d',
+                            month: 'MMM yyyy',
+                            year: 'yyyy'
+                        },
+                        // unit: 'minute', // Optional: force a specific unit, or let Chart.js decide
+                    },
                     title: {
                         display: true,
                         text: 'Time'
                     },
                     grid: {
-                        display: false
+                        display: false // Cleaner look for x-axis grid
                     },
                     ticks: {
-                        maxRotation: 0,
-                        autoSkip: true,
-                        maxTicksLimit: 10
+                        maxRotation: 0, // Prevent label rotation
+                        autoSkip: true,   // Automatically skip labels to prevent overlap
+                        maxTicksLimit: 10 // Limit the number of visible ticks
                     }
                 },
-                y: {
+                y: { // Default y-axis (can be yFlow if you prefer explicit ID)
                     title: {
                         display: true,
                         text: 'GPM'
                     },
                     grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
+                        color: 'rgba(0, 0, 0, 0.05)' // Lighter grid lines
                     },
-                    beginAtZero: true
+                    beginAtZero: false, // Let Chart.js determine the best min based on data
+                                       // Set to true if you always want it to start at 0
+                    // suggestedMin: 0, // Or explicitly set a min
+                    // suggestedMax: calculate appropriate max based on data if needed
                 }
             },
             interaction: {
                 mode: 'nearest',
                 axis: 'x',
                 intersect: false
-            },
-            animations: {
-                tension: {
-                    duration: 1000,
-                    easing: 'linear'
-                }
             }
         }
     });
 }
 
 function createDetailProbeChart(entries) {
-    destroyChart(detailProbeChart);
-    const labels = entries.map(e => formatTime(e.timestamp));
-    const phData = entries.map(e => e.pH?.actual ?? null);
-    const orpData = entries.map(e => e.orp?.actual ?? null);
-    const hasPH = phData.some(d => d !== null);
-    const hasORP = orpData.some(d => d !== null);
+    destroyChart(detailProbeChart); // Destroy any existing chart instance
 
-    if (!hasPH && !hasORP) { 
-        DOMElements.detailProbeChartCanvas.parentElement.style.display = 'none'; 
+    if (!entries || entries.length === 0) {
+        console.warn("createDetailProbeChart: No entries provided.");
+        DOMElements.detailProbeChartCanvas.parentElement.style.display = 'none';
         return;
     }
-    
-    DOMElements.detailProbeChartCanvas.parentElement.style.display = 'block';
+
+    // Map entries to data points, parsing timestamps robustly
+    const chartDataPoints = entries.map(e => {
+        let dateObj = null;
+        const originalTimestamp = e.timestamp;
+
+        if (originalTimestamp) {
+            dateObj = new Date(originalTimestamp);
+            if (isNaN(dateObj.getTime()) && typeof originalTimestamp === 'string') {
+                if (originalTimestamp.match(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}-\d{3}$/)) {
+                    const isoString = originalTimestamp.replace('_', 'T').replace(/-(\d{2})-(\d{2})-(\d{3})$/, ':$1:$2.$3') + 'Z';
+                    dateObj = new Date(isoString);
+                } else if (originalTimestamp.match(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/)) {
+                    const isoString = originalTimestamp.replace('_', 'T').replace(/-(\d{2})-(\d{2})$/, ':$1:$2') + 'Z';
+                    dateObj = new Date(isoString);
+                }
+            }
+        }
+        return {
+            x: (dateObj && !isNaN(dateObj.getTime())) ? dateObj.getTime() : null,
+            ph: e.pH?.actual ?? null,
+            orp: e.orp?.actual ?? null
+        };
+    }).filter(dp => dp.x !== null); // Filter out entries with unparseable timestamps
+
+    if (chartDataPoints.length < 2) {
+        console.warn("createDetailProbeChart: Not enough valid data points (after timestamp parsing).");
+        DOMElements.detailProbeChartCanvas.parentElement.style.display = 'none';
+        return;
+    }
 
     const datasets = [];
-    
+    const phData = chartDataPoints.map(dp => ({ x: dp.x, y: dp.ph }));
+    const orpData = chartDataPoints.map(dp => ({ x: dp.x, y: dp.orp }));
+
+    const hasPH = phData.some(dp => dp.y !== null);
+    const hasORP = orpData.some(dp => dp.y !== null);
+
+    if (!hasPH && !hasORP) {
+        console.warn("createDetailProbeChart: No pH or ORP data to display.");
+        DOMElements.detailProbeChartCanvas.parentElement.style.display = 'none';
+        return;
+    }
+    DOMElements.detailProbeChartCanvas.parentElement.style.display = 'block';
+
     if (hasPH) {
-        datasets.push({ 
-            label: 'pH', 
-            data: phData, 
-            yAxisID: 'yPH', 
-            spanGaps: true, 
-            borderColor: 'rgba(66, 135, 245, 0.8)', 
-            backgroundColor: 'rgba(66, 135, 245, 0.2)', 
-            borderWidth: 2, 
-            tension: 0.3, 
-            fill: false, 
-            pointRadius: 1, 
-            pointHoverRadius: 4 
+        datasets.push({
+            label: 'pH',
+            data: phData,
+            yAxisID: 'yPH',
+            borderColor: 'rgba(66, 135, 245, 0.8)', // Blueish
+            backgroundColor: 'rgba(66, 135, 245, 0.2)',
+            borderWidth: 2, tension: 0.3, fill: false, pointRadius: 1, pointHoverRadius: 5, spanGaps: true
         });
     }
-    
+
     if (hasORP) {
-        datasets.push({ 
-            label: 'ORP (mV)', 
-            data: orpData, 
-            yAxisID: 'yORP', 
-            spanGaps: true, 
-            borderColor: 'rgba(66, 245, 132, 0.8)', 
-            backgroundColor: 'rgba(66, 245, 132, 0.2)', 
-            borderWidth: 2, 
-            tension: 0.3, 
-            fill: false, 
-            pointRadius: 1, 
-            pointHoverRadius: 4 
+        datasets.push({
+            label: 'ORP (mV)',
+            data: orpData,
+            yAxisID: 'yORP',
+            borderColor: 'rgba(75, 192, 192, 0.8)', // Greenish/Teal
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderWidth: 2, tension: 0.3, fill: false, pointRadius: 1, pointHoverRadius: 5, spanGaps: true
         });
     }
 
     detailProbeChart = new Chart(DOMElements.detailProbeChartCanvas, {
-        type: 'line', 
-        data: { 
-            labels: labels, 
-            datasets: datasets 
-        },
+        type: 'line',
+        data: { datasets: datasets },
         options: {
             responsive: true,
             maintainAspectRatio: false,
@@ -2176,84 +2265,59 @@ function createDetailProbeChart(entries) {
                 title: {
                     display: true,
                     text: 'Probe Readings Trend',
-                    font: {
-                        size: 16,
-                        weight: 'bold'
-                    },
-                    padding: {
-                        top: 10,
-                        bottom: 20
-                    }
+                    font: { size: 16, weight: 'bold' },
+                    padding: { top: 10, bottom: 20 }
                 },
                 tooltip: {
-                    mode: 'index',
-                    intersect: false,
-                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                    titleFont: {
-                        weight: 'bold'
-                    },
-                    bodySpacing: 6,
-                    padding: 10
-                }
+                    mode: 'index', intersect: false, backgroundColor: 'rgba(0,0,0,0.8)', titleFont: {weight: 'bold'}, bodySpacing:6, padding:10,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) { label += ': '; }
+                            if (context.parsed.y !== null) {
+                                label += context.parsed.y.toFixed(context.dataset.label === 'pH' ? 2 : 0);
+                                if (context.dataset.label === 'ORP (mV)') label += ' mV';
+                            }
+                            return label;
+                        }
+                    }
+                },
+                legend: { display: true, position: 'top' }
             },
             scales: {
                 x: {
-                    title: {
-                        display: true,
-                        text: 'Time'
+                    type: 'time',
+                    time: {
+                        tooltipFormat: 'MMM d, yyyy, h:mm a',
+                        displayFormats: { millisecond: 'h:mm:ss.SSS a', second: 'h:mm:ss a', minute: 'h:mm a', hour: 'hA', day: 'MMM d', month: 'MMM yyyy', year: 'yyyy' }
                     },
-                    grid: {
-                        display: false
-                    },
-                    ticks: {
-                        maxRotation: 0,
-                        autoSkip: true,
-                        maxTicksLimit: 10
-                    }
+                    title: { display: true, text: 'Time' },
+                    grid: { display: false },
+                    ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 10 }
                 },
-                yPH: { 
-                    type: 'linear', 
-                    display: hasPH, 
-                    position: 'left', 
-                    title: { 
-                        display: hasPH, 
-                        text: 'pH' 
-                    },
-                    grid: {
-                        color: 'rgba(66, 135, 245, 0.1)'
-                    },
-                    suggestedMin: hasPH ? Math.max(0, Math.min(...phData.filter(d => d !== null)) - 1) : undefined,
-                    suggestedMax: hasPH ? Math.min(14, Math.max(...phData.filter(d => d !== null)) + 1) : undefined
+                yPH: {
+                    type: 'linear',
+                    display: hasPH, // Only display if there's pH data
+                    position: 'left',
+                    title: { display: true, text: 'pH' },
+                    grid: { color: 'rgba(66, 135, 245, 0.1)' },
+                    // suggestedMin: 0, suggestedMax: 14 // Common pH range
                 },
-                yORP: { 
-                    type: 'linear', 
-                    display: hasORP, 
-                    position: 'right', 
-                    title: { 
-                        display: hasORP, 
-                        text: 'ORP (mV)' 
-                    }, 
-                    grid: { 
-                        drawOnChartArea: !hasPH, // only draw grid lines for ORP if PH axis is not displayed
-                        color: 'rgba(66, 245, 132, 0.1)'
-                    } 
+                yORP: {
+                    type: 'linear',
+                    display: hasORP, // Only display if there's ORP data
+                    position: 'right',
+                    title: { display: true, text: 'ORP (mV)' },
+                    grid: {
+                        drawOnChartArea: !hasPH, // Draw ORP grid only if pH axis isn't there (to avoid clutter)
+                        color: 'rgba(75, 192, 192, 0.1)'
+                    },
                 }
             },
-            interaction: {
-                mode: 'nearest',
-                axis: 'x',
-                intersect: false
-            },
-            animations: {
-                tension: {
-                    duration: 1000,
-                    easing: 'linear'
-                }
-            }
+            interaction: { mode: 'nearest', axis: 'x', intersect: false }
         }
     });
 }
-
 function populateDetailDataTable(logEntries) {
     DOMElements.detailDataTableBody.innerHTML = ''; // Clear
     
@@ -2677,79 +2741,98 @@ function changeHistoryPageSize(e) {
 }
 
 function createHistoryChart(entries) {
-    destroyChart(historyChart);
-    
-    // Limit points for better performance
-    const maxPoints = 200; 
-    let chartEntries = entries;
-    
-    if (entries.length > maxPoints) {
-        // Sample data points for large datasets
-        const step = Math.floor(entries.length / maxPoints);
-        chartEntries = [];
-        for (let i = 0; i < entries.length; i += step) {
-            chartEntries.push(entries[i]);
-        }
-        // Always include the last entry
-        if (entries.length > 0 && chartEntries[chartEntries.length - 1] !== entries[entries.length - 1]) {
-            chartEntries.push(entries[entries.length - 1]);
-        }
-        console.log(`Sampled ${chartEntries.length} points from ${entries.length} for chart performance`);
-    }
-    
-    const labels = chartEntries.map(e => formatDateTime(e.timestamp));
-    const flowData = chartEntries.map(e => e.flow?.actual ?? null);
-    const ppmData = chartEntries.map(e => e.ppm ?? null);
-    const hasFlow = flowData.some(d => d !== null);
-    const hasPPM = ppmData.some(d => d !== null);
+    destroyChart(historyChart); // Destroy any existing chart instance
 
-    if (!hasFlow && !hasPPM) { 
-        DOMElements.historyChartContainer.style.display = 'none'; 
+    if (!entries || entries.length === 0) {
+        console.warn("createHistoryChart: No entries provided.");
+        DOMElements.historyChartContainer.style.display = 'none';
         return;
     }
-    
-    DOMElements.historyChartContainer.style.display = 'block';
+
+    // Limit points for better performance if needed, or use all for history
+    const maxPoints = 500; // Adjust as needed for performance vs. detail
+    let chartEntries = entries;
+    if (entries.length > maxPoints) {
+        const step = Math.ceil(entries.length / maxPoints); // Use ceil to ensure we don't go over
+        chartEntries = entries.filter((entry, index) => index % step === 0);
+        if (chartEntries[chartEntries.length - 1] !== entries[entries.length - 1]) {
+             chartEntries.push(entries[entries.length - 1]); // Ensure last point is included
+        }
+        console.log(`createHistoryChart: Sampled ${chartEntries.length} from ${entries.length} entries for performance.`);
+    }
+
+
+    // Map entries to data points, parsing timestamps robustly
+    const chartDataPoints = chartEntries.map(e => {
+        let dateObj = null;
+        const originalTimestamp = e.timestamp;
+
+        if (originalTimestamp) {
+            dateObj = new Date(originalTimestamp);
+            if (isNaN(dateObj.getTime()) && typeof originalTimestamp === 'string') {
+                if (originalTimestamp.match(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}-\d{3}$/)) {
+                    const isoString = originalTimestamp.replace('_', 'T').replace(/-(\d{2})-(\d{2})-(\d{3})$/, ':$1:$2.$3') + 'Z';
+                    dateObj = new Date(isoString);
+                } else if (originalTimestamp.match(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/)) {
+                    const isoString = originalTimestamp.replace('_', 'T').replace(/-(\d{2})-(\d{2})$/, ':$1:$2') + 'Z';
+                    dateObj = new Date(isoString);
+                }
+            }
+        }
+        return {
+            x: (dateObj && !isNaN(dateObj.getTime())) ? dateObj.getTime() : null,
+            flow: e.flow?.actual ?? null,
+            ppm: e.ppm ?? null
+        };
+    }).filter(dp => dp.x !== null);
+
+
+    if (chartDataPoints.length < 2) {
+        console.warn("createHistoryChart: Not enough valid data points (after timestamp parsing).");
+        DOMElements.historyChartContainer.style.display = 'none';
+        return;
+    }
 
     const datasets = [];
-    
+    const flowData = chartDataPoints.map(dp => ({ x: dp.x, y: dp.flow }));
+    const ppmData = chartDataPoints.map(dp => ({ x: dp.x, y: dp.ppm }));
+
+    const hasFlow = flowData.some(dp => dp.y !== null);
+    const hasPPM = ppmData.some(dp => dp.y !== null);
+
+    if (!hasFlow && !hasPPM) {
+        console.warn("createHistoryChart: No Flow or PPM data to display.");
+        DOMElements.historyChartContainer.style.display = 'none';
+        return;
+    }
+    DOMElements.historyChartContainer.style.display = 'block';
+
+
     if (hasFlow) {
-        datasets.push({ 
-            label: 'Flow Rate (GPM)', 
-            data: flowData, 
-            yAxisID: 'yFlow', 
-            spanGaps: true, 
-            borderColor: 'rgba(203, 32, 38, 0.8)', 
-            backgroundColor: 'rgba(203, 32, 38, 0.1)', 
-            borderWidth: 1.5, 
-            tension: 0.2, 
-            fill: false, 
-            pointRadius: 0, 
-            pointHoverRadius: 3 
+        datasets.push({
+            label: 'Flow Rate (GPM)',
+            data: flowData,
+            yAxisID: 'yFlow',
+            borderColor: 'rgba(203, 32, 38, 0.8)', // EDIE Red
+            backgroundColor: 'rgba(203, 32, 38, 0.1)',
+            borderWidth: 1.5, tension: 0.2, fill: false, pointRadius: 0, pointHoverRadius: 3, spanGaps: true
         });
     }
-    
+
     if (hasPPM) {
-        datasets.push({ 
-            label: 'PPM Reading', 
-            data: ppmData, 
-            yAxisID: 'yPPM', 
-            spanGaps: true, 
-            borderColor: 'rgba(66, 135, 245, 0.8)', 
-            backgroundColor: 'rgba(66, 135, 245, 0.1)', 
-            borderWidth: 1.5, 
-            tension: 0.2, 
-            fill: false, 
-            pointRadius: 0, 
-            pointHoverRadius: 3 
+        datasets.push({
+            label: 'PPM Reading',
+            data: ppmData,
+            yAxisID: 'yPPM',
+            borderColor: 'rgba(66, 135, 245, 0.8)', // Blue
+            backgroundColor: 'rgba(66, 135, 245, 0.1)',
+            borderWidth: 1.5, tension: 0.2, fill: false, pointRadius: 0, pointHoverRadius: 3, spanGaps: true
         });
     }
 
     historyChart = new Chart(DOMElements.historyChart, { // DOMElements.historyChart is the canvas
-        type: 'line', 
-        data: { 
-            labels: labels, 
-            datasets: datasets 
-        },
+        type: 'line',
+        data: { datasets: datasets },
         options: {
             responsive: true,
             maintainAspectRatio: false,
@@ -2757,80 +2840,61 @@ function createHistoryChart(entries) {
                 title: {
                     display: true,
                     text: 'Historical Data Trend',
-                    font: {
-                        size: 16,
-                        weight: 'bold'
-                    },
-                    padding: {
-                        top: 10,
-                        bottom: 20
-                    }
+                    font: { size: 16, weight: 'bold' },
+                    padding: { top: 10, bottom: 20 }
                 },
                 tooltip: {
-                    mode: 'index',
-                    intersect: false
+                    mode: 'index', intersect: false, backgroundColor: 'rgba(0,0,0,0.8)', titleFont: {weight: 'bold'}, bodySpacing:6, padding:10,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) { label += ': '; }
+                            if (context.parsed.y !== null) {
+                                label += context.parsed.y.toFixed(context.dataset.label === 'Flow Rate (GPM)' ? 1 : 0);
+                                if (context.dataset.label === 'Flow Rate (GPM)') label += ' GPM';
+                            }
+                            return label;
+                        }
+                    }
                 },
-                // zoom: { // Chart.js Zoom plugin is not included by default
-                //     pan: {
-                //         enabled: true,
-                //         mode: 'x'
-                //     },
-                //     zoom: {
-                //         wheel: {
-                //             enabled: true
-                //         },
-                //         pinch: {
-                //             enabled: true
-                //         },
-                //         mode: 'x'
-                //     }
-                // }
+                legend: { display: true, position: 'top' }
+                // Zoom plugin (if you decide to use it)
+                // zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }}
             },
             scales: {
                 x: {
-                    title: {
-                        display: true,
-                        text: 'Timestamp'
+                    type: 'time',
+                    time: {
+                        tooltipFormat: 'MMM d, yyyy, h:mm a',
+                        displayFormats: { millisecond: 'h:mm:ss.SSS a', second: 'h:mm:ss a', minute: 'h:mm a', hour: 'hA', day: 'MMM d', month: 'MMM yyyy', year: 'yyyy' }
                     },
-                    ticks: {
-                        autoSkip: true,
-                        maxTicksLimit: 15,
-                        maxRotation: 0,
-                        minRotation: 0
-                    }
+                    title: { display: true, text: 'Timestamp' },
+                    ticks: { autoSkip: true, maxTicksLimit: 15, maxRotation: 0 }
                 },
                 yFlow: {
                     type: 'linear',
                     display: hasFlow,
                     position: 'left',
-                    title: {
-                        display: hasFlow,
-                        text: 'Flow Rate (GPM)'
-                    },
-                    beginAtZero: true
+                    title: { display: true, text: 'Flow (GPM)' },
+                    beginAtZero: false, // Or true if preferred
+                    grid: { color: 'rgba(203, 32, 38, 0.05)'}
                 },
                 yPPM: {
                     type: 'linear',
                     display: hasPPM,
                     position: 'right',
-                    title: {
-                        display: hasPPM,
-                        text: 'PPM'
-                    },
+                    title: { display: true, text: 'PPM' },
                     grid: {
-                        drawOnChartArea: !hasFlow // Only draw grid for PPM if Flow axis isn't there
-                    }
+                        drawOnChartArea: !hasFlow, // Only draw PPM grid if Flow axis isn't there
+                        color: 'rgba(66, 135, 245, 0.05)'
+                    },
+                    beginAtZero: false
                 }
             },
-            interaction: {
-                mode: 'nearest',
-                axis: 'x',
-                intersect: false
-            }
+            interaction: { mode: 'nearest', axis: 'x', intersect: false }
         }
     });
 }
-
 function exportHistoryToCSV() {
     const deviceId = DOMElements.historyDeviceSelect.value;
     if (!deviceId || !historyAllData || historyAllData.length === 0) {
