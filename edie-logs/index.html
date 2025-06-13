@@ -237,6 +237,21 @@
         .performance-badge.legacy {
             background: rgba(255, 193, 7, 0.9);
             color: #000;
+            cursor: pointer; /* Make it clickable */
+        }
+
+        .performance-badge.legacy:hover {
+            background: rgba(255, 193, 7, 1);
+            transform: scale(1.05);
+        }
+
+        .migration-btn {
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: inherit;
+            cursor: pointer;
+            padding: 0;
         }
 
         /* Smart Status Indicators */
@@ -1454,16 +1469,60 @@ function showPerformanceBadge(mode, version = null) {
     const badge = document.getElementById('performanceBadge');
     const text = document.getElementById('performanceText');
     
+    // Remove any existing click handlers
+    badge.onclick = null;
+    
     if (mode === 'batch') {
         badge.className = 'performance-badge batch';
-        text.textContent = version ? `Batch v${version}` : 'Batch Mode';
+        text.innerHTML = version ? `Batch v${version}` : 'Batch Mode';
     } else if (mode === 'legacy') {
         badge.className = 'performance-badge legacy';
-        text.textContent = 'Legacy Mode';
+        text.innerHTML = `<button class="migration-btn" title="Click to migrate to fast batch mode">Legacy Mode - Click to Upgrade</button>`;
+        
+        // Add click handler for migration
+        badge.onclick = () => {
+            if (confirm('Migrate to fast batch mode?\n\nThis will convert your legacy device data to the new optimized format for 10x faster loading.')) {
+                migrateToBatchMode();
+            }
+        };
     }
     
     badge.style.display = 'block';
     performanceMode = mode;
+}
+
+// Migrate legacy data to batch mode
+async function migrateToBatchMode() {
+    showLoading("Migrating to batch mode...");
+    
+    try {
+        const response = await fetchWithAuth(`${API_ENDPOINT}/admin/migrate-to-batch`, {
+            method: 'POST'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Migration failed: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToastSuccess(`🚀 Migration complete! ${result.migrated} devices upgraded to batch mode`);
+            
+            // Refresh to show new batch mode
+            setTimeout(() => {
+                refreshDeviceList(true);
+            }, 1000);
+        } else {
+            throw new Error(result.message || 'Migration failed');
+        }
+        
+    } catch (error) {
+        console.error("Migration error:", error);
+        showToastError(`Migration failed: ${error.message}`);
+    } finally {
+        hideLoading();
+    }
 }
 
 function hidePerformanceBadge() {
@@ -1947,11 +2006,11 @@ async function showDeviceDetails(deviceId) {
 
 async function fetchDetailChartData(deviceId) {
     try {
-        // Use analytics endpoint for better performance
+        // First, get a longer range to find actual data
         const endDate = new Date();
-        const startDate = new Date(endDate.getTime() - (currentChartTimeRange * 60 * 60 * 1000));
+        const searchStartDate = new Date(endDate.getTime() - (7 * 24 * 60 * 60 * 1000)); // Look back 7 days
         
-        const url = `${API_ENDPOINT}/analytics?deviceId=${deviceId}&resolution=raw&startDate=${formatDateForInput(startDate)}&endDate=${formatDateForInput(endDate)}`;
+        const url = `${API_ENDPOINT}/analytics?deviceId=${deviceId}&resolution=raw&startDate=${formatDateForInput(searchStartDate)}&endDate=${formatDateForInput(endDate)}`;
         const response = await fetchWithAuth(url);
         
         if (!response.ok) {
@@ -1963,18 +2022,73 @@ async function fetchDetailChartData(deviceId) {
             throw new Error("Invalid chart data structure received");
         }
         
-        detailAllData = result.data.sort((a, b) => 
+        // Store all available data
+        const allData = result.data.sort((a, b) => 
             new Date(b.timestamp) - new Date(a.timestamp)
         );
         
-        console.log(`Loaded ${detailAllData.length} records for chart`);
+        if (allData.length === 0) {
+            detailAllData = [];
+            showDetailMessage("No historical data available for this device.");
+            return;
+        }
+        
+        // Find the smart range - look for last meaningful activity
+        const meaningfulData = allData.filter(e => 
+            e.flow?.actual > 0 || 
+            (e.errorCode && e.errorCode !== 'OK') ||
+            e.isAlarm
+        );
+        
+        let chartStartTime;
+        if (meaningfulData.length > 0) {
+            // Start from last meaningful activity, then go back by the selected range
+            const lastActivity = new Date(meaningfulData[0].timestamp);
+            chartStartTime = new Date(lastActivity.getTime() - (currentChartTimeRange * 60 * 60 * 1000));
+        } else {
+            // No meaningful activity found, use traditional range from now
+            chartStartTime = new Date(endDate.getTime() - (currentChartTimeRange * 60 * 60 * 1000));
+        }
+        
+        // Filter data to the smart range
+        detailAllData = allData.filter(e => {
+            const entryTime = new Date(e.timestamp);
+            return entryTime >= chartStartTime;
+        });
+        
+        console.log(`Loaded ${detailAllData.length} records for chart (${allData.length} total available)`);
         
         if (detailAllData.length > 0) {
             detailCurrentPage = 0;
             updateDetailChart();
             populateDetailDataTable();
         } else {
-            showDetailMessage("No historical data available for this device.");
+            // If nothing in smart range, show message but keep controls
+            const canvas = document.getElementById('detailFlowChart');
+            if (canvas) {
+                const container = canvas.parentElement;
+                const existingPlaceholder = container.querySelector('.chart-placeholder');
+                if (existingPlaceholder) {
+                    existingPlaceholder.remove();
+                }
+                
+                const placeholder = document.createElement('div');
+                placeholder.className = 'chart-placeholder';
+                placeholder.innerHTML = `
+                    <div>
+                        <div>No data in selected ${document.getElementById('chartTimeLabel').textContent} range</div>
+                        <div style="font-size: 0.8rem; margin-top: 8px; opacity: 0.7;">
+                            Last activity: ${meaningfulData.length > 0 ? getRelativeTimeString(meaningfulData[0].timestamp) : 'Unknown'}
+                        </div>
+                        <div style="font-size: 0.8rem; opacity: 0.7;">
+                            Try extending the time range with the slider below
+                        </div>
+                    </div>
+                `;
+                container.appendChild(placeholder);
+            }
+            
+            populateDetailDataTable(); // Still show table with all data
         }
         
     } catch (error) {
@@ -2003,15 +2117,28 @@ function createDetailFlowChart(entries) {
     const canvas = document.getElementById('detailFlowChart');
     if (!canvas) return;
     
+    // Clear any existing placeholder
+    const container = canvas.parentElement;
+    const existingPlaceholder = container.querySelector('.chart-placeholder');
+    if (existingPlaceholder) {
+        existingPlaceholder.remove();
+    }
+    
     // Prepare data with gap filling
     const data = fillChartGaps(entries, currentChartTimeRange);
     
     if (data.length < 1) {
-        canvas.parentElement.querySelector('.chart-placeholder')?.remove();
         const placeholder = document.createElement('div');
         placeholder.className = 'chart-placeholder';
-        placeholder.textContent = 'No data available for selected time range';
-        canvas.parentElement.appendChild(placeholder);
+        placeholder.innerHTML = `
+            <div>
+                <div>No data available for selected time range</div>
+                <div style="font-size: 0.8rem; margin-top: 8px; opacity: 0.7;">
+                    Try extending the time range with the slider below
+                </div>
+            </div>
+        `;
+        container.appendChild(placeholder);
         return;
     }
     
