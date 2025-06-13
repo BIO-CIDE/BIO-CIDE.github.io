@@ -26,15 +26,6 @@
             --transition-speed: 0.3s;
         }
 
-        /* Dark mode colors - for future implementation */
-        [data-bs-theme="dark"] {
-            --background-color: #1e2124;
-            --card-bg: #2d3238;
-            --text-color: #e9ecef;
-            --primary-lighter: rgba(203, 32, 38, 0.15);
-            --highlight-color: #3a2425;
-        }
-
         body {
             background-color: var(--background-color);
             color: var(--text-color);
@@ -56,11 +47,6 @@
           --bs-btn-hover-bg: var(--primary-dark); --bs-btn-hover-border-color: #96181d;
           --bs-btn-active-bg: #96181d; --bs-btn-active-border-color: #8a161a;
           --bs-btn-disabled-bg: var(--primary-color); --bs-btn-disabled-border-color: var(--primary-color);
-        }
-        .btn-outline-primary {
-          --bs-btn-color: var(--primary-color); --bs-btn-border-color: var(--primary-color);
-          --bs-btn-hover-bg: var(--primary-color); --bs-btn-hover-border-color: var(--primary-color); --bs-btn-hover-color: white;
-          --bs-btn-active-bg: var(--primary-color); --bs-btn-active-border-color: var(--primary-color); --bs-btn-active-color: white;
         }
 
         .auth-container { max-width: 450px; margin: 5rem auto; animation: fadeIn 0.5s ease; }
@@ -245,16 +231,6 @@
                 padding: 0.5rem 0.75rem;
                 font-size: 0.8rem;
             }
-        }
-        
-        /* High contrast mode toggle - future feature */
-        .contrast-toggle {
-            color: white;
-            background: none;
-            border: none;
-            padding: 5px;
-            font-size: 1.2rem;
-            cursor: pointer;
         }
         
         /* Print styles */
@@ -482,7 +458,7 @@
                                     <th>Device ID</th>
                                     <th>Status</th>
                                     <th>Last Seen</th>
-                                    <th>Last File</th>
+                                    <th>Last Value</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -532,12 +508,12 @@
                                 <input type="date" id="historyEndDateInput" class="form-control form-control-sm">
                             </div>
                             <div class="col-md-2 col-lg-2">
-                                <label for="historyLimitSelect" class="form-label">Max Files</label>
+                                <label for="historyLimitSelect" class="form-label">Max Records</label>
                                 <select id="historyLimitSelect" class="form-select form-select-sm">
-                                    <option value="20">20</option>
-                                    <option value="50" selected>50</option>
                                     <option value="100">100</option>
                                     <option value="250">250</option>
+                                    <option value="500" selected>500</option>
+                                    <option value="1000">1000</option>
                                 </select>
                             </div>
                             <div class="col-md-12 col-lg-3">
@@ -553,10 +529,7 @@
 
                         <div class="d-flex justify-content-between align-items-center mb-3 no-print" id="historyTableControls" style="display: none !important;">
                             <div>
-                                <div class="btn-group btn-group-sm" role="group" aria-label="Data View">
-                                    <button type="button" class="btn btn-outline-secondary active" id="showAllDataBtn">All Data</button>
-                                    <button type="button" class="btn btn-outline-secondary" id="showDailyAveragesBtn">Daily Averages</button>
-                                </div>
+                                <span id="historyRecordsInfo" class="text-muted">0 records loaded</span>
                             </div>
                             <div>
                                 <select id="historyPageSizeSelect" class="form-select form-select-sm" style="width: auto; display: inline-block;">
@@ -575,8 +548,8 @@
                                         <th>Timestamp</th>
                                         <th>Flow (GPM)</th>
                                         <th>PPM</th>
-                                        <th>Chem Inj (Gal)</th>
-                                        <th>Acid Inj (Gal)</th>
+                                        <th>pH</th>
+                                        <th>ORP</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
@@ -608,7 +581,7 @@
                 </div>
             </div>
             
-            <!-- Analytics Section -->
+            <!-- Analytics Section (Simplified) -->
             <div id="analyticsSection" class="d-none">
                 <div class="timezone-info">
                     <i class="bi bi-clock"></i> All times shown in local timezone: <strong id="userTimezoneAnalytics"></strong>
@@ -618,123 +591,10 @@
                     <div class="col-12">
                         <div class="card shadow-sm">
                             <div class="card-header bg-light">
-                                <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Fleet Performance</h5>
+                                <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Analytics (Coming Soon)</h5>
                             </div>
-                            <div class="card-body">
-                                <div class="row g-3 mb-3">
-                                    <div class="col-md-4">
-                                        <label for="analyticsTimeRangeSelect" class="form-label">Time Range</label>
-                                        <select id="analyticsTimeRangeSelect" class="form-select">
-                                            <option value="day">Last 24 Hours</option>
-                                            <option value="week" selected>Last 7 Days</option>
-                                            <option value="month">Last 30 Days</option>
-                                            <option value="quarter">Last 90 Days</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label for="analyticsMetricSelect" class="form-label">Primary Metric</label>
-                                        <select id="analyticsMetricSelect" class="form-select">
-                                            <option value="flow" selected>Flow Rate (GPM)</option>
-                                            <option value="ppm">PPM Reading</option>
-                                            <option value="uptime">Uptime %</option>
-                                            <option value="chem">Chemical Injection</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label for="analyticsGroupingSelect" class="form-label">Group By</label>
-                                        <select id="analyticsGroupingSelect" class="form-select">
-                                            <option value="none" selected>No Grouping</option>
-                                            <option value="day">Day</option>
-                                            <option value="week">Week</option>
-                                            <option value="device">Device</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                
-                                <div class="row mb-4">
-                                    <div class="col-12">
-                                        <div style="height: 400px;" id="fleetPerformanceChart">
-                                            <canvas></canvas>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <div class="card bg-light">
-                                            <div class="card-body p-3">
-                                                <h6 class="mb-3">Key Statistics</h6>
-                                                <div class="d-flex justify-content-between mb-2">
-                                                    <span>Average Flow Rate:</span>
-                                                    <strong>32.7 GPM</strong>
-                                                </div>
-                                                <div class="d-flex justify-content-between mb-2">
-                                                    <span>Total Chemical Usage:</span>
-                                                    <strong>187.4 Gal</strong>
-                                                </div>
-                                                <div class="d-flex justify-content-between mb-2">
-                                                    <span>Total Acid Usage:</span>
-                                                    <strong>94.2 Gal</strong>
-                                                </div>
-                                                <div class="d-flex justify-content-between mb-2">
-                                                    <span>Average PPM:</span>
-                                                    <strong>642</strong>
-                                                </div>
-                                                <div class="d-flex justify-content-between">
-                                                    <span>Fleet Uptime:</span>
-                                                    <strong>94.8%</strong>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="card bg-light">
-                                            <div class="card-body p-3">
-                                                <h6 class="mb-3">Status Distribution</h6>
-                                                <div style="height: 200px;" id="statusDistributionChart">
-                                                    <canvas></canvas>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-light">
-                                <h5 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Device Comparison</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row g-3 mb-3">
-                                    <div class="col-md-8">
-                                        <label for="compareDevicesSelect" class="form-label">Select Devices to Compare</label>
-                                        <select id="compareDevicesSelect" class="form-select" multiple size="3">
-                                            <!-- Devices will be dynamically added here -->
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label for="compareMetricSelect" class="form-label">Comparison Metric</label>
-                                        <select id="compareMetricSelect" class="form-select">
-                                            <option value="flow" selected>Flow Rate</option>
-                                            <option value="ppm">PPM Reading</option>
-                                            <option value="chem">Chemical Usage</option>
-                                            <option value="acid">Acid Usage</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                
-                                <div class="row mb-4">
-                                    <div class="col-12">
-                                        <div style="height: 350px;" id="deviceComparisonChart">
-                                            <canvas></canvas>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="card-body text-center p-5">
+                                <p class="text-muted">Advanced analytics features will be available in a future update.</p>
                             </div>
                         </div>
                     </div>
@@ -757,24 +617,19 @@
                 <div class="modal-body p-0">
                     <ul class="nav nav-tabs nav-fill" id="deviceDetailTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="detail-overview-tab" data-bs-toggle="tab" data-bs-target="#detailOverviewPane" type="button" role="tab" aria-controls="detailOverviewPane" aria-selected="true">
+                            <button class="nav-link active" id="detail-overview-tab" data-bs-toggle="tab" data-bs-target="#detailOverviewPane" type="button" role="tab">
                                 <i class="bi bi-bar-chart-line-fill me-1"></i>Overview
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="detail-data-tab" data-bs-toggle="tab" data-bs-target="#detailDataPane" type="button" role="tab" aria-controls="detailDataPane" aria-selected="false">
+                            <button class="nav-link" id="detail-data-tab" data-bs-toggle="tab" data-bs-target="#detailDataPane" type="button" role="tab">
                                 <i class="bi bi-table me-1"></i>Data Log
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="detail-info-tab" data-bs-toggle="tab" data-bs-target="#detailInfoPane" type="button" role="tab" aria-controls="detailInfoPane" aria-selected="false">
-                                <i class="bi bi-info-circle-fill me-1"></i>Info
                             </button>
                         </li>
                     </ul>
                     <div class="tab-content p-4" id="deviceDetailTabContent">
                         <!-- Overview Tab Pane -->
-                        <div class="tab-pane fade show active" id="detailOverviewPane" role="tabpanel" aria-labelledby="detail-overview-tab" tabindex="0">
+                        <div class="tab-pane fade show active" id="detailOverviewPane" role="tabpanel">
                             <div class="row mb-4">
                                 <div class="col-md-6">
                                     <div class="detail-chart-container">
@@ -783,7 +638,7 @@
                                 </div>
                                 <div class="col-md-6">
                                      <div class="detail-chart-container">
-                                        <canvas id="detailProbeChart"></canvas>
+                                        <canvas id="detailPpmChart"></canvas>
                                     </div>
                                 </div>
                             </div>
@@ -809,25 +664,17 @@
                             
                             <div class="device-metrics-row" id="detailAdditionalMetricsContainer">
                                 <div class="metric-card">
-                                    <div class="metric-label">Status Code</div>
+                                    <div class="metric-label">Status</div>
                                     <div class="metric-value" id="detailStatusMetric">--</div>
                                 </div>
                                 <div class="metric-card">
-                                    <div class="metric-label">Total Flow</div>
-                                    <div class="metric-value" id="detailTotalFlowMetric">--</div>
-                                </div>
-                                <div class="metric-card">
-                                    <div class="metric-label">Chem Inj Total</div>
-                                    <div class="metric-value" id="detailChemInjMetric">--</div>
-                                </div>
-                                <div class="metric-card">
-                                    <div class="metric-label">Acid Inj Total</div>
-                                    <div class="metric-value" id="detailAcidInjMetric">--</div>
+                                    <div class="metric-label">Last Update</div>
+                                    <div class="metric-value small" id="detailLastUpdateMetric">--</div>
                                 </div>
                             </div>
                         </div>
                         <!-- Data Log Tab Pane -->
-                        <div class="tab-pane fade" id="detailDataPane" role="tabpanel" aria-labelledby="detail-data-tab" tabindex="0">
+                        <div class="tab-pane fade" id="detailDataPane" role="tabpanel">
                              <h6>Recent Data Log Entries</h6>
                              <div class="table-responsive mt-2">
                                 <table class="table table-sm table-striped table-hover" id="detailDataTable">
@@ -836,14 +683,13 @@
                                             <th>Timestamp</th>
                                             <th>Flow</th>
                                             <th>PPM</th>
-                                            <th>Chem Inj</th>
-                                            <th>Acid Inj</th>
-                                            <th>Error Code</th>
-                                            <th>Uploaded</th>
+                                            <th>pH</th>
+                                            <th>ORP</th>
+                                            <th>Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                         <tr><td colspan="7" class="text-center text-muted p-3">Loading data...</td></tr>
+                                         <tr><td colspan="6" class="text-center text-muted p-3">Loading data...</td></tr>
                                     </tbody>
                                 </table>
                                 
@@ -862,31 +708,6 @@
                                     </nav>
                                 </div>
                              </div>
-                        </div>
-                        <!-- Info Tab Pane -->
-                        <div class="tab-pane fade" id="detailInfoPane" role="tabpanel" aria-labelledby="detail-info-tab" tabindex="0">
-                            <h6>Device Information</h6>
-                             <div class="table-responsive mt-2">
-                                <table class="table table-sm table-striped" id="detailInfoTable">
-                                    <tbody>
-                                        <tr><td colspan="2" class="text-center text-muted p-3">Loading info...</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            
-                            <!-- Quick Actions Section -->
-                            <h6 class="mt-4">Quick Actions</h6>
-                            <div class="d-flex gap-2 flex-wrap">
-                                <button class="btn btn-outline-primary btn-sm" id="deviceExportDataBtn">
-                                    <i class="bi bi-download me-1"></i>Export Device Data
-                                </button>
-                                <button class="btn btn-outline-secondary btn-sm" id="deviceClearDataBtn">
-                                    <i class="bi bi-eraser me-1"></i>Clear Device Cache
-                                </button>
-                                <button class="btn btn-outline-danger btn-sm" id="deviceRemoveFromDashboardBtn">
-                                    <i class="bi bi-eye-slash me-1"></i>Hide from Dashboard
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -944,40 +765,44 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.30.0/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script>
 // --- Configuration ---
 const API_ENDPOINT = 'https://jolly-queen-8e6f.larry-schrimpfff6544.workers.dev'; // Worker URL
-const API_KEY_STORAGE_KEY = 'edieApiKey'; // Key for localStorage
+const API_KEY_STORAGE_KEY = 'edieApiKey';
 const SELECTED_DEVICES_STORAGE_KEY = 'edieSelectedDevices';
-const DEFAULT_API_KEY = "k32BWMByEJrCihED0YEmhs0AaUJCeontFUC_qbeB"; // Pre-fill for convenience (Matches worker)
+const DEFAULT_API_KEY = "k32BWMByEJrCihED0YEmhs0AaUJCeontFUC_qbeB"; // Set your default API key here if desired
 const AUTO_REFRESH_INTERVAL = 60000; // 60 seconds
-const OFFLINE_THRESHOLD_MINUTES = 15; // Device considered offline after this many minutes
-const VIEW_MODE_STORAGE_KEY = 'edieViewMode'; // grid or list
+const OFFLINE_THRESHOLD_MINUTES = 15;
+const VIEW_MODE_STORAGE_KEY = 'edieViewMode';
 
 // --- State Variables ---
-let apiKey = ''; // Holds the validated API key
-let allDevices = []; // Holds the raw summary data for ALL devices fetched from API
-let displayedDevices = []; // Holds the devices currently being displayed (filtered/sorted subset of allDevices)
-let selectedDeviceIDs = null; // Array of IDs to show, or null to show all
-let currentSortCriteria = 'name'; // Default sort
+let apiKey = '';
+let allDevices = []; // Raw device summary data
+let displayedDevices = []; // Filtered/sorted subset
+let selectedDeviceIDs = null; // null = show all
+let currentSortCriteria = 'name';
 let currentSearchTerm = '';
-let currentViewMode = 'grid'; // Default view mode (grid or list)
+let currentViewMode = 'grid';
 let autoRefreshTimer = null;
 let isTabVisible = true;
+
+// Detail modal state
 let detailCurrentPage = 0;
 let detailPageSize = 25;
-let historyAllData = []; // Store all historical data for pagination
+let detailAllData = [];
+let detailDeviceId = null;
+
+// History state
+let historyAllData = [];
 let historyCurrentPage = 0;
 let historyPageSize = 25;
 
 // Chart instances
-let flowMiniCharts = {}; // Flow mini-charts for device cards
 let detailFlowChart = null;
-let detailProbeChart = null;
+let detailPpmChart = null;
 let historyChart = null;
-let fleetPerformanceChart = null;
-let statusDistributionChart = null;
-let deviceComparisonChart = null;
 
 // Modal instances
 let deviceDetailModal = null;
@@ -985,222 +810,126 @@ let deviceSelectModal = null;
 let errorToast = null;
 let successToast = null;
 
-// --- DOM Elements (Cache common ones) ---
-const DOMElements = {
-    loadingIndicator: document.getElementById('loadingIndicator'),
-    loadingMessage: document.getElementById('loadingMessage'),
-    // Auth Screen
-    authScreen: document.getElementById('authScreen'),
-    apiKeyInput: document.getElementById('apiKeyInput'),
-    toggleApiKeyVisibilityBtn: document.getElementById('toggleApiKeyVisibilityBtn'),
-    rememberKeyCheckbox: document.getElementById('rememberKeyCheckbox'),
-    loginBtn: document.getElementById('loginBtn'),
-    authError: document.getElementById('authError'),
-    // Main Dashboard
-    mainDashboard: document.getElementById('mainDashboard'),
-    logoutBtn: document.getElementById('logoutBtn'),
-    navOverviewLink: document.getElementById('navOverviewLink'),
-    navHistoryLink: document.getElementById('navHistoryLink'),
-    navAnalyticsLink: document.getElementById('navAnalyticsLink'),
-    // Overview
-    overviewSection: document.getElementById('overviewSection'),
-    userTimezoneOverview: document.getElementById('userTimezoneOverview'),
-    searchDevicesInput: document.getElementById('searchDevicesInput'),
-    devicesGrid: document.getElementById('devicesGrid'),
-    devicesList: document.getElementById('devicesList'),
-    devicesListBody: document.getElementById('devicesListBody'),
-    overviewMessageArea: document.getElementById('overviewMessageArea'),
-    overviewMessageText: document.getElementById('overviewMessageText'),
-    refreshBtn: document.getElementById('refreshBtn'),
-    viewGridBtn: document.getElementById('viewGridBtn'),
-    viewListBtn: document.getElementById('viewListBtn'),
-    // Stats counters
-    totalDevicesCounter: document.getElementById('totalDevicesCounter'),
-    onlineDevicesCounter: document.getElementById('onlineDevicesCounter'),
-    warningDevicesCounter: document.getElementById('warningDevicesCounter'),
-    offlineDevicesCounter: document.getElementById('offlineDevicesCounter'),
-    // History
-    historySection: document.getElementById('historySection'),
-    userTimezoneHistory: document.getElementById('userTimezoneHistory'),
-    historyDeviceSelect: document.getElementById('historyDeviceSelect'),
-    historyStartDateInput: document.getElementById('historyStartDateInput'),
-    historyEndDateInput: document.getElementById('historyEndDateInput'),
-    historyLimitSelect: document.getElementById('historyLimitSelect'),
-    searchHistoryBtn: document.getElementById('searchHistoryBtn'),
-    exportCsvBtn: document.getElementById('exportCsvBtn'),
-    printHistoryBtn: document.getElementById('printHistoryBtn'),
-    historyChartContainer: document.getElementById('historyChartContainer'),
-    historyChart: document.getElementById('historyChart'), // This is the canvas element
-    historyTableContainer: document.getElementById('historyTableContainer'),
-    historyTableBody: document.getElementById('historyTable').querySelector('tbody'),
-    historyMessageArea: document.getElementById('historyMessageArea'),
-    historyMessageText: document.getElementById('historyMessageText'),
-    historyRowCounter: document.getElementById('historyRowCounter'),
-    historyPrevPage: document.getElementById('historyPrevPage'),
-    historyNextPage: document.getElementById('historyNextPage'),
-    historyPageSizeSelect: document.getElementById('historyPageSizeSelect'),
-    // Analytics Section
-    analyticsSection: document.getElementById('analyticsSection'),
-    userTimezoneAnalytics: document.getElementById('userTimezoneAnalytics'),
-    // Device Selection
-    selectDevicesBtn: document.getElementById('selectDevicesBtn'),
-    deviceSelectModalElement: document.getElementById('deviceSelectModal'),
-    deviceSelectList: document.getElementById('deviceSelectList'),
-    filterDeviceSelectInput: document.getElementById('filterDeviceSelectInput'),
-    selectAllDevicesCheckbox: document.getElementById('selectAllDevicesCheckbox'),
-    selectOnlineOnlyBtn: document.getElementById('selectOnlineOnlyBtn'),
-    saveDeviceSelectionBtn: document.getElementById('saveDeviceSelectionBtn'),
-    // Device Details
-    deviceDetailModalElement: document.getElementById('deviceDetailModal'),
-    deviceDetailTitle: document.getElementById('deviceDetailTitle'),
-    detailMetricsContainer: document.getElementById('detailMetricsContainer'),
-    detailFlowMetric: document.getElementById('detailFlowMetric'),
-    detailPpmMetric: document.getElementById('detailPpmMetric'),
-    detailPHMetric: document.getElementById('detailPHMetric'),
-    detailORPMetric: document.getElementById('detailORPMetric'),
-    detailStatusMetric: document.getElementById('detailStatusMetric'),
-    detailTotalFlowMetric: document.getElementById('detailTotalFlowMetric'),
-    detailChemInjMetric: document.getElementById('detailChemInjMetric'),
-    detailAcidInjMetric: document.getElementById('detailAcidInjMetric'),
-    detailFlowChartCanvas: document.getElementById('detailFlowChart'),
-    detailProbeChartCanvas: document.getElementById('detailProbeChart'),
-    detailDataTableBody: document.getElementById('detailDataTable').querySelector('tbody'),
-    detailInfoTableBody: document.getElementById('detailInfoTable').querySelector('tbody'),
-    detailDataCounter: document.getElementById('detailDataCounter'),
-    detailPrevPage: document.getElementById('detailPrevPage'),
-    detailNextPage: document.getElementById('detailNextPage'),
-    detailRefreshBtn: document.getElementById('detailRefreshBtn'),
-    deviceExportDataBtn: document.getElementById('deviceExportDataBtn'),
-    deviceClearDataBtn: document.getElementById('deviceClearDataBtn'),
-    deviceRemoveFromDashboardBtn: document.getElementById('deviceRemoveFromDashboardBtn'),
-    // Toasts
-    errorToastElement: document.getElementById('errorToast'),
-    errorToastMessage: document.getElementById('toastErrorMessage'),
-    successToastElement: document.getElementById('successToast'),
-    successToastMessage: document.getElementById('toastSuccessMessage'),
-};
-
-// --- Initialization ---
+// --- Initialize App ---
 document.addEventListener('DOMContentLoaded', initializeApp);
 
 function initializeApp() {
-    console.log("Initializing EDIE Dashboard (API Key Version)...");
+    console.log("Initializing EDIE Dashboard...");
     initializeTimezone();
     initializeModalsAndToast();
     setupEventListeners();
-    loadStateFromStorage(); // Loads API Key and selection
-
-    // Set default dates for history section
+    loadStateFromStorage();
     initializeDateInputs();
 
     if (apiKey) {
         console.log("API key found in storage. Attempting auto-login.");
-        DOMElements.apiKeyInput.value = apiKey; // Pre-fill from storage
-        DOMElements.rememberKeyCheckbox.checked = true; // Assume remembered if found
-        // Attempt to validate the stored key silently before showing dashboard
+        document.getElementById('apiKeyInput').value = apiKey;
+        document.getElementById('rememberKeyCheckbox').checked = true;
         validateApiKeyAndProceed(apiKey, true);
     } else {
         console.log("No API key in storage. Showing login screen.");
-        DOMElements.apiKeyInput.value = DEFAULT_API_KEY; // Pre-fill default key
+        document.getElementById('apiKeyInput').value = DEFAULT_API_KEY;
         showAuthScreen();
     }
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    // Initialize Chart.js default settings
     initializeChartDefaults();
 }
 
+// --- Utility Functions ---
 function initializeTimezone() {
     try {
         const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        DOMElements.userTimezoneOverview.textContent = userTimezone;
-        DOMElements.userTimezoneHistory.textContent = userTimezone;
-        DOMElements.userTimezoneAnalytics.textContent = userTimezone;
-    } catch (e) { console.error("Could not determine timezone:", e); /* Handle error */ }
+        document.getElementById('userTimezoneOverview').textContent = userTimezone;
+        document.getElementById('userTimezoneHistory').textContent = userTimezone;
+        document.getElementById('userTimezoneAnalytics').textContent = userTimezone;
+    } catch (e) { 
+        console.error("Could not determine timezone:", e); 
+    }
 }
 
 function initializeModalsAndToast() {
     try {
-        deviceDetailModal = new bootstrap.Modal(DOMElements.deviceDetailModalElement);
-        deviceSelectModal = new bootstrap.Modal(DOMElements.deviceSelectModalElement);
-        errorToast = new bootstrap.Toast(DOMElements.errorToastElement);
-        successToast = new bootstrap.Toast(DOMElements.successToastElement);
-    } catch(e) { console.error("Error initializing Bootstrap components:", e); }
+        deviceDetailModal = new bootstrap.Modal(document.getElementById('deviceDetailModal'));
+        deviceSelectModal = new bootstrap.Modal(document.getElementById('deviceSelectModal'));
+        errorToast = new bootstrap.Toast(document.getElementById('errorToast'));
+        successToast = new bootstrap.Toast(document.getElementById('successToast'));
+    } catch(e) { 
+        console.error("Error initializing Bootstrap components:", e); 
+    }
 }
 
 function initializeDateInputs() {
-    // Set default date range for historical data
     const today = new Date();
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(today.getDate() - 7);
     
-    DOMElements.historyEndDateInput.valueAsDate = today;
-    DOMElements.historyStartDateInput.valueAsDate = oneWeekAgo;
+    document.getElementById('historyEndDateInput').valueAsDate = today;
+    document.getElementById('historyStartDateInput').valueAsDate = oneWeekAgo;
 }
 
 function initializeChartDefaults() {
-    // Set global Chart.js defaults
     Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
     Chart.defaults.font.size = 12;
     Chart.defaults.color = '#6c757d';
     Chart.defaults.plugins.legend.position = 'top';
-    Chart.defaults.plugins.title.font.size = 14;
-    Chart.defaults.plugins.title.font.weight = 'bold';
-    Chart.defaults.animation.duration = 1000;
     Chart.defaults.maintainAspectRatio = false;
-    Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-    Chart.defaults.plugins.tooltip.titleFont.weight = 'bold';
     Chart.defaults.responsive = true;
 }
 
 function setupEventListeners() {
-    // Auth & Navigation
-    DOMElements.loginBtn.addEventListener('click', handleLogin);
-    DOMElements.apiKeyInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
-    DOMElements.toggleApiKeyVisibilityBtn.addEventListener('click', toggleApiKeyVisibility);
-    DOMElements.logoutBtn.addEventListener('click', handleLogout);
-    DOMElements.refreshBtn.addEventListener('click', () => refreshDeviceList(true)); // Force refresh
-    DOMElements.selectDevicesBtn.addEventListener('click', openDeviceSelectionModal);
-    DOMElements.navOverviewLink.addEventListener('click', showOverviewSection);
-    DOMElements.navHistoryLink.addEventListener('click', showHistorySection);
-    DOMElements.navAnalyticsLink.addEventListener('click', showAnalyticsSection);
-
-    // Overview Search, Sort, and View Mode
-    DOMElements.searchDevicesInput.addEventListener('input', handleSearchInput);
+    // Auth
+    document.getElementById('loginBtn').addEventListener('click', handleLogin);
+    document.getElementById('apiKeyInput').addEventListener('keypress', (e) => { 
+        if (e.key === 'Enter') handleLogin(); 
+    });
+    document.getElementById('toggleApiKeyVisibilityBtn').addEventListener('click', toggleApiKeyVisibility);
+    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+    
+    // Navigation
+    document.getElementById('navOverviewLink').addEventListener('click', showOverviewSection);
+    document.getElementById('navHistoryLink').addEventListener('click', showHistorySection);
+    document.getElementById('navAnalyticsLink').addEventListener('click', showAnalyticsSection);
+    
+    // Overview controls
+    document.getElementById('refreshBtn').addEventListener('click', () => refreshDeviceList(true));
+    document.getElementById('selectDevicesBtn').addEventListener('click', openDeviceSelectionModal);
+    document.getElementById('searchDevicesInput').addEventListener('input', handleSearchInput);
+    document.getElementById('viewGridBtn').addEventListener('change', () => setViewMode('grid'));
+    document.getElementById('viewListBtn').addEventListener('change', () => setViewMode('list'));
+    
+    // Sort options
     document.querySelectorAll('input[name="sortOptions"]').forEach(radio => {
         radio.addEventListener('change', handleSortChange);
     });
-    DOMElements.viewGridBtn.addEventListener('change', () => setViewMode('grid'));
-    DOMElements.viewListBtn.addEventListener('change', () => setViewMode('list'));
-
-    // History Controls
-    DOMElements.searchHistoryBtn.addEventListener('click', fetchHistoricalData);
-    DOMElements.exportCsvBtn.addEventListener('click', exportHistoryToCSV);
-    DOMElements.printHistoryBtn.addEventListener('click', printHistoryData);
-    DOMElements.historyPrevPage.addEventListener('click', showPreviousHistoryPage);
-    DOMElements.historyNextPage.addEventListener('click', showNextHistoryPage);
-    DOMElements.historyPageSizeSelect.addEventListener('change', changeHistoryPageSize);
-
-    // Device Selection Modal
-    DOMElements.saveDeviceSelectionBtn.addEventListener('click', saveDeviceSelection);
-    DOMElements.selectAllDevicesCheckbox.addEventListener('change', handleSelectAllToggle);
-    DOMElements.filterDeviceSelectInput.addEventListener('input', filterDeviceSelectionList);
-    DOMElements.selectOnlineOnlyBtn.addEventListener('click', selectOnlineDevicesOnly);
-
-    // Device Detail Modal
-    DOMElements.detailRefreshBtn.addEventListener('click', refreshCurrentDeviceDetails);
-    DOMElements.deviceExportDataBtn.addEventListener('click', exportDeviceData);
-    DOMElements.deviceClearDataBtn.addEventListener('click', clearDeviceCache);
-    DOMElements.deviceRemoveFromDashboardBtn.addEventListener('click', removeDeviceFromDashboard);
-    DOMElements.detailPrevPage.addEventListener('click', showPreviousDetailPage);
-    DOMElements.detailNextPage.addEventListener('click', showNextDetailPage);
     
-    // Reset charts on modal close
-    DOMElements.deviceDetailModalElement.addEventListener('hidden.bs.modal', () => {
-        destroyChart(detailFlowChart); detailFlowChart = null;
-        destroyChart(detailProbeChart); detailProbeChart = null;
-        console.log("Detail modal closed, charts destroyed.");
+    // History controls
+    document.getElementById('searchHistoryBtn').addEventListener('click', fetchHistoricalData);
+    document.getElementById('exportCsvBtn').addEventListener('click', exportHistoryToCSV);
+    document.getElementById('printHistoryBtn').addEventListener('click', () => window.print());
+    document.getElementById('historyPrevPage').addEventListener('click', showPreviousHistoryPage);
+    document.getElementById('historyNextPage').addEventListener('click', showNextHistoryPage);
+    document.getElementById('historyPageSizeSelect').addEventListener('change', changeHistoryPageSize);
+    
+    // Device selection modal
+    document.getElementById('saveDeviceSelectionBtn').addEventListener('click', saveDeviceSelection);
+    document.getElementById('selectAllDevicesCheckbox').addEventListener('change', handleSelectAllToggle);
+    document.getElementById('filterDeviceSelectInput').addEventListener('input', filterDeviceSelectionList);
+    document.getElementById('selectOnlineOnlyBtn').addEventListener('click', selectOnlineDevicesOnly);
+    
+    // Detail modal
+    document.getElementById('detailRefreshBtn').addEventListener('click', refreshCurrentDeviceDetails);
+    document.getElementById('detailPrevPage').addEventListener('click', showPreviousDetailPage);
+    document.getElementById('detailNextPage').addEventListener('click', showNextDetailPage);
+    
+    // Clean up charts on modal close
+    document.getElementById('deviceDetailModal').addEventListener('hidden.bs.modal', () => {
+        destroyChart(detailFlowChart); 
+        detailFlowChart = null;
+        destroyChart(detailPpmChart); 
+        detailPpmChart = null;
+        detailAllData = [];
+        detailDeviceId = null;
     });
 }
 
@@ -1208,9 +937,7 @@ function loadStateFromStorage() {
     // Load API Key
     const savedKey = localStorage.getItem(API_KEY_STORAGE_KEY);
     if (savedKey) {
-        apiKey = savedKey; // Tentatively load the key
-    } else {
-        apiKey = '';
+        apiKey = savedKey;
     }
 
     // Load Device Selection
@@ -1219,34 +946,27 @@ function loadStateFromStorage() {
         try {
             selectedDeviceIDs = JSON.parse(savedSelection);
             if (!Array.isArray(selectedDeviceIDs)) {
-                console.warn("Invalid device selection in localStorage, resetting.");
                 selectedDeviceIDs = null;
                 localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY);
             }
-        } catch (e) { selectedDeviceIDs = null; localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY); }
-    } else {
-        selectedDeviceIDs = null; // Default: show all
+        } catch (e) { 
+            selectedDeviceIDs = null; 
+        }
     }
     
     // Load View Mode
     const savedViewMode = localStorage.getItem(VIEW_MODE_STORAGE_KEY);
-    if (savedViewMode === 'grid' || savedViewMode === 'list') {
-        currentViewMode = savedViewMode;
-        if (savedViewMode === 'list') {
-            DOMElements.viewListBtn.checked = true;
-        } else {
-            DOMElements.viewGridBtn.checked = true;
-        }
+    if (savedViewMode === 'list') {
+        currentViewMode = 'list';
+        document.getElementById('viewListBtn').checked = true;
     }
-    
-    console.log("Initial state loaded - API Key:", apiKey ? 'Exists' : 'None', "Selected Devices:", selectedDeviceIDs === null ? "Show All" : selectedDeviceIDs.length, "View Mode:", currentViewMode);
 }
 
-// --- Authentication (API Key) ---
+// --- Authentication ---
 async function handleLogin() {
-    const inputKey = DOMElements.apiKeyInput.value.trim();
-    const remember = DOMElements.rememberKeyCheckbox.checked;
-    DOMElements.authError.classList.add('d-none'); // Hide previous errors
+    const inputKey = document.getElementById('apiKeyInput').value.trim();
+    const remember = document.getElementById('rememberKeyCheckbox').checked;
+    document.getElementById('authError').classList.add('d-none');
 
     if (!inputKey) {
         showAuthError("Please enter your API key.");
@@ -1259,95 +979,68 @@ async function handleLogin() {
 async function validateApiKeyAndProceed(keyToValidate, isAutoLogin = false, remember = false) {
     showLoading(isAutoLogin ? "Authenticating..." : "Validating API Key...");
     try {
-        // Test API key by fetching minimal data (summary list, limit 1 device)
-        // Use the key directly in fetchWithAuth for this test
-        const tempApiKey = keyToValidate;
-        const response = await fetchWithAuth(`${API_ENDPOINT}/devices?limit=1`, {}, tempApiKey);
+        // Test API key by fetching device list
+        const response = await fetchWithAuth(`${API_ENDPOINT}/devices`, {}, keyToValidate);
 
         if (response.ok) {
-            // Validation successful
-            apiKey = keyToValidate; // Set the global API key
-            if (!isAutoLogin) { // Only save/remove on explicit login action
+            apiKey = keyToValidate;
+            if (!isAutoLogin) {
                 if (remember) {
                     localStorage.setItem(API_KEY_STORAGE_KEY, apiKey);
-                    console.log("API Key saved to localStorage.");
                     showToastSuccess("API key saved for future sessions");
                 } else {
                     localStorage.removeItem(API_KEY_STORAGE_KEY);
-                    console.log("API Key not saved (removed from localStorage).");
                 }
             }
             showMainDashboard();
             startAutoRefresh();
-            await refreshDeviceList(); // Fetch initial data after successful validation
-
+            await refreshDeviceList();
         } else if (response.status === 401) {
-            // Unauthorized - Invalid Key
             if (isAutoLogin) {
-                console.warn("Stored API key is invalid. Clearing and showing login.");
-                handleLogout(); // Clear invalid stored key
+                handleLogout();
                 showAuthScreen();
                 showAuthError("Stored API Key is invalid. Please login again.");
             } else {
                 showAuthError("Invalid API Key. Please check and try again.");
             }
-            apiKey = ''; // Clear invalid key from state
+            apiKey = '';
         } else {
-            // Other errors during validation
-            const errorData = await response.json().catch(() => ({ message: response.statusText }));
-            const errorMsg = `API Key validation failed: ${errorData.message || response.statusText} (Status: ${response.status})`;
-            if (isAutoLogin) {
-                console.error(errorMsg);
-                handleLogout(); // Treat as auth failure
-                showAuthScreen();
-                showAuthError("Error validating stored key. Please login again.");
-            } else {
-                showAuthError(errorMsg);
-            }
-            apiKey = ''; // Clear invalid key
+            throw new Error(`Validation failed: ${response.statusText}`);
         }
     } catch (error) {
-        console.error("API Key validation network error:", error);
-        const errorMsg = "Connection error. Could not reach the server to validate the API Key.";
-        if (isAutoLogin) {
-            showAuthScreen(); // Show login if auto-login fails due to network
-            showAuthError(errorMsg);
-        } else {
-            showAuthError(errorMsg);
-        }
-        apiKey = ''; // Clear key state
+        console.error("API Key validation error:", error);
+        showAuthError("Connection error. Could not reach the server.");
+        apiKey = '';
     } finally {
         hideLoading();
     }
 }
 
-
 function handleLogout() {
     console.log("Logging out...");
-    apiKey = ''; // Clear the key from state
+    apiKey = '';
     allDevices = [];
     displayedDevices = [];
-    selectedDeviceIDs = null; // Reset selection state
-    localStorage.removeItem(API_KEY_STORAGE_KEY); // Remove from storage
-    localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY); // Clear selection on logout
-    DOMElements.apiKeyInput.value = DEFAULT_API_KEY; // Reset input to default
-    DOMElements.rememberKeyCheckbox.checked = false;
+    selectedDeviceIDs = null;
+    localStorage.removeItem(API_KEY_STORAGE_KEY);
+    localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY);
+    document.getElementById('apiKeyInput').value = DEFAULT_API_KEY;
+    document.getElementById('rememberKeyCheckbox').checked = false;
     stopAutoRefresh();
     clearAllCharts();
     showAuthScreen();
-    resetHistoryView(); // Reset history section
-    DOMElements.historyDeviceSelect.innerHTML = '<option value="" selected>Select a device...</option>';
-    console.log("Logout complete.");
+    resetHistoryView();
 }
 
 function showAuthError(message) {
-    DOMElements.authError.textContent = message;
-    DOMElements.authError.classList.remove('d-none');
+    const errorDiv = document.getElementById('authError');
+    errorDiv.textContent = message;
+    errorDiv.classList.remove('d-none');
 }
 
 function toggleApiKeyVisibility() {
-    const input = DOMElements.apiKeyInput;
-    const icon = DOMElements.toggleApiKeyVisibilityBtn.querySelector('i');
+    const input = document.getElementById('apiKeyInput');
+    const icon = document.querySelector('#toggleApiKeyVisibilityBtn i');
     if (input.type === "password") {
         input.type = "text";
         icon.classList.remove('bi-eye-slash');
@@ -1359,170 +1052,170 @@ function toggleApiKeyVisibility() {
     }
 }
 
-// --- UI Navigation & State ---
+// --- UI Navigation ---
 function showAuthScreen() {
-    DOMElements.authScreen.classList.remove('d-none');
-    DOMElements.mainDashboard.classList.add('d-none');
+    document.getElementById('authScreen').classList.remove('d-none');
+    document.getElementById('mainDashboard').classList.add('d-none');
 }
 
 function showMainDashboard() {
-    DOMElements.authScreen.classList.add('d-none');
-    DOMElements.mainDashboard.classList.remove('d-none');
-    showOverviewSection(); // Default to overview
+    document.getElementById('authScreen').classList.add('d-none');
+    document.getElementById('mainDashboard').classList.remove('d-none');
+    showOverviewSection();
 }
 
 function showOverviewSection(e) {
     if (e) e.preventDefault();
-    DOMElements.overviewSection.classList.remove('d-none');
-    DOMElements.historySection.classList.add('d-none');
-    DOMElements.analyticsSection.classList.add('d-none');
-    DOMElements.navOverviewLink.classList.add('active');
-    DOMElements.navHistoryLink.classList.remove('active');
-    DOMElements.navAnalyticsLink.classList.remove('active');
-    DOMElements.navOverviewLink.setAttribute('aria-current', 'page');
-    DOMElements.navHistoryLink.removeAttribute('aria-current');
-    DOMElements.navAnalyticsLink.removeAttribute('aria-current');
-    console.log("Switched to Overview section.");
+    document.getElementById('overviewSection').classList.remove('d-none');
+    document.getElementById('historySection').classList.add('d-none');
+    document.getElementById('analyticsSection').classList.add('d-none');
+    setActiveNav('navOverviewLink');
 }
 
 function showHistorySection(e) {
     if (e) e.preventDefault();
-    DOMElements.overviewSection.classList.add('d-none');
-    DOMElements.historySection.classList.remove('d-none');
-    DOMElements.analyticsSection.classList.add('d-none');
-    DOMElements.navOverviewLink.classList.remove('active');
-    DOMElements.navHistoryLink.classList.add('active');
-    DOMElements.navAnalyticsLink.classList.remove('active');
-    DOMElements.navHistoryLink.setAttribute('aria-current', 'page');
-    DOMElements.navOverviewLink.removeAttribute('aria-current');
-    DOMElements.navAnalyticsLink.removeAttribute('aria-current');
-    console.log("Switched to History section.");
-    populateHistoryDeviceDropdown(); // Ensure dropdown is populated
+    document.getElementById('overviewSection').classList.add('d-none');
+    document.getElementById('historySection').classList.remove('d-none');
+    document.getElementById('analyticsSection').classList.add('d-none');
+    setActiveNav('navHistoryLink');
+    populateHistoryDeviceDropdown();
 }
 
 function showAnalyticsSection(e) {
     if (e) e.preventDefault();
-    DOMElements.overviewSection.classList.add('d-none');
-    DOMElements.historySection.classList.add('d-none');
-    DOMElements.analyticsSection.classList.remove('d-none');
-    DOMElements.navOverviewLink.classList.remove('active');
-    DOMElements.navHistoryLink.classList.remove('active');
-    DOMElements.navAnalyticsLink.classList.add('active');
-    DOMElements.navAnalyticsLink.setAttribute('aria-current', 'page');
-    DOMElements.navOverviewLink.removeAttribute('aria-current');
-    DOMElements.navHistoryLink.removeAttribute('aria-current');
-    console.log("Switched to Analytics section.");
-    
-    // Initialize analytics charts if this is the first view
-    initializeAnalyticsCharts();
+    document.getElementById('overviewSection').classList.add('d-none');
+    document.getElementById('historySection').classList.add('d-none');
+    document.getElementById('analyticsSection').classList.remove('d-none');
+    setActiveNav('navAnalyticsLink');
+}
+
+function setActiveNav(activeId) {
+    ['navOverviewLink', 'navHistoryLink', 'navAnalyticsLink'].forEach(id => {
+        const link = document.getElementById(id);
+        if (id === activeId) {
+            link.classList.add('active');
+            link.setAttribute('aria-current', 'page');
+        } else {
+            link.classList.remove('active');
+            link.removeAttribute('aria-current');
+        }
+    });
 }
 
 function setViewMode(mode) {
-    if (mode !== 'grid' && mode !== 'list') {
-        console.error(`Invalid view mode: ${mode}`);
-        return;
-    }
-    
     currentViewMode = mode;
     localStorage.setItem(VIEW_MODE_STORAGE_KEY, mode);
     
     if (mode === 'grid') {
-        DOMElements.devicesGrid.classList.remove('d-none');
-        DOMElements.devicesList.classList.add('d-none');
-    } else { // list mode
-        DOMElements.devicesGrid.classList.add('d-none');
-        DOMElements.devicesList.classList.remove('d-none');
-        renderDeviceList(); // Ensure list view is updated
+        document.getElementById('devicesGrid').classList.remove('d-none');
+        document.getElementById('devicesList').classList.add('d-none');
+    } else {
+        document.getElementById('devicesGrid').classList.add('d-none');
+        document.getElementById('devicesList').classList.remove('d-none');
     }
     
-    console.log(`View mode set to: ${mode}`);
+    renderDevices();
 }
 
-// --- API Interaction ---
+// --- API Communication ---
 async function fetchWithAuth(url, options = {}, keyOverride = null) {
-    const keyToUse = keyOverride || apiKey; // Use override if provided (for validation)
+    const keyToUse = keyOverride || apiKey;
     if (!keyToUse) {
         console.error("Attempted fetch without API key.");
-        showToastError("Authentication error. Please login again.");
-        handleLogout(); // Force logout if key is missing unexpectedly
         throw new Error("Authentication required.");
     }
     const headers = {
         ...options.headers,
-        'X-API-KEY': keyToUse, // Send the API Key in this header
+        'X-API-KEY': keyToUse,
     };
     return fetch(url, { ...options, headers });
 }
 
-// --- Overview Page Logic ---
+// --- Device List Management ---
 async function refreshDeviceList(force = false) {
-    if (!apiKey) return; // Don't refresh if not logged in
-    console.log("Refreshing device list (summary)...");
+    if (!apiKey) return;
+    console.log("Refreshing device list...");
     showLoading("Fetching devices...");
+    
     try {
-        // Fetch the summary list (worker lists prefixes and gets latest file meta for each)
         const response = await fetchWithAuth(`${API_ENDPOINT}/devices`);
         if (!response.ok) {
             if (response.status === 401) {
-                showToastError("Authentication failed (Invalid API Key). Please log in again.");
+                showToastError("Authentication failed. Please log in again.");
                 handleLogout();
-            } else {
-                throw new Error(`Failed to fetch devices: ${response.statusText} (${response.status})`);
+                return;
             }
-            return; // Stop processing on error
+            throw new Error(`Failed to fetch devices: ${response.statusText}`);
         }
 
         const data = await response.json();
         if (data.success && Array.isArray(data.devices)) {
-            console.log(`Fetched summary for ${data.devices.length} devices.`);
-            allDevices = data.devices; // Store the summary data
-
-            // Pre-calculate status based ONLY on lastUpdated from summary
-            allDevices.forEach(dev => {
-                dev._status = getDeviceStatus(dev);
-                dev._lastUpdateTimestamp = dev.lastUpdated; // Use for sorting/display
-            });
-
-            applyFiltersAndSort(); // Filter based on search/selection, then sort
-            renderDevices(); // Render in current view mode
-            populateHistoryDeviceDropdown(); // Update history dropdown
+            console.log(`Fetched ${data.devices.length} devices.`);
+            allDevices = data.devices;
             
-            // Update dashboard counters
+            // Process devices - handle actual data structure
+            allDevices.forEach(dev => {
+                // The latestData is already parsed from the worker
+                dev._parsedData = dev.latestData || null;
+                
+                // Determine status based on lastUpdated time
+                dev._status = getDeviceStatus(dev);
+                dev._lastUpdateTimestamp = dev.lastUpdated;
+            });
+            
+            applyFiltersAndSort();
+            renderDevices();
+            populateHistoryDeviceDropdown();
             updateDashboardCounters();
             
-            showToastSuccess(`Successfully fetched ${data.devices.length} devices`);
+            if (force) {
+                showToastSuccess(`Successfully refreshed ${data.devices.length} devices`);
+            }
         } else {
-            throw new Error(`Invalid data structure received from server: ${JSON.stringify(data)}`);
+            throw new Error("Invalid data structure received");
         }
     } catch (error) {
         console.error("Error refreshing device list:", error);
         showToastError(`Error fetching devices: ${error.message}`);
-        allDevices = []; // Clear data on error
+        allDevices = [];
         applyFiltersAndSort();
-        renderDevices(); // Render empty state
+        renderDevices();
     } finally {
         hideLoading();
     }
 }
 
+function getDeviceStatus(device) {
+    const timestamp = device.lastUpdated || device.latestData?.timestamp;
+    if (!timestamp) return 'offline';
+    
+    const timeDiffMinutes = getTimeDifference(timestamp);
+    
+    if (timeDiffMinutes > OFFLINE_THRESHOLD_MINUTES) {
+        return 'offline';
+    } else if (device.latestData && device.latestData.errorCode && device.latestData.errorCode !== 'OK') {
+        return 'warning';
+    } else {
+        return 'online';
+    }
+}
+
 function updateDashboardCounters() {
-    // Calculate stats
     const total = allDevices.length;
     const online = allDevices.filter(d => d._status === 'online').length;
     const warning = allDevices.filter(d => d._status === 'warning').length;
     const offline = allDevices.filter(d => d._status === 'offline').length;
     
-    // Animate counters
-    animateCounter(DOMElements.totalDevicesCounter, total);
-    animateCounter(DOMElements.onlineDevicesCounter, online);
-    animateCounter(DOMElements.warningDevicesCounter, warning);
-    animateCounter(DOMElements.offlineDevicesCounter, offline);
+    animateCounter(document.getElementById('totalDevicesCounter'), total);
+    animateCounter(document.getElementById('onlineDevicesCounter'), online);
+    animateCounter(document.getElementById('warningDevicesCounter'), warning);
+    animateCounter(document.getElementById('offlineDevicesCounter'), offline);
 }
 
 function animateCounter(element, targetValue) {
     const startValue = parseInt(element.innerText) || 0;
-    const duration = 1000; // Animation duration in ms
-    const stepTime = 50; // Time between animation frames
+    const duration = 1000;
+    const stepTime = 50;
     const steps = duration / stepTime;
     const increment = (targetValue - startValue) / steps;
     let currentValue = startValue;
@@ -1541,6 +1234,7 @@ function animateCounter(element, targetValue) {
     }, stepTime);
 }
 
+// --- Filtering and Sorting ---
 function handleSearchInput(event) {
     currentSearchTerm = event.target.value.toLowerCase().trim();
     applyFiltersAndSort();
@@ -1554,41 +1248,43 @@ function handleSortChange(event) {
 }
 
 function applyFiltersAndSort() {
-    let filtered = [...allDevices]; // Start with all devices from the summary
+    let filtered = [...allDevices];
 
-    // 1. Filter by Selection (if applicable)
+    // Filter by selection
     if (selectedDeviceIDs !== null && Array.isArray(selectedDeviceIDs)) {
-         filtered = filtered.filter(device => selectedDeviceIDs.includes(device.deviceId));
+        filtered = filtered.filter(device => selectedDeviceIDs.includes(device.deviceId));
     }
 
-    // 2. Filter by Search Term
+    // Filter by search
     if (currentSearchTerm) {
-        filtered = filtered.filter(device => device.deviceId.toLowerCase().includes(currentSearchTerm));
+        filtered = filtered.filter(device => 
+            device.deviceId.toLowerCase().includes(currentSearchTerm)
+        );
     }
 
-    // 3. Sort
-    // Simpler status priority as we only have online/offline
+    // Sort
     const statusPriority = { 'online': 0, 'warning': 1, 'offline': 2 };
     filtered.sort((a, b) => {
         switch (currentSortCriteria) {
             case 'status':
-                 const priorityA = statusPriority[a._status] ?? 99;
-                 const priorityB = statusPriority[b._status] ?? 99;
-                 if (priorityA !== priorityB) return priorityA - priorityB;
-                 return a.deviceId.localeCompare(b.deviceId); // Secondary sort by name
+                const priorityA = statusPriority[a._status] ?? 99;
+                const priorityB = statusPriority[b._status] ?? 99;
+                if (priorityA !== priorityB) return priorityA - priorityB;
+                return a.deviceId.localeCompare(b.deviceId);
             case 'lastUpdate':
                 const dateA = a._lastUpdateTimestamp ? new Date(a._lastUpdateTimestamp) : new Date(0);
                 const dateB = b._lastUpdateTimestamp ? new Date(b._lastUpdateTimestamp) : new Date(0);
-                return dateB - dateA; // Newest first
+                return dateB - dateA;
             case 'name':
             default:
                 return a.deviceId.localeCompare(b.deviceId);
         }
     });
 
-    displayedDevices = filtered; // Update the list to be displayed
+    displayedDevices = filtered;
 }
 
+// --- Rendering ---
 function renderDevices() {
     if (currentViewMode === 'grid') {
         renderDeviceCards();
@@ -1598,30 +1294,32 @@ function renderDevices() {
 }
 
 function renderDeviceCards() {
-    DOMElements.devicesGrid.innerHTML = ''; // Clear previous cards
+    const container = document.getElementById('devicesGrid');
+    container.innerHTML = '';
 
     if (displayedDevices.length === 0) {
-        let message = "No devices found.";
-        if (allDevices.length > 0 && (selectedDeviceIDs !== null || currentSearchTerm)) {
-            message = "No devices match your current filter or selection.";
-        } else if (allDevices.length > 0) {
-            message = "No devices to display."; // Should not happen if filters clear
-        } else if (apiKey) {
-             message = "No devices found for this API key, or fetching failed.";
-        }
-        showOverviewMessage(message);
+        showOverviewMessage("No devices found.");
         return;
     }
 
     hideOverviewMessage();
     
-    // Create a document fragment for better performance
     const fragment = document.createDocumentFragment();
     
     displayedDevices.forEach((device, index) => {
+        // Get latest value to display - handle both parsed and latestData formats
+        let latestValue = '--';
+        const data = device._parsedData || device.latestData;
+        if (data) {
+            if (data.flow?.actual !== undefined) {
+                latestValue = `${data.flow.actual.toFixed(1)} GPM`;
+            } else if (data.ppm !== undefined) {
+                latestValue = `${data.ppm} PPM`;
+            }
+        }
+        
         const card = document.createElement('div');
         card.className = `col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-3 animate-fade-in`;
-        // Add staggered animation delay based on index
         card.style.animationDelay = `${index * 50}ms`;
         
         card.innerHTML = `
@@ -1631,18 +1329,15 @@ function renderDeviceCards() {
                     <span class="badge rounded-pill status-badge text-uppercase ${getStatusBadgeClass(device._status)}">${device._status}</span>
                 </div>
                 <div class="card-body d-flex flex-column">
-                    <div class="mini-chart-container mb-3">
-                        <div class="chart-placeholder" id="miniChart-${device.deviceId}">
-                            <i class="bi bi-bar-chart-line me-1"></i> Flow rate trend
-                        </div>
+                    <div class="text-center mb-3">
+                        <div class="metric-label">Latest Value</div>
+                        <div class="metric-value">${latestValue}</div>
                     </div>
-
                     <div class="mt-auto text-center">
                         <div class="metric-label">Last Seen</div>
                         <div class="last-update-time" title="${formatDateTime(device.lastUpdated)}">
                             ${getRelativeTimeString(device.lastUpdated)}
                         </div>
-                        ${device.lastFile ? `<div class="metric-label small mt-1">Last File: ${escapeHtml(device.lastFile)}</div>` : ''}
                     </div>
                 </div>
                 <div class="card-footer bg-white border-top-0 pt-0 pb-2">
@@ -1655,45 +1350,42 @@ function renderDeviceCards() {
         fragment.appendChild(card);
     });
     
-    DOMElements.devicesGrid.appendChild(fragment);
+    container.appendChild(fragment);
     
-    // Add listeners after DOM is updated
-    displayedDevices.forEach(device => {
-        const detailBtn = DOMElements.devicesGrid.querySelector(`.view-details-btn[data-device-id="${device.deviceId}"]`);
-        if (detailBtn) {
-            detailBtn.addEventListener('click', () => {
-                showDeviceDetails(device.deviceId);
-            });
-        }
-        
-        // Placeholder for mini chart creation
-        // In a real implementation, we might fetch some data and render a mini chart
-        // initializeMiniChart(device.deviceId);
+    // Add event listeners
+    container.querySelectorAll('.view-details-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const deviceId = e.currentTarget.dataset.deviceId;
+            showDeviceDetails(deviceId);
+        });
     });
 }
 
 function renderDeviceList() {
-    DOMElements.devicesListBody.innerHTML = ''; // Clear previous list
+    const tbody = document.getElementById('devicesListBody');
+    tbody.innerHTML = '';
     
     if (displayedDevices.length === 0) {
-        let message = "No devices found.";
-        if (allDevices.length > 0 && (selectedDeviceIDs !== null || currentSearchTerm)) {
-            message = "No devices match your current filter or selection.";
-        } else if (allDevices.length > 0) {
-            message = "No devices to display.";
-        } else if (apiKey) {
-             message = "No devices found for this API key, or fetching failed.";
-        }
-        
         const row = document.createElement('tr');
-        row.innerHTML = `<td colspan="5" class="text-center p-4">${message}</td>`;
-        DOMElements.devicesListBody.appendChild(row);
+        row.innerHTML = `<td colspan="5" class="text-center p-4">No devices found.</td>`;
+        tbody.appendChild(row);
         return;
     }
     
     const fragment = document.createDocumentFragment();
     
     displayedDevices.forEach((device, index) => {
+        // Get latest value - handle both parsed and latestData formats
+        let latestValue = 'N/A';
+        const data = device._parsedData || device.latestData;
+        if (data) {
+            if (data.flow?.actual !== undefined) {
+                latestValue = `${data.flow.actual.toFixed(1)} GPM`;
+            } else if (data.ppm !== undefined) {
+                latestValue = `${data.ppm} PPM`;
+            }
+        }
+        
         const row = document.createElement('tr');
         row.className = 'animate-fade-in';
         row.style.animationDelay = `${index * 30}ms`;
@@ -1707,7 +1399,7 @@ function renderDeviceList() {
             </td>
             <td><span class="badge ${getStatusBadgeClass(device._status)}">${device._status}</span></td>
             <td title="${formatDateTime(device.lastUpdated)}">${getRelativeTimeString(device.lastUpdated)}</td>
-            <td>${device.lastFile ? escapeHtml(device.lastFile) : 'N/A'}</td>
+            <td>${latestValue}</td>
             <td>
                 <button class="btn btn-sm btn-outline-secondary view-details-btn" data-device-id="${device.deviceId}">
                     <i class="bi bi-search me-1"></i> Details
@@ -1718,42 +1410,15 @@ function renderDeviceList() {
         fragment.appendChild(row);
     });
     
-    DOMElements.devicesListBody.appendChild(fragment);
+    tbody.appendChild(fragment);
     
-    // Add listeners after DOM is updated
-    document.querySelectorAll('#devicesListBody .view-details-btn').forEach(btn => {
+    // Add event listeners
+    tbody.querySelectorAll('.view-details-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const deviceId = e.currentTarget.dataset.deviceId;
             showDeviceDetails(deviceId);
         });
     });
-}
-
-function initializeMiniChart(deviceId) {
-    // This is a placeholder for mini-chart creation
-    // In a real implementation, we'd fetch data and create a small chart
-    // For now, we'll just show a placeholder message
-    const chartContainer = document.getElementById(`miniChart-${deviceId}`);
-    if (!chartContainer) return;
-    
-    chartContainer.innerHTML = '<span class="text-muted">No chart data available</span>';
-}
-
-function getDeviceStatus(deviceSummary) {
-    // Based on the *second* worker code, the summary only has reliable `lastUpdated`.
-    const timestamp = deviceSummary.lastUpdated;
-
-    if (!timestamp) {
-        return 'offline'; // Or maybe 'unknown' if preferred
-    }
-
-    const timeDiffMinutes = getTimeDifference(timestamp);
-
-    if (timeDiffMinutes > OFFLINE_THRESHOLD_MINUTES) {
-        return 'offline';
-    } else {
-        return 'online'; // Can't determine warning/error from summary alone
-    }
 }
 
 function getStatusBadgeClass(status) {
@@ -1777,899 +1442,631 @@ function getStatusColor(status) {
 }
 
 function showOverviewMessage(message) {
-    DOMElements.overviewMessageText.textContent = message;
-    DOMElements.overviewMessageArea.style.display = 'block';
+    document.getElementById('overviewMessageText').textContent = message;
+    document.getElementById('overviewMessageArea').style.display = 'block';
 }
 
 function hideOverviewMessage() {
-    DOMElements.overviewMessageArea.style.display = 'none';
+    document.getElementById('overviewMessageArea').style.display = 'none';
 }
 
-// --- Device Details Modal ---
+// --- Device Details ---
 async function showDeviceDetails(deviceId) {
-    if (!apiKey) { showToastError("Authentication required."); return; }
-    console.log(`Fetching details for ${deviceId}...`);
-    DOMElements.deviceDetailTitle.textContent = `Device Details: ${deviceId}`;
-
-    resetDetailModal(); // Reset content to loading state
+    if (!apiKey) return;
+    
+    detailDeviceId = deviceId;
+    document.getElementById('deviceDetailTitle').textContent = `Device Details: ${deviceId}`;
+    resetDetailModal();
     deviceDetailModal.show();
+    
     showLoading(`Loading details for ${deviceId}...`);
-
+    
     try {
-        // Fetch recent detailed data. Worker fetches N files, each contains an array of logs.
-        const limitFiles = 50; // Limit the number of *files* fetched by the worker
-        const url = `${API_ENDPOINT}/devices?deviceId=${deviceId}&limit=${limitFiles}`;
+        // First, get the latest data from the device summary
+        const device = allDevices.find(d => d.deviceId === deviceId);
+        if (device && device.latestData) {
+            // Show latest data immediately
+            updateDetailMetrics(device.latestData);
+        }
+        
+        // Fetch historical data using the new endpoint
+        const url = `${API_ENDPOINT}/device/${deviceId}/history?limit=100`;
         const response = await fetchWithAuth(url);
-
+        
         if (!response.ok) {
-            if (response.status === 401) throw new Error("Authentication failed (Invalid API Key)");
-            throw new Error(`Failed to fetch details: ${response.statusText} (${response.status})`);
+            // Fallback to old endpoint if new one not available
+            if (response.status === 404) {
+                console.log("New history endpoint not found, falling back to old endpoint");
+                return await showDeviceDetailsLegacy(deviceId);
+            }
+            throw new Error(`Failed to fetch history: ${response.statusText}`);
         }
-
+        
         const result = await response.json();
-        // **CRITICAL:** Adapt to the actual structure returned by *this* worker's /devices?deviceId=... endpoint.
-        // Assuming worker returns { success: true, deviceId: "...", data: [ fileMeta1, fileMeta2, ... ] }
-        // Where each fileMeta needs fetching *again* if it doesn't contain the log data directly.
-        // **HOWEVER**, the worker's handleGetDevices *already fetches and parses* the content.
-        // It returns: { success: true, deviceId: "...", data: [ {fileName, uploaded, size, logData: [...] }, ... ] } <- CORRECT structure!
         if (!result.success || !Array.isArray(result.data)) {
-            console.error("Invalid data structure received for device details:", result);
-            throw new Error("Invalid data structure received from server.");
+            throw new Error("Invalid data structure received");
         }
+        
+        // Process data
+        detailAllData = result.data.sort((a, b) => 
+            new Date(b.timestamp) - new Date(a.timestamp)
+        );
+        
+        console.log(`Loaded ${detailAllData.length} records for ${deviceId}`);
+        
+        if (detailAllData.length > 0) {
+            detailCurrentPage = 0;
+            populateDetailModal();
+        } else {
+            showDetailMessage("No historical data available for this device.");
+        }
+        
+    } catch (error) {
+        console.error(`Error fetching details for ${deviceId}:`, error);
+        showToastError(`Could not load details: ${error.message}`);
+        showDetailMessage(`Error loading data: ${error.message}`, true);
+    } finally {
+        hideLoading();
+    }
+}
 
-        // Flatten the log entries from all fetched files
+// Legacy method for existing worker format
+async function showDeviceDetailsLegacy(deviceId) {
+    try {
+        // Use the existing endpoint format
+        const url = `${API_ENDPOINT}/devices?deviceId=${deviceId}&limit=50`;
+        const response = await fetchWithAuth(url);
+        
+        if (!response.ok) {
+            throw new Error(`Failed to fetch details: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        if (!result.success || !Array.isArray(result.data)) {
+            throw new Error("Invalid data structure received");
+        }
+        
+        // Flatten all log entries from the file results
         let allLogEntries = [];
         result.data.forEach(fileResult => {
-            // Check if the logData exists and is an array
             if (fileResult && Array.isArray(fileResult.logData)) {
-                // Add the upload timestamp from the file metadata to each entry
+                // Add file metadata to each entry
                 fileResult.logData.forEach(entry => {
-                    entry.uploaded = fileResult.uploaded; // Add file upload time
-                    entry.deviceId = entry.deviceId || deviceId; // Ensure deviceId
+                    entry.uploaded = fileResult.uploaded;
+                    entry.deviceId = entry.deviceId || deviceId;
                 });
                 allLogEntries = allLogEntries.concat(fileResult.logData);
             } else if (fileResult && fileResult.error) {
                 console.warn(`Skipping file due to error: ${fileResult.fileName} - ${fileResult.error}`);
             }
         });
-
-        // Sort all entries by their *actual* timestamp, newest first
-        allLogEntries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        console.log(`Processed ${allLogEntries.length} total log entries for detail view.`);
-
-        if (allLogEntries.length > 0) {
-            detailCurrentPage = 0; // Reset pagination
-            populateDetailModal(allLogEntries, deviceId);
+        
+        // Sort all entries by timestamp (newest first)
+        detailAllData = allLogEntries.sort((a, b) => 
+            new Date(b.timestamp) - new Date(a.timestamp)
+        );
+        
+        console.log(`Loaded ${detailAllData.length} records from ${result.data.length} files`);
+        
+        if (detailAllData.length > 0) {
+            detailCurrentPage = 0;
+            populateDetailModal();
         } else {
-            showDetailMessage("No recent log entries found for this device.");
+            showDetailMessage("No historical data available for this device.");
         }
-
+        
     } catch (error) {
-        console.error(`Error fetching details for ${deviceId}:`, error);
+        console.error(`Error in legacy fetch for ${deviceId}:`, error);
         showToastError(`Could not load details: ${error.message}`);
-        showDetailMessage(`Error loading data: ${error.message}`, true); // Show error in modal body
-        // Optionally hide modal on critical error: deviceDetailModal.hide();
-    } finally {
-        hideLoading();
+        showDetailMessage(`Error loading data: ${error.message}`, true);
     }
 }
 
 function refreshCurrentDeviceDetails() {
-    const deviceId = DOMElements.deviceDetailTitle.textContent.replace('Device Details: ', '').trim();
-    if (deviceId) {
-        showDeviceDetails(deviceId);
+    if (detailDeviceId) {
+        showDeviceDetails(detailDeviceId);
     }
 }
 
 function resetDetailModal() {
-    // Clear metrics, tables, charts
-    // Reset metric displays to placeholder values
-    DOMElements.detailFlowMetric.textContent = '--';
-    DOMElements.detailPpmMetric.textContent = '--';
-    DOMElements.detailPHMetric.textContent = '--';
-    DOMElements.detailORPMetric.textContent = '--';
-    DOMElements.detailStatusMetric.textContent = '--';
-    DOMElements.detailTotalFlowMetric.textContent = '--';
-    DOMElements.detailChemInjMetric.textContent = '--';
-    DOMElements.detailAcidInjMetric.textContent = '--';
+    // Clear metrics
+    ['detailFlowMetric', 'detailPpmMetric', 'detailPHMetric', 'detailORPMetric', 
+     'detailStatusMetric', 'detailLastUpdateMetric'].forEach(id => {
+        document.getElementById(id).textContent = '--';
+    });
     
-    DOMElements.detailDataTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted p-3">Loading data log...</td></tr>';
-    DOMElements.detailInfoTableBody.innerHTML = '<tr><td colspan="2" class="text-center text-muted p-3">Loading info...</td></tr>';
-    DOMElements.detailDataCounter.textContent = "Showing 0 of 0 entries";
-    DOMElements.detailPrevPage.parentElement.classList.add('disabled');
-    DOMElements.detailNextPage.parentElement.classList.add('disabled');
-
-    // Destroy previous charts if they exist
-    destroyChart(detailFlowChart); detailFlowChart = null;
-    destroyChart(detailProbeChart); detailProbeChart = null;
-
-    // Ensure chart canvases are visible initially
-    DOMElements.detailFlowChartCanvas.parentElement.style.display = 'block';
-    DOMElements.detailProbeChartCanvas.parentElement.style.display = 'block';
-
+    // Clear table
+    document.querySelector('#detailDataTable tbody').innerHTML = 
+        '<tr><td colspan="6" class="text-center text-muted p-3">Loading data...</td></tr>';
+    
+    // Reset pagination
+    document.getElementById('detailDataCounter').textContent = "Showing 0 of 0 entries";
+    document.getElementById('detailPrevPage').parentElement.classList.add('disabled');
+    document.getElementById('detailNextPage').parentElement.classList.add('disabled');
+    
+    // Clear charts
+    destroyChart(detailFlowChart);
+    detailFlowChart = null;
+    destroyChart(detailPpmChart);
+    detailPpmChart = null;
+    
     // Reset to overview tab
     const overviewTab = document.getElementById('detail-overview-tab');
     if (overviewTab) {
-        try { bootstrap.Tab.getOrCreateInstance(overviewTab)?.show(); }
-        catch (e) { console.error("Error showing overview tab:", e); }
+        bootstrap.Tab.getOrCreateInstance(overviewTab).show();
     }
 }
 
 function showDetailMessage(message, isError = false) {
     const messageClass = isError ? 'text-danger' : 'text-muted';
-    
-    // Update metrics display
-    DOMElements.detailFlowMetric.textContent = '--';
-    DOMElements.detailPpmMetric.textContent = '--';
-    DOMElements.detailPHMetric.textContent = '--';
-    DOMElements.detailORPMetric.textContent = '--';
-    DOMElements.detailStatusMetric.textContent = '--';
-    DOMElements.detailTotalFlowMetric.textContent = '--';
-    DOMElements.detailChemInjMetric.textContent = '--';
-    DOMElements.detailAcidInjMetric.textContent = '--';
-    
-    // Update tables with message
-    const colsData = DOMElements.detailDataTableBody.parentElement?.rows[0]?.cells?.length || 7; // Get colspan dynamically
-    const colsInfo = DOMElements.detailInfoTableBody.parentElement?.rows[0]?.cells?.length || 2;
-    DOMElements.detailDataTableBody.innerHTML = `<tr><td colspan="${colsData}" class="text-center p-3 ${messageClass}">${escapeHtml(message)}</td></tr>`;
-    DOMElements.detailInfoTableBody.innerHTML = `<tr><td colspan="${colsInfo}" class="text-center p-3 ${messageClass}">${escapeHtml(message)}</td></tr>`;
-    
-    // Hide charts if there's an error or no data
-    DOMElements.detailFlowChartCanvas.parentElement.style.display = 'none';
-    DOMElements.detailProbeChartCanvas.parentElement.style.display = 'none';
-    
-    // Reset pagination
-    DOMElements.detailDataCounter.textContent = "Showing 0 of 0 entries";
-    DOMElements.detailPrevPage.parentElement.classList.add('disabled');
-    DOMElements.detailNextPage.parentElement.classList.add('disabled');
+    document.querySelector('#detailDataTable tbody').innerHTML = 
+        `<tr><td colspan="6" class="text-center p-3 ${messageClass}">${escapeHtml(message)}</td></tr>`;
 }
 
-function populateDetailModal(logEntries, deviceId) {
-    if (!logEntries || logEntries.length === 0) {
+function updateDetailMetrics(data) {
+    if (!data) return;
+    
+    document.getElementById('detailFlowMetric').textContent = 
+        data.flow?.actual !== undefined ? `${data.flow.actual.toFixed(1)} GPM` : '--';
+    
+    document.getElementById('detailPpmMetric').textContent = 
+        data.ppm !== undefined ? `${data.ppm}` : '--';
+    
+    document.getElementById('detailPHMetric').textContent = 
+        data.pH?.actual !== undefined ? `${data.pH.actual.toFixed(1)}` : '--';
+    
+    document.getElementById('detailORPMetric').textContent = 
+        data.orp?.actual !== undefined ? `${data.orp.actual.toFixed(0)} mV` : '--';
+    
+    document.getElementById('detailStatusMetric').textContent = 
+        data.errorCode ? escapeHtml(data.errorCode) : 'OK';
+    
+    document.getElementById('detailLastUpdateMetric').textContent = 
+        data.timestamp ? formatDateTime(data.timestamp) : '--';
+}
+
+function populateDetailModal() {
+    if (!detailAllData || detailAllData.length === 0) {
         showDetailMessage("No data available to display.");
         return;
     }
-    const latestEntry = logEntries[0]; // Newest entry (already sorted)
-
-    // Populate Overview Tab with direct metric updates
-    populateDetailMetrics(latestEntry);
-    createDetailCharts(logEntries); // Create charts using the sorted list
-
-    // Populate Data Log Tab with pagination
-    populateDetailDataTable(logEntries);
-
-    // Populate Info Tab
-    populateDetailInfoTable(latestEntry, deviceId, logEntries.length);
+    
+    // Update metrics with latest entry
+    updateDetailMetrics(detailAllData[0]);
+    
+    // Create charts
+    createDetailCharts();
+    
+    // Populate data table
+    populateDetailDataTable();
 }
 
-function populateDetailMetrics(entry) {
-    if (!entry) {
-        showDetailMessage("No metrics available.");
-        return;
-    }
+function createDetailCharts() {
+    if (!detailAllData || detailAllData.length < 2) return;
     
-    // Format and display metrics with proper formatting and error checking
-    DOMElements.detailFlowMetric.textContent = (entry.flow?.actual !== undefined) ? 
-        `${entry.flow.actual.toFixed(1)} GPM` : 'N/A';
-        
-    DOMElements.detailPpmMetric.textContent = (entry.ppm !== undefined) ? 
-        `${entry.ppm}` : 'N/A';
-        
-    DOMElements.detailPHMetric.textContent = (entry.pH?.actual !== undefined) ? 
-        `${entry.pH.actual.toFixed(1)}` : 'N/A';
-        
-    DOMElements.detailORPMetric.textContent = (entry.orp?.actual !== undefined) ? 
-        `${entry.orp.actual.toFixed(0)} mV` : 'N/A';
-        
-    DOMElements.detailStatusMetric.textContent = entry.errorCode ? 
-        escapeHtml(entry.errorCode).replace(/_/g, ' ') : 'OK';
-        
-    DOMElements.detailTotalFlowMetric.textContent = (entry.flow?.totalizer !== undefined) ? 
-        `${entry.flow.totalizer.toFixed(1)} Gal` : 'N/A';
-        
-    DOMElements.detailChemInjMetric.textContent = (entry.chemPump?.totalizer !== undefined) ? 
-        `${entry.chemPump.totalizer.toFixed(4)} Gal` : 'N/A';
-        
-    DOMElements.detailAcidInjMetric.textContent = (entry.acidPump?.totalizer !== undefined) ? 
-        `${entry.acidPump.totalizer.toFixed(4)} Gal` : 'N/A';
-}
-
-function createDetailCharts(logEntries) {
-    // Reverse log entries for chronological plotting (oldest first)
-    const chronologicalEntries = [...logEntries].reverse().slice(-100); // Last 100 entries for better performance
+    // Prepare data for charts (chronological order, limit to recent data)
+    const chartData = [...detailAllData].reverse().slice(-100);
     
-    if (chronologicalEntries.length < 2) {
-        console.warn("Not enough data points for charts.");
-        DOMElements.detailFlowChartCanvas.parentElement.style.display = 'none';
-        DOMElements.detailProbeChartCanvas.parentElement.style.display = 'none';
-        return;
-    }
-
-    createDetailFlowChart(chronologicalEntries);
-    createDetailProbeChart(chronologicalEntries);
+    createDetailFlowChart(chartData);
+    createDetailPpmChart(chartData);
 }
 
 function createDetailFlowChart(entries) {
-    destroyChart(detailFlowChart); // Destroy any existing chart instance
-
-    if (!entries || entries.length === 0) {
-        console.warn("createDetailFlowChart: No entries provided.");
-        DOMElements.detailFlowChartCanvas.parentElement.style.display = 'none';
+    destroyChart(detailFlowChart);
+    
+    const canvas = document.getElementById('detailFlowChart');
+    if (!canvas) return;
+    
+    const data = entries.map(e => ({
+        x: new Date(e.timestamp),
+        y: e.flow?.actual ?? null
+    })).filter(d => d.y !== null);
+    
+    if (data.length < 2) {
+        canvas.parentElement.style.display = 'none';
         return;
     }
-
-    // Map entries to {x, y} data points, parsing timestamps robustly
-    const chartDataPoints = entries.map(e => {
-        let dateObj = null;
-        const originalTimestamp = e.timestamp;
-
-        if (originalTimestamp) {
-            dateObj = new Date(originalTimestamp); // Try direct parsing first
-
-            // If direct parsing fails, try custom formats
-            if (isNaN(dateObj.getTime()) && typeof originalTimestamp === 'string') {
-                if (originalTimestamp.match(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}-\d{3}$/)) { // YYYY-MM-DD_HH-MM-SS-mmm
-                    const isoString = originalTimestamp.replace('_', 'T').replace(/-(\d{2})-(\d{2})-(\d{3})$/, ':$1:$2.$3') + 'Z';
-                    dateObj = new Date(isoString);
-                } else if (originalTimestamp.match(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/)) { // YYYY-MM-DD_HH-MM-SS
-                    const isoString = originalTimestamp.replace('_', 'T').replace(/-(\d{2})-(\d{2})$/, ':$1:$2') + 'Z';
-                    dateObj = new Date(isoString);
-                }
-            }
-        }
-
-        return {
-            x: (dateObj && !isNaN(dateObj.getTime())) ? dateObj.getTime() : null, // Milliseconds for x-axis
-            y: e.flow?.actual ?? null                                            // Flow value for y-axis
-        };
-    }).filter(dp => dp.x !== null); // Filter out entries with unparseable timestamps
-
-    // Further filter to ensure we only plot points that have a valid flow value (y)
-    // This prevents Chart.js from trying to connect distant points if there are many nulls in between.
-    // However, 'spanGaps: true' can handle this visually if you prefer to show gaps.
-    // For this example, let's keep points with null 'y' if 'spanGaps' is true, as it's often desired.
-    // const validFlowDataPoints = chartDataPoints.filter(dp => dp.y !== null);
-
-    if (chartDataPoints.length < 2) { // Need at least two points to draw a line
-        console.warn("createDetailFlowChart: Not enough valid data points (after timestamp parsing) to draw a flow chart.");
-        DOMElements.detailFlowChartCanvas.parentElement.style.display = 'none';
-        return;
-    }
-
-    // Check if there's any actual flow data to plot
-    const hasActualFlowData = chartDataPoints.some(dp => dp.y !== null);
-    if (!hasActualFlowData) {
-        console.warn("createDetailFlowChart: No actual flow data (all y values are null).");
-        DOMElements.detailFlowChartCanvas.parentElement.style.display = 'none';
-        return;
-    }
-
-
-    DOMElements.detailFlowChartCanvas.parentElement.style.display = 'block'; // Show the chart container
-
-    const avgFlow = (() => {
-        const validValues = chartDataPoints.filter(dp => dp.y !== null).map(dp => dp.y);
-        return validValues.length > 0 ?
-            validValues.reduce((sum, val) => sum + val, 0) / validValues.length : 0;
-    })();
-
-
-    detailFlowChart = new Chart(DOMElements.detailFlowChartCanvas, {
+    
+    canvas.parentElement.style.display = 'block';
+    
+    detailFlowChart = new Chart(canvas, {
         type: 'line',
         data: {
             datasets: [{
                 label: 'Flow Rate (GPM)',
-                data: chartDataPoints, // Array of {x, y} objects
+                data: data,
                 borderColor: 'rgba(203, 32, 38, 0.8)',
-                backgroundColor: 'rgba(203, 32, 38, 0.2)',
+                backgroundColor: 'rgba(203, 32, 38, 0.1)',
                 borderWidth: 2,
-                tension: 0.3,       // For smooth curves
-                fill: true,         // Fill area under the line
-                pointRadius: 1,     // Smaller points
-                pointHoverRadius: 5,// Larger points on hover
-                spanGaps: true      // Connect lines even if there are null data points in between
+                tension: 0.3,
+                fill: true,
+                pointRadius: 2,
+                pointHoverRadius: 5
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Flow Rate Trend',
-                    font: { size: 16, weight: 'bold' },
-                    padding: { top: 10, bottom: 20 }
-                },
-                tooltip: {
-                    mode: 'index', // Show tooltips for all datasets at that index
-                    intersect: false,
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleFont: { weight: 'bold' },
-                    bodySpacing: 6,
-                    padding: 10,
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            if (context.parsed.y !== null) {
-                                label += context.parsed.y.toFixed(1) + ' GPM';
-                            }
-                            return label;
-                        }
-                    }
-                },
-                legend: {
-                    display: true, // Usually good to show legend for single dataset too
-                    position: 'top',
-                },
-                annotation: { // Requires chartjs-plugin-annotation if you want to use this
-                    annotations: {
-                        avgLine: {
-                            type: 'line',
-                            yMin: avgFlow,
-                            yMax: avgFlow,
-                            borderColor: 'rgba(0, 128, 0, 0.7)', // Green for average line
-                            borderWidth: 1.5,
-                            borderDash: [6, 6],
-                            label: {
-                                enabled: true,
-                                content: `Avg: ${avgFlow.toFixed(1)} GPM`,
-                                position: 'end',
-                                backgroundColor: 'rgba(0, 128, 0, 0.7)',
-                                font: { size: 10, weight: 'normal' },
-                                color: 'white',
-                                yAdjust: -10 // Adjust label position
-                            }
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    type: 'time', // CRITICAL: Set x-axis type to 'time'
-                    time: {
-                        parser: ' επίπεδο', // Not strictly needed if x is milliseconds
-                        tooltipFormat: 'MMM d, yyyy, h:mm a', // Format for tooltips
-                        displayFormats: { // How ticks are displayed
-                            millisecond: 'h:mm:ss.SSS a',
-                            second: 'h:mm:ss a',
-                            minute: 'h:mm a',
-                            hour: 'hA', // e.g., 5PM
-                            day: 'MMM d', // e.g., Jan 5
-                            week: 'MMM d',
-                            month: 'MMM yyyy',
-                            year: 'yyyy'
-                        },
-                        // unit: 'minute', // Optional: force a specific unit, or let Chart.js decide
-                    },
-                    title: {
-                        display: true,
-                        text: 'Time'
-                    },
-                    grid: {
-                        display: false // Cleaner look for x-axis grid
-                    },
-                    ticks: {
-                        maxRotation: 0, // Prevent label rotation
-                        autoSkip: true,   // Automatically skip labels to prevent overlap
-                        maxTicksLimit: 10 // Limit the number of visible ticks
-                    }
-                },
-                y: { // Default y-axis (can be yFlow if you prefer explicit ID)
-                    title: {
-                        display: true,
-                        text: 'GPM'
-                    },
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)' // Lighter grid lines
-                    },
-                    beginAtZero: false, // Let Chart.js determine the best min based on data
-                                       // Set to true if you always want it to start at 0
-                    // suggestedMin: 0, // Or explicitly set a min
-                    // suggestedMax: calculate appropriate max based on data if needed
-                }
-            },
-            interaction: {
-                mode: 'nearest',
-                axis: 'x',
-                intersect: false
-            }
-        }
-    });
-}
-
-function createDetailProbeChart(entries) {
-    destroyChart(detailProbeChart); // Destroy any existing chart instance
-
-    if (!entries || entries.length === 0) {
-        console.warn("createDetailProbeChart: No entries provided.");
-        DOMElements.detailProbeChartCanvas.parentElement.style.display = 'none';
-        return;
-    }
-
-    // Map entries to data points, parsing timestamps robustly
-    const chartDataPoints = entries.map(e => {
-        let dateObj = null;
-        const originalTimestamp = e.timestamp;
-
-        if (originalTimestamp) {
-            dateObj = new Date(originalTimestamp);
-            if (isNaN(dateObj.getTime()) && typeof originalTimestamp === 'string') {
-                if (originalTimestamp.match(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}-\d{3}$/)) {
-                    const isoString = originalTimestamp.replace('_', 'T').replace(/-(\d{2})-(\d{2})-(\d{3})$/, ':$1:$2.$3') + 'Z';
-                    dateObj = new Date(isoString);
-                } else if (originalTimestamp.match(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/)) {
-                    const isoString = originalTimestamp.replace('_', 'T').replace(/-(\d{2})-(\d{2})$/, ':$1:$2') + 'Z';
-                    dateObj = new Date(isoString);
-                }
-            }
-        }
-        return {
-            x: (dateObj && !isNaN(dateObj.getTime())) ? dateObj.getTime() : null,
-            ph: e.pH?.actual ?? null,
-            orp: e.orp?.actual ?? null
-        };
-    }).filter(dp => dp.x !== null); // Filter out entries with unparseable timestamps
-
-    if (chartDataPoints.length < 2) {
-        console.warn("createDetailProbeChart: Not enough valid data points (after timestamp parsing).");
-        DOMElements.detailProbeChartCanvas.parentElement.style.display = 'none';
-        return;
-    }
-
-    const datasets = [];
-    const phData = chartDataPoints.map(dp => ({ x: dp.x, y: dp.ph }));
-    const orpData = chartDataPoints.map(dp => ({ x: dp.x, y: dp.orp }));
-
-    const hasPH = phData.some(dp => dp.y !== null);
-    const hasORP = orpData.some(dp => dp.y !== null);
-
-    if (!hasPH && !hasORP) {
-        console.warn("createDetailProbeChart: No pH or ORP data to display.");
-        DOMElements.detailProbeChartCanvas.parentElement.style.display = 'none';
-        return;
-    }
-    DOMElements.detailProbeChartCanvas.parentElement.style.display = 'block';
-
-    if (hasPH) {
-        datasets.push({
-            label: 'pH',
-            data: phData,
-            yAxisID: 'yPH',
-            borderColor: 'rgba(66, 135, 245, 0.8)', // Blueish
-            backgroundColor: 'rgba(66, 135, 245, 0.2)',
-            borderWidth: 2, tension: 0.3, fill: false, pointRadius: 1, pointHoverRadius: 5, spanGaps: true
-        });
-    }
-
-    if (hasORP) {
-        datasets.push({
-            label: 'ORP (mV)',
-            data: orpData,
-            yAxisID: 'yORP',
-            borderColor: 'rgba(75, 192, 192, 0.8)', // Greenish/Teal
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            borderWidth: 2, tension: 0.3, fill: false, pointRadius: 1, pointHoverRadius: 5, spanGaps: true
-        });
-    }
-
-    detailProbeChart = new Chart(DOMElements.detailProbeChartCanvas, {
-        type: 'line',
-        data: { datasets: datasets },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Probe Readings Trend',
-                    font: { size: 16, weight: 'bold' },
-                    padding: { top: 10, bottom: 20 }
-                },
-                tooltip: {
-                    mode: 'index', intersect: false, backgroundColor: 'rgba(0,0,0,0.8)', titleFont: {weight: 'bold'}, bodySpacing:6, padding:10,
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) { label += ': '; }
-                            if (context.parsed.y !== null) {
-                                label += context.parsed.y.toFixed(context.dataset.label === 'pH' ? 2 : 0);
-                                if (context.dataset.label === 'ORP (mV)') label += ' mV';
-                            }
-                            return label;
-                        }
-                    }
-                },
-                legend: { display: true, position: 'top' }
-            },
             scales: {
                 x: {
                     type: 'time',
                     time: {
-                        tooltipFormat: 'MMM d, yyyy, h:mm a',
-                        displayFormats: { millisecond: 'h:mm:ss.SSS a', second: 'h:mm:ss a', minute: 'h:mm a', hour: 'hA', day: 'MMM d', month: 'MMM yyyy', year: 'yyyy' }
+                        unit: 'hour',
+                        displayFormats: {
+                            hour: 'MMM d, HH:mm'
+                        }
                     },
-                    title: { display: true, text: 'Time' },
-                    grid: { display: false },
-                    ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 10 }
+                    title: { display: true, text: 'Time' }
                 },
-                yPH: {
-                    type: 'linear',
-                    display: hasPH, // Only display if there's pH data
-                    position: 'left',
-                    title: { display: true, text: 'pH' },
-                    grid: { color: 'rgba(66, 135, 245, 0.1)' },
-                    // suggestedMin: 0, suggestedMax: 14 // Common pH range
-                },
-                yORP: {
-                    type: 'linear',
-                    display: hasORP, // Only display if there's ORP data
-                    position: 'right',
-                    title: { display: true, text: 'ORP (mV)' },
-                    grid: {
-                        drawOnChartArea: !hasPH, // Draw ORP grid only if pH axis isn't there (to avoid clutter)
-                        color: 'rgba(75, 192, 192, 0.1)'
-                    },
+                y: {
+                    title: { display: true, text: 'GPM' },
+                    beginAtZero: false
                 }
             },
-            interaction: { mode: 'nearest', axis: 'x', intersect: false }
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Flow Rate Trend'
+                },
+                legend: { display: false }
+            }
         }
     });
 }
-function populateDetailDataTable(logEntries) {
-    DOMElements.detailDataTableBody.innerHTML = ''; // Clear
+
+function createDetailPpmChart(entries) {
+    destroyChart(detailPpmChart);
     
-    if (!logEntries || logEntries.length === 0) {
-        DOMElements.detailDataTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted p-3">No data log entries found.</td></tr>';
-        DOMElements.detailDataCounter.textContent = "Showing 0 of 0 entries";
-        DOMElements.detailPrevPage.parentElement.classList.add('disabled');
-        DOMElements.detailNextPage.parentElement.classList.add('disabled');
+    const canvas = document.getElementById('detailPpmChart');
+    if (!canvas) return;
+    
+    const data = entries.map(e => ({
+        x: new Date(e.timestamp),
+        y: e.ppm ?? null
+    })).filter(d => d.y !== null);
+    
+    if (data.length < 2) {
+        canvas.parentElement.style.display = 'none';
         return;
     }
     
-    // Pagination implementation
-    const totalEntries = logEntries.length;
+    canvas.parentElement.style.display = 'block';
+    
+    detailPpmChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+            datasets: [{
+                label: 'PPM',
+                data: data,
+                borderColor: 'rgba(66, 135, 245, 0.8)',
+                backgroundColor: 'rgba(66, 135, 245, 0.1)',
+                borderWidth: 2,
+                tension: 0.3,
+                fill: true,
+                pointRadius: 2,
+                pointHoverRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'hour',
+                        displayFormats: {
+                            hour: 'MMM d, HH:mm'
+                        }
+                    },
+                    title: { display: true, text: 'Time' }
+                },
+                y: {
+                    title: { display: true, text: 'PPM' },
+                    beginAtZero: false
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'PPM Trend'
+                },
+                legend: { display: false }
+            }
+        }
+    });
+}
+
+function populateDetailDataTable() {
+    const tbody = document.querySelector('#detailDataTable tbody');
+    tbody.innerHTML = '';
+    
+    if (!detailAllData || detailAllData.length === 0) {
+        showDetailMessage("No data log entries found.");
+        return;
+    }
+    
+    // Pagination
+    const totalEntries = detailAllData.length;
     const maxPage = Math.ceil(totalEntries / detailPageSize) - 1;
     const startIndex = detailCurrentPage * detailPageSize;
     const endIndex = Math.min(startIndex + detailPageSize, totalEntries);
     
-    // Display current page of entries
-    const currentPageEntries = logEntries.slice(startIndex, endIndex);
-    
+    const currentPageEntries = detailAllData.slice(startIndex, endIndex);
     const fragment = document.createDocumentFragment();
     
     currentPageEntries.forEach(entry => {
         const row = document.createElement('tr');
-        // Added check for upload timestamp from file meta
-        const uploadTimeStr = entry.uploaded ? formatDateTime(entry.uploaded) : 'N/A';
         row.innerHTML = `
             <td>${formatDateTime(entry.timestamp)}</td>
             <td>${entry.flow?.actual?.toFixed(1) ?? 'N/A'}</td>
             <td>${entry.ppm ?? 'N/A'}</td>
-            <td>${entry.chemPump?.totalizer?.toFixed(4) ?? 'N/A'}</td>
-            <td>${entry.acidPump?.totalizer?.toFixed(4) ?? 'N/A'}</td>
-            <td>${escapeHtml(entry.errorCode || 'OK').replace(/_/g, ' ')}</td>
-            <td>${uploadTimeStr}</td>
+            <td>${entry.pH?.actual?.toFixed(1) ?? 'N/A'}</td>
+            <td>${entry.orp?.actual?.toFixed(0) ?? 'N/A'}</td>
+            <td>${escapeHtml(entry.errorCode || 'OK')}</td>
         `;
         fragment.appendChild(row);
     });
     
-    DOMElements.detailDataTableBody.appendChild(fragment);
+    tbody.appendChild(fragment);
     
     // Update pagination controls
-    DOMElements.detailDataCounter.textContent = `Showing ${startIndex + 1} to ${endIndex} of ${totalEntries} entries`;
+    document.getElementById('detailDataCounter').textContent = 
+        `Showing ${startIndex + 1} to ${endIndex} of ${totalEntries} entries`;
+    
+    const prevBtn = document.getElementById('detailPrevPage').parentElement;
+    const nextBtn = document.getElementById('detailNextPage').parentElement;
     
     if (detailCurrentPage > 0) {
-        DOMElements.detailPrevPage.parentElement.classList.remove('disabled');
+        prevBtn.classList.remove('disabled');
     } else {
-        DOMElements.detailPrevPage.parentElement.classList.add('disabled');
+        prevBtn.classList.add('disabled');
     }
     
     if (detailCurrentPage < maxPage) {
-        DOMElements.detailNextPage.parentElement.classList.remove('disabled');
+        nextBtn.classList.remove('disabled');
     } else {
-        DOMElements.detailNextPage.parentElement.classList.add('disabled');
+        nextBtn.classList.add('disabled');
     }
 }
 
 function showPreviousDetailPage(e) {
     e.preventDefault();
-    if (DOMElements.detailPrevPage.parentElement.classList.contains('disabled')) return;
-    
     if (detailCurrentPage > 0) {
         detailCurrentPage--;
-        const deviceId = DOMElements.deviceDetailTitle.textContent.replace('Device Details: ', '').trim();
-        // Re-fetch data might be too much for pagination. Ideally, re-render from existing `allLogEntries`.
-        // For this, we'd need to store the full `allLogEntries` associated with the modal.
-        // Quick fix: refresh the whole detail view which re-fetches
-        refreshCurrentDeviceDetails(); // Or: populateDetailDataTable(storedLogEntriesForModal);
+        populateDetailDataTable();
     }
 }
 
 function showNextDetailPage(e) {
     e.preventDefault();
-    if (DOMElements.detailNextPage.parentElement.classList.contains('disabled')) return;
-    
-    detailCurrentPage++;
-     // Quick fix: refresh the whole detail view which re-fetches
-    refreshCurrentDeviceDetails(); // Or: populateDetailDataTable(storedLogEntriesForModal);
-}
-
-function populateDetailInfoTable(entry, deviceId, entryCount) {
-    DOMElements.detailInfoTableBody.innerHTML = ''; // Clear
-    
-    if (!entry) {
-        DOMElements.detailInfoTableBody.innerHTML = '<tr><td colspan="2" class="text-center text-muted p-3">No device information available.</td></tr>';
-        return;
-    }
-    
-    // Use data from the latest log entry
-    const info = [
-        { name: 'Device ID', value: deviceId },
-        { name: 'Last Log Timestamp', value: formatDateTime(entry.timestamp) },
-        { name: 'Last Data Upload (File)', value: formatDateTime(entry.uploaded) },
-        { name: 'Latest Status Code', value: escapeHtml(entry.errorCode || 'OK').replace(/_/g, ' ') },
-        { name: 'Total Log Entries (Recent Batch)', value: entryCount.toString() },
-        { name: 'Device Uptime (ms)', value: entry._deviceUptimeMs ?? 'N/A' },
-        { name: 'Last Connection IP', value: entry._connectionIp ?? 'N/A' },
-        { name: 'Firmware Version', value: entry._firmwareVersion ?? 'N/A' }
-    ];
-    
-    const fragment = document.createDocumentFragment();
-    
-    info.forEach(item => {
-        if (item.value !== 'N/A' || item.name === 'Device ID') { // Always show Device ID
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td><strong>${item.name}</strong></td>
-                <td>${item.value}</td>
-            `;
-            fragment.appendChild(row);
-        }
-    });
-    
-    DOMElements.detailInfoTableBody.appendChild(fragment);
-}
-
-// Device specific actions
-function exportDeviceData() {
-    const deviceId = DOMElements.deviceDetailTitle.textContent.replace('Device Details: ', '').trim();
-    if (!deviceId) {
-        showToastError("No device selected for export");
-        return;
-    }
-    
-    showToastSuccess(`Exporting data for ${deviceId}. Please wait...`);
-    
-    // In a real implementation, this would trigger a download
-    // For now, we'll simulate it with a timeout and placeholder CSV
-    setTimeout(() => {
-        // Create a placeholder CSV with some data
-        const csvContent = "timestamp,flow,ppm,chem_inj,acid_inj,status\n" +
-                          "2025-05-19T10:30:00Z,34.5,650,0.2345,0.1123,OK\n" +
-                          "2025-05-19T10:35:00Z,35.2,655,0.2348,0.1125,OK\n";
-                          
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        const filename = `EDIE_Device_${deviceId}_${formatDateForFilename(new Date())}.csv`;
-        
-        link.setAttribute("href", url);
-        link.setAttribute("download", filename);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        
-        showToastSuccess(`Data for ${deviceId} exported successfully!`);
-    }, 1500);
-}
-
-function clearDeviceCache() {
-    const deviceId = DOMElements.deviceDetailTitle.textContent.replace('Device Details: ', '').trim();
-    if (!deviceId) {
-        showToastError("No device selected");
-        return;
-    }
-    
-    if (confirm(`Clear cached data for device ${deviceId}? This won't delete data from the server.`)) {
-        showToastSuccess(`Cache cleared for ${deviceId}`);
-        
-        // In a real implementation, this would clear some local cache
-        // For now, just re-fetch the device details
-        refreshCurrentDeviceDetails();
+    const maxPage = Math.ceil(detailAllData.length / detailPageSize) - 1;
+    if (detailCurrentPage < maxPage) {
+        detailCurrentPage++;
+        populateDetailDataTable();
     }
 }
 
-function removeDeviceFromDashboard() {
-    const deviceId = DOMElements.deviceDetailTitle.textContent.replace('Device Details: ', '').trim();
-    if (!deviceId) {
-        showToastError("No device selected");
-        return;
-    }
-    
-    if (confirm(`Hide ${deviceId} from dashboard? You can add it back later.`)) {
-        // Add to the hidden devices list (if we have selection enabled)
-        if (selectedDeviceIDs === null) {
-            // Currently showing all devices - change to showing all except this one
-            selectedDeviceIDs = allDevices
-                .filter(d => d.deviceId !== deviceId)
-                .map(d => d.deviceId);
-        } else {
-            // Remove this device from the selected list
-            selectedDeviceIDs = selectedDeviceIDs.filter(id => id !== deviceId);
-        }
-        
-        // Save the selection
-        localStorage.setItem(SELECTED_DEVICES_STORAGE_KEY, JSON.stringify(selectedDeviceIDs));
-        
-        // Close the modal
-        deviceDetailModal.hide();
-        
-        // Refresh the view
-        applyFiltersAndSort();
-        renderDevices();
-        
-        showToastSuccess(`${deviceId} has been hidden from view`);
-    }
-}
-
-// --- History Page Logic ---
+// --- History Section ---
 function populateHistoryDeviceDropdown() {
-    const currentVal = DOMElements.historyDeviceSelect.value;
-    DOMElements.historyDeviceSelect.innerHTML = '<option value="" selected>Select a device...</option>';
+    const select = document.getElementById('historyDeviceSelect');
+    const currentVal = select.value;
+    select.innerHTML = '<option value="" selected>Select a device...</option>';
 
     const sorted = [...allDevices].sort((a, b) => a.deviceId.localeCompare(b.deviceId));
-    
-    const fragment = document.createDocumentFragment();
     
     sorted.forEach(dev => {
         const option = document.createElement('option');
         option.value = dev.deviceId;
         option.textContent = dev.deviceId;
-        // Add a status indicator (HTML in textContent will be escaped, this is for display only)
-        const statusClass = dev._status === 'online' ? 'text-success' : (dev._status === 'warning' ? 'text-warning' : 'text-secondary');
-        option.innerHTML = `${escapeHtml(dev.deviceId)} <span class="${statusClass}">&#9679;</span>`; // ●
-        fragment.appendChild(option);
+        select.appendChild(option);
     });
-    
-    DOMElements.historyDeviceSelect.appendChild(fragment);
 
     if (currentVal && sorted.some(d => d.deviceId === currentVal)) {
-        DOMElements.historyDeviceSelect.value = currentVal;
+        select.value = currentVal;
     }
 }
 
 function resetHistoryView() {
-    DOMElements.historyMessageText.textContent = "Select criteria and search to view history.";
-    DOMElements.historyMessageArea.style.display = 'block';
-    DOMElements.historyChartContainer.style.display = 'none';
-    DOMElements.historyTableContainer.style.display = 'none';
-    DOMElements.historyTableBody.innerHTML = '';
-    DOMElements.exportCsvBtn.disabled = true;
-    DOMElements.printHistoryBtn.disabled = true;
-    DOMElements.historyRowCounter.textContent = "Showing 0 of 0 entries";
-    DOMElements.historyPrevPage.parentElement.classList.add('disabled');
-    DOMElements.historyNextPage.parentElement.classList.add('disabled');
+    document.getElementById('historyMessageText').textContent = "Select criteria and search to view history.";
+    document.getElementById('historyMessageArea').style.display = 'block';
+    document.getElementById('historyChartContainer').style.display = 'none';
+    document.getElementById('historyTableContainer').style.display = 'none';
+    document.querySelector('#historyTable tbody').innerHTML = '';
+    document.getElementById('exportCsvBtn').disabled = true;
+    document.getElementById('printHistoryBtn').disabled = true;
     
-    destroyChart(historyChart); 
+    destroyChart(historyChart);
     historyChart = null;
-    
-    // Reset pagination
-    historyCurrentPage = 0;
     historyAllData = [];
+    historyCurrentPage = 0;
 }
 
 async function fetchHistoricalData() {
-    const deviceId = DOMElements.historyDeviceSelect.value;
-    const startDateStr = DOMElements.historyStartDateInput.value; // YYYY-MM-DD
-    const endDateStr = DOMElements.historyEndDateInput.value;   // YYYY-MM-DD
-    const limitFiles = parseInt(DOMElements.historyLimitSelect.value, 10);
+    const deviceId = document.getElementById('historyDeviceSelect').value;
+    const startDate = document.getElementById('historyStartDateInput').value;
+    const endDate = document.getElementById('historyEndDateInput').value;
+    const limit = parseInt(document.getElementById('historyLimitSelect').value, 10);
 
-    if (!deviceId) { 
-        showToastError("Please select a device."); 
-        return; 
+    if (!deviceId) {
+        showToastError("Please select a device.");
+        return;
     }
 
     resetHistoryView();
     showLoading("Fetching historical data...");
 
     try {
-        // Fetch data from the worker (limit applies to number of files listed/fetched by worker)
-        let url = `${API_ENDPOINT}/devices?deviceId=${deviceId}&limit=${limitFiles}`;
-        console.log("Fetching history URL:", url); // Note: Worker doesn't use startDate/endDate
-
+        // Build query parameters
+        let url = `${API_ENDPOINT}/device/${deviceId}/history?limit=${limit}`;
+        if (startDate) url += `&startDate=${startDate}`;
+        if (endDate) url += `&endDate=${endDate}`;
+        
         const response = await fetchWithAuth(url);
+        
         if (!response.ok) {
-            if (response.status === 401) throw new Error("Authentication failed (Invalid API Key)");
-            throw new Error(`Failed to fetch history: ${response.statusText} (${response.status})`);
+            throw new Error(`Failed to fetch history: ${response.statusText}`);
         }
 
         const result = await response.json();
-        if (!result.success || !Array.isArray(result.data)) { 
-            throw new Error("Invalid data structure received."); 
+        if (!result.success || !Array.isArray(result.data)) {
+            throw new Error("Invalid data structure received");
         }
 
-        // Flatten log entries from all fetched files
-        let historicalEntries = [];
-        result.data.forEach(fileResult => {
-            if (fileResult && Array.isArray(fileResult.logData)) {
-                // Add metadata from the file to each entry
-                fileResult.logData.forEach(entry => {
-                    entry.fileName = fileResult.fileName;
-                    entry.uploaded = fileResult.uploaded;
-                });
-                historicalEntries = historicalEntries.concat(fileResult.logData);
-            }
-        });
-
-        // *** CLIENT-SIDE Date Filtering ***
-        let filteredEntries = historicalEntries;
-        if (startDateStr) {
-            const startFilter = new Date(startDateStr + "T00:00:00Z"); // Assume UTC start of day
-            filteredEntries = filteredEntries.filter(entry => new Date(entry.timestamp) >= startFilter);
-        }
-        if (endDateStr) {
-            const endFilter = new Date(endDateStr + "T23:59:59Z"); // Assume UTC end of day
-            filteredEntries = filteredEntries.filter(entry => new Date(entry.timestamp) <= endFilter);
-        }
-
-        // Sort the *filtered* entries chronologically (oldest first for table/chart)
-        filteredEntries.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-        console.log(`Processed ${historicalEntries.length} total entries, ${filteredEntries.length} after date filtering.`);
-
-        if (filteredEntries.length > 0) {
-            // Store all data for pagination
-            historyAllData = filteredEntries;
+        // Sort chronologically (oldest first for table/chart)
+        historyAllData = result.data.sort((a, b) => 
+            new Date(a.timestamp) - new Date(b.timestamp)
+        );
+        
+        console.log(`Fetched ${historyAllData.length} historical records`);
+        
+        if (historyAllData.length > 0) {
             historyCurrentPage = 0;
-            
             renderHistoricalData();
-            DOMElements.historyMessageArea.style.display = 'none';
-            DOMElements.exportCsvBtn.disabled = false;
-            DOMElements.printHistoryBtn.disabled = false;
-            
-            showToastSuccess(`Found ${filteredEntries.length} records for ${deviceId}`);
+            document.getElementById('historyMessageArea').style.display = 'none';
+            document.getElementById('exportCsvBtn').disabled = false;
+            document.getElementById('printHistoryBtn').disabled = false;
+            document.getElementById('historyRecordsInfo').textContent = 
+                `${historyAllData.length} records loaded`;
+            showToastSuccess(`Found ${historyAllData.length} records`);
         } else {
-            DOMElements.historyMessageText.textContent = "No data found for the selected criteria.";
-            DOMElements.historyMessageArea.style.display = 'block';
-            DOMElements.exportCsvBtn.disabled = true;
-            DOMElements.printHistoryBtn.disabled = true;
-            
-            showToastError("No data found for the selected date range");
+            document.getElementById('historyMessageText').textContent = 
+                "No data found for the selected criteria.";
+            showToastError("No data found");
         }
 
     } catch (error) {
-        console.error("Error fetching/processing historical data:", error);
+        console.error("Error fetching historical data:", error);
         showToastError(`Could not load history: ${error.message}`);
-        DOMElements.historyMessageText.textContent = `Error loading history: ${error.message}`;
-        DOMElements.historyMessageArea.style.display = 'block';
-        DOMElements.exportCsvBtn.disabled = true;
-        DOMElements.printHistoryBtn.disabled = true;
+        document.getElementById('historyMessageText').textContent = 
+            `Error loading history: ${error.message}`;
     } finally {
         hideLoading();
     }
 }
 
 function renderHistoricalData() {
-    if (!historyAllData || historyAllData.length === 0) {
-        resetHistoryView();
-        return;
+    if (!historyAllData || historyAllData.length === 0) return;
+    
+    // Create chart
+    createHistoryChart();
+    document.getElementById('historyChartContainer').style.display = 'block';
+    
+    // Populate table
+    updateHistoryTable();
+    document.getElementById('historyTableContainer').style.display = 'block';
+}
+
+function createHistoryChart() {
+    destroyChart(historyChart);
+    
+    const canvas = document.getElementById('historyChart');
+    if (!canvas || !historyAllData || historyAllData.length < 2) return;
+    
+    // Limit data points for performance
+    const maxPoints = 500;
+    let chartData = historyAllData;
+    if (historyAllData.length > maxPoints) {
+        const step = Math.ceil(historyAllData.length / maxPoints);
+        chartData = historyAllData.filter((_, index) => index % step === 0);
     }
     
-    // Create Chart from all data
-    createHistoryChart(historyAllData);
-    DOMElements.historyChartContainer.style.display = 'block';
+    const datasets = [];
     
-    // Populate Table with pagination
-    updateHistoryTable();
-    DOMElements.historyTableContainer.style.display = 'block';
+    // Flow data
+    const flowData = chartData.map(e => ({
+        x: new Date(e.timestamp),
+        y: e.flow?.actual ?? null
+    })).filter(d => d.y !== null);
+    
+    if (flowData.length > 0) {
+        datasets.push({
+            label: 'Flow Rate (GPM)',
+            data: flowData,
+            yAxisID: 'y',
+            borderColor: 'rgba(203, 32, 38, 0.8)',
+            backgroundColor: 'rgba(203, 32, 38, 0.1)',
+            borderWidth: 1.5,
+            tension: 0.2,
+            fill: false,
+            pointRadius: 0,
+            pointHoverRadius: 3
+        });
+    }
+    
+    // PPM data
+    const ppmData = chartData.map(e => ({
+        x: new Date(e.timestamp),
+        y: e.ppm ?? null
+    })).filter(d => d.y !== null);
+    
+    if (ppmData.length > 0) {
+        datasets.push({
+            label: 'PPM',
+            data: ppmData,
+            yAxisID: 'y1',
+            borderColor: 'rgba(66, 135, 245, 0.8)',
+            backgroundColor: 'rgba(66, 135, 245, 0.1)',
+            borderWidth: 1.5,
+            tension: 0.2,
+            fill: false,
+            pointRadius: 0,
+            pointHoverRadius: 3
+        });
+    }
+    
+    if (datasets.length === 0) return;
+    
+    historyChart = new Chart(canvas, {
+        type: 'line',
+        data: { datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'hour',
+                        displayFormats: {
+                            hour: 'MMM d, HH:mm'
+                        }
+                    },
+                    title: { display: true, text: 'Time' }
+                },
+                y: {
+                    type: 'linear',
+                    display: flowData.length > 0,
+                    position: 'left',
+                    title: { display: true, text: 'Flow (GPM)' }
+                },
+                y1: {
+                    type: 'linear',
+                    display: ppmData.length > 0,
+                    position: 'right',
+                    title: { display: true, text: 'PPM' },
+                    grid: {
+                        drawOnChartArea: flowData.length === 0,
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Historical Data'
+                }
+            }
+        }
+    });
 }
 
 function updateHistoryTable() {
-    DOMElements.historyTableBody.innerHTML = ''; // Clear table
+    const tbody = document.querySelector('#historyTable tbody');
+    tbody.innerHTML = '';
     
     // Pagination
     const totalEntries = historyAllData.length;
@@ -2677,9 +2074,7 @@ function updateHistoryTable() {
     const startIndex = historyCurrentPage * historyPageSize;
     const endIndex = Math.min(startIndex + historyPageSize, totalEntries);
     
-    // Get current page of entries
     const currentPageEntries = historyAllData.slice(startIndex, endIndex);
-    
     const fragment = document.createDocumentFragment();
     
     currentPageEntries.forEach(entry => {
@@ -2688,35 +2083,28 @@ function updateHistoryTable() {
             <td>${formatDateTime(entry.timestamp)}</td>
             <td>${entry.flow?.actual?.toFixed(1) ?? 'N/A'}</td>
             <td>${entry.ppm ?? 'N/A'}</td>
-            <td>${entry.chemPump?.totalizer?.toFixed(4) ?? 'N/A'}</td>
-            <td>${entry.acidPump?.totalizer?.toFixed(4) ?? 'N/A'}</td>
-            <td>${escapeHtml(entry.errorCode || 'OK').replace(/_/g, ' ')}</td>
+            <td>${entry.pH?.actual?.toFixed(1) ?? 'N/A'}</td>
+            <td>${entry.orp?.actual?.toFixed(0) ?? 'N/A'}</td>
+            <td>${escapeHtml(entry.errorCode || 'OK')}</td>
         `;
         fragment.appendChild(row);
     });
     
-    DOMElements.historyTableBody.appendChild(fragment);
+    tbody.appendChild(fragment);
     
-    // Update pagination controls
-    DOMElements.historyRowCounter.textContent = `Showing ${startIndex + 1} to ${endIndex} of ${totalEntries} entries`;
+    // Update pagination
+    document.getElementById('historyRowCounter').textContent = 
+        `Showing ${startIndex + 1} to ${endIndex} of ${totalEntries} entries`;
     
-    if (historyCurrentPage > 0) {
-        DOMElements.historyPrevPage.parentElement.classList.remove('disabled');
-    } else {
-        DOMElements.historyPrevPage.parentElement.classList.add('disabled');
-    }
+    const prevBtn = document.getElementById('historyPrevPage').parentElement;
+    const nextBtn = document.getElementById('historyNextPage').parentElement;
     
-    if (historyCurrentPage < maxPage) {
-        DOMElements.historyNextPage.parentElement.classList.remove('disabled');
-    } else {
-        DOMElements.historyNextPage.parentElement.classList.add('disabled');
-    }
+    prevBtn.classList.toggle('disabled', historyCurrentPage === 0);
+    nextBtn.classList.toggle('disabled', historyCurrentPage >= maxPage);
 }
 
 function showPreviousHistoryPage(e) {
     e.preventDefault();
-    if (DOMElements.historyPrevPage.parentElement.classList.contains('disabled')) return;
-    
     if (historyCurrentPage > 0) {
         historyCurrentPage--;
         updateHistoryTable();
@@ -2725,198 +2113,38 @@ function showPreviousHistoryPage(e) {
 
 function showNextHistoryPage(e) {
     e.preventDefault();
-    if (DOMElements.historyNextPage.parentElement.classList.contains('disabled')) return;
-    
-    historyCurrentPage++;
+    const maxPage = Math.ceil(historyAllData.length / historyPageSize) - 1;
+    if (historyCurrentPage < maxPage) {
+        historyCurrentPage++;
+        updateHistoryTable();
+    }
+}
+
+function changeHistoryPageSize() {
+    historyPageSize = parseInt(document.getElementById('historyPageSizeSelect').value, 10);
+    historyCurrentPage = 0;
     updateHistoryTable();
 }
 
-function changeHistoryPageSize(e) {
-    const newSize = parseInt(e.target.value, 10);
-    if (isNaN(newSize) || newSize < 1) return;
-    
-    historyPageSize = newSize;
-    historyCurrentPage = 0; // Reset to first page
-    updateHistoryTable();
-}
-
-function createHistoryChart(entries) {
-    destroyChart(historyChart); // Destroy any existing chart instance
-
-    if (!entries || entries.length === 0) {
-        console.warn("createHistoryChart: No entries provided.");
-        DOMElements.historyChartContainer.style.display = 'none';
-        return;
-    }
-
-    // Limit points for better performance if needed, or use all for history
-    const maxPoints = 500; // Adjust as needed for performance vs. detail
-    let chartEntries = entries;
-    if (entries.length > maxPoints) {
-        const step = Math.ceil(entries.length / maxPoints); // Use ceil to ensure we don't go over
-        chartEntries = entries.filter((entry, index) => index % step === 0);
-        if (chartEntries[chartEntries.length - 1] !== entries[entries.length - 1]) {
-             chartEntries.push(entries[entries.length - 1]); // Ensure last point is included
-        }
-        console.log(`createHistoryChart: Sampled ${chartEntries.length} from ${entries.length} entries for performance.`);
-    }
-
-
-    // Map entries to data points, parsing timestamps robustly
-    const chartDataPoints = chartEntries.map(e => {
-        let dateObj = null;
-        const originalTimestamp = e.timestamp;
-
-        if (originalTimestamp) {
-            dateObj = new Date(originalTimestamp);
-            if (isNaN(dateObj.getTime()) && typeof originalTimestamp === 'string') {
-                if (originalTimestamp.match(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}-\d{3}$/)) {
-                    const isoString = originalTimestamp.replace('_', 'T').replace(/-(\d{2})-(\d{2})-(\d{3})$/, ':$1:$2.$3') + 'Z';
-                    dateObj = new Date(isoString);
-                } else if (originalTimestamp.match(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/)) {
-                    const isoString = originalTimestamp.replace('_', 'T').replace(/-(\d{2})-(\d{2})$/, ':$1:$2') + 'Z';
-                    dateObj = new Date(isoString);
-                }
-            }
-        }
-        return {
-            x: (dateObj && !isNaN(dateObj.getTime())) ? dateObj.getTime() : null,
-            flow: e.flow?.actual ?? null,
-            ppm: e.ppm ?? null
-        };
-    }).filter(dp => dp.x !== null);
-
-
-    if (chartDataPoints.length < 2) {
-        console.warn("createHistoryChart: Not enough valid data points (after timestamp parsing).");
-        DOMElements.historyChartContainer.style.display = 'none';
-        return;
-    }
-
-    const datasets = [];
-    const flowData = chartDataPoints.map(dp => ({ x: dp.x, y: dp.flow }));
-    const ppmData = chartDataPoints.map(dp => ({ x: dp.x, y: dp.ppm }));
-
-    const hasFlow = flowData.some(dp => dp.y !== null);
-    const hasPPM = ppmData.some(dp => dp.y !== null);
-
-    if (!hasFlow && !hasPPM) {
-        console.warn("createHistoryChart: No Flow or PPM data to display.");
-        DOMElements.historyChartContainer.style.display = 'none';
-        return;
-    }
-    DOMElements.historyChartContainer.style.display = 'block';
-
-
-    if (hasFlow) {
-        datasets.push({
-            label: 'Flow Rate (GPM)',
-            data: flowData,
-            yAxisID: 'yFlow',
-            borderColor: 'rgba(203, 32, 38, 0.8)', // EDIE Red
-            backgroundColor: 'rgba(203, 32, 38, 0.1)',
-            borderWidth: 1.5, tension: 0.2, fill: false, pointRadius: 0, pointHoverRadius: 3, spanGaps: true
-        });
-    }
-
-    if (hasPPM) {
-        datasets.push({
-            label: 'PPM Reading',
-            data: ppmData,
-            yAxisID: 'yPPM',
-            borderColor: 'rgba(66, 135, 245, 0.8)', // Blue
-            backgroundColor: 'rgba(66, 135, 245, 0.1)',
-            borderWidth: 1.5, tension: 0.2, fill: false, pointRadius: 0, pointHoverRadius: 3, spanGaps: true
-        });
-    }
-
-    historyChart = new Chart(DOMElements.historyChart, { // DOMElements.historyChart is the canvas
-        type: 'line',
-        data: { datasets: datasets },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Historical Data Trend',
-                    font: { size: 16, weight: 'bold' },
-                    padding: { top: 10, bottom: 20 }
-                },
-                tooltip: {
-                    mode: 'index', intersect: false, backgroundColor: 'rgba(0,0,0,0.8)', titleFont: {weight: 'bold'}, bodySpacing:6, padding:10,
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) { label += ': '; }
-                            if (context.parsed.y !== null) {
-                                label += context.parsed.y.toFixed(context.dataset.label === 'Flow Rate (GPM)' ? 1 : 0);
-                                if (context.dataset.label === 'Flow Rate (GPM)') label += ' GPM';
-                            }
-                            return label;
-                        }
-                    }
-                },
-                legend: { display: true, position: 'top' }
-                // Zoom plugin (if you decide to use it)
-                // zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }}
-            },
-            scales: {
-                x: {
-                    type: 'time',
-                    time: {
-                        tooltipFormat: 'MMM d, yyyy, h:mm a',
-                        displayFormats: { millisecond: 'h:mm:ss.SSS a', second: 'h:mm:ss a', minute: 'h:mm a', hour: 'hA', day: 'MMM d', month: 'MMM yyyy', year: 'yyyy' }
-                    },
-                    title: { display: true, text: 'Timestamp' },
-                    ticks: { autoSkip: true, maxTicksLimit: 15, maxRotation: 0 }
-                },
-                yFlow: {
-                    type: 'linear',
-                    display: hasFlow,
-                    position: 'left',
-                    title: { display: true, text: 'Flow (GPM)' },
-                    beginAtZero: false, // Or true if preferred
-                    grid: { color: 'rgba(203, 32, 38, 0.05)'}
-                },
-                yPPM: {
-                    type: 'linear',
-                    display: hasPPM,
-                    position: 'right',
-                    title: { display: true, text: 'PPM' },
-                    grid: {
-                        drawOnChartArea: !hasFlow, // Only draw PPM grid if Flow axis isn't there
-                        color: 'rgba(66, 135, 245, 0.05)'
-                    },
-                    beginAtZero: false
-                }
-            },
-            interaction: { mode: 'nearest', axis: 'x', intersect: false }
-        }
-    });
-}
 function exportHistoryToCSV() {
-    const deviceId = DOMElements.historyDeviceSelect.value;
+    const deviceId = document.getElementById('historyDeviceSelect').value;
     if (!deviceId || !historyAllData || historyAllData.length === 0) {
-        showToastError("No data available to export.");
+        showToastError("No data to export");
         return;
     }
     
-    // Format data as CSV
-    const headers = ['Timestamp', 'Flow (GPM)', 'PPM', 'Chem Inj (Gal)', 'Acid Inj (Gal)', 'Status'];
+    // Build CSV
+    const headers = ['Timestamp', 'Flow (GPM)', 'PPM', 'pH', 'ORP', 'Status'];
     const rows = historyAllData.map(entry => [
-        entry.timestamp, // Use raw timestamp for CSV
+        entry.timestamp,
         entry.flow?.actual ?? '',
         entry.ppm ?? '',
-        entry.chemPump?.totalizer ?? '',
-        entry.acidPump?.totalizer ?? '',
+        entry.pH?.actual ?? '',
+        entry.orp?.actual ?? '',
         entry.errorCode || 'OK'
     ]);
     
-    // Add headers
-    let csvContent = headers.map(h => `"${h}"`).join(',') + '\r\n';
-    
-    // Add data rows
+    let csvContent = headers.join(',') + '\r\n';
     rows.forEach(row => {
         csvContent += row.map(cell => {
             if (cell === null || cell === undefined) return '';
@@ -2924,7 +2152,7 @@ function exportHistoryToCSV() {
         }).join(',') + '\r\n';
     });
     
-    // Create download link
+    // Download
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const filename = `EDIE_History_${deviceId}_${formatDateForFilename(new Date())}.csv`;
     const link = document.createElement("a");
@@ -2937,237 +2165,29 @@ function exportHistoryToCSV() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     
-    showToastSuccess(`CSV Export: ${filename}`);
+    showToastSuccess(`Exported ${filename}`);
 }
 
-function printHistoryData() {
-    const deviceId = DOMElements.historyDeviceSelect.value;
-    if (!deviceId || !historyAllData || historyAllData.length === 0) {
-        showToastError("No data available to print.");
-        return;
-    }
-    
-    // No special handling for print classes needed here, CSS @media print will handle it.
-    window.print();
-}
-
-// --- Analytics Section Logic ---
-function initializeAnalyticsCharts() {
-    // Only initialize if not already created
-    if (fleetPerformanceChart && statusDistributionChart && deviceComparisonChart) return;
-    
-    createFleetPerformanceChart();
-    createStatusDistributionChart();
-    createDeviceComparisonChart();
-    
-    // Populate device selection
-    populateCompareDevicesSelect();
-}
-
-function populateCompareDevicesSelect() {
-    const selectElement = document.getElementById('compareDevicesSelect');
-    if (!selectElement) return;
-    
-    selectElement.innerHTML = '';
-    
-    const sorted = [...allDevices].sort((a, b) => a.deviceId.localeCompare(b.deviceId));
-    
-    sorted.forEach(device => {
-        const option = document.createElement('option');
-        option.value = device.deviceId;
-        option.textContent = device.deviceId;
-        selectElement.appendChild(option);
-    });
-    
-    // Select first 3 devices by default
-    for (let i = 0; i < Math.min(3, sorted.length); i++) {
-        selectElement.options[i].selected = true;
-    }
-}
-
-function createFleetPerformanceChart() {
-    const canvas = document.querySelector('#fleetPerformanceChart canvas');
-    if (!canvas) return;
-    
-    // Sample data for demonstration
-    const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
-    const flowData = [32.5, 34.1, 33.8, 35.2];
-    const ppmData = [620, 635, 618, 640];
-    
-    fleetPerformanceChart = new Chart(canvas, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Average Flow Rate (GPM)',
-                data: flowData,
-                borderColor: 'rgba(203, 32, 38, 0.8)',
-                backgroundColor: 'rgba(203, 32, 38, 0.1)',
-                borderWidth: 2,
-                tension: 0.3,
-                fill: true,
-                yAxisID: 'yFlow'
-            },
-            {
-                label: 'Average PPM',
-                data: ppmData,
-                borderColor: 'rgba(66, 135, 245, 0.8)',
-                backgroundColor: 'rgba(66, 135, 245, 0.1)',
-                borderWidth: 2,
-                tension: 0.3,
-                fill: true,
-                yAxisID: 'yPPM'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                yFlow: {
-                    position: 'left',
-                    title: {
-                        display: true,
-                        text: 'Flow Rate (GPM)'
-                    },
-                    beginAtZero: false
-                },
-                yPPM: {
-                    position: 'right',
-                    title: {
-                        display: true,
-                        text: 'PPM'
-                    },
-                    grid: {
-                        drawOnChartArea: false
-                    },
-                     beginAtZero: false
-                }
-            },
-            plugins: {
-                tooltip: {
-                    mode: 'index',
-                    intersect: false
-                }
-            }
-        }
-    });
-}
-
-function createStatusDistributionChart() {
-    const canvas = document.querySelector('#statusDistributionChart canvas');
-    if (!canvas) return;
-    
-    // Calculate actual status distribution
-    const online = allDevices.filter(d => d._status === 'online').length;
-    const warning = allDevices.filter(d => d._status === 'warning').length; // Note: 'warning' status isn't fully derived yet
-    const offline = allDevices.filter(d => d._status === 'offline').length;
-    
-    statusDistributionChart = new Chart(canvas, {
-        type: 'doughnut',
-        data: {
-            labels: ['Online', 'Warning', 'Offline'],
-            datasets: [{
-                data: [online, warning, offline],
-                backgroundColor: [
-                    'rgba(25, 135, 84, 0.7)',  // Green for online
-                    'rgba(255, 193, 7, 0.7)',  // Yellow for warning
-                    'rgba(108, 117, 125, 0.7)' // Gray for offline
-                ],
-                borderColor: [
-                    'rgba(25, 135, 84, 1)',
-                    'rgba(255, 193, 7, 1)',
-                    'rgba(108, 117, 125, 1)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        boxWidth: 12,
-                        padding: 15
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const label = context.label || '';
-                            const value = context.parsed || 0;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = total ? Math.round((value / total) * 100) : 0;
-                            return `${label}: ${value} (${percentage}%)`;
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
-function createDeviceComparisonChart() {
-    const canvas = document.querySelector('#deviceComparisonChart canvas');
-    if (!canvas) return;
-    
-    // Sample data for demonstration
-    deviceComparisonChart = new Chart(canvas, {
-        type: 'bar',
-        data: {
-            labels: ['Device 1', 'Device 2', 'Device 3'],
-            datasets: [{
-                label: 'Average Flow Rate (GPM)',
-                data: [32.4, 29.8, 35.6],
-                backgroundColor: 'rgba(203, 32, 38, 0.7)',
-                borderColor: 'rgba(203, 32, 38, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Flow Rate (GPM)'
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false // Hides legend if only one dataset, which is typical for bar comparison
-                }
-            }
-        }
-    });
-}
-
-// --- Device Selection Modal Logic ---
+// --- Device Selection Modal ---
 function openDeviceSelectionModal() {
     populateDeviceSelectionList();
     deviceSelectModal.show();
-    DOMElements.filterDeviceSelectInput.value = ''; // Clear filter
-    filterDeviceSelectionList(); // Apply empty filter
+    document.getElementById('filterDeviceSelectInput').value = '';
 }
 
 function populateDeviceSelectionList() {
-    DOMElements.deviceSelectList.innerHTML = '';
-    // Use allDevices which contains the summary list {deviceId, lastUpdated, ...}
+    const container = document.getElementById('deviceSelectList');
+    container.innerHTML = '';
+    
     const sortedDevices = [...allDevices].sort((a, b) => a.deviceId.localeCompare(b.deviceId));
-
+    
     if (sortedDevices.length === 0) {
-        DOMElements.deviceSelectList.innerHTML = '<p class="text-muted text-center p-3">No devices available.</p>';
-        DOMElements.selectAllDevicesCheckbox.disabled = true;
-        DOMElements.selectAllDevicesCheckbox.checked = false;
+        container.innerHTML = '<p class="text-muted text-center p-3">No devices available.</p>';
+        document.getElementById('selectAllDevicesCheckbox').disabled = true;
         return;
     }
-
-    DOMElements.selectAllDevicesCheckbox.disabled = false;
     
+    document.getElementById('selectAllDevicesCheckbox').disabled = false;
     const fragment = document.createDocumentFragment();
     
     sortedDevices.forEach(device => {
@@ -3185,14 +2205,13 @@ function populateDeviceSelectionList() {
         fragment.appendChild(div);
     });
     
-    DOMElements.deviceSelectList.appendChild(fragment);
-
-    checkSelectAllState(); // Set initial state of "Select All"
+    container.appendChild(fragment);
+    checkSelectAllState();
 }
 
 function filterDeviceSelectionList() {
-    const filterText = DOMElements.filterDeviceSelectInput.value.toLowerCase();
-    const items = DOMElements.deviceSelectList.querySelectorAll('.device-select-item');
+    const filterText = document.getElementById('filterDeviceSelectInput').value.toLowerCase();
+    const items = document.getElementById('deviceSelectList').querySelectorAll('.device-select-item');
     
     let visibleCount = 0;
     
@@ -3203,326 +2222,193 @@ function filterDeviceSelectionList() {
         if (isVisible) visibleCount++;
     });
     
-    // Show a message if no devices match the filter
-    const noMatchMsgElement = DOMElements.deviceSelectList.querySelector('#noDevicesMatchMessage');
-    if (visibleCount === 0 && items.length > 0) {
-        // Check if the message already exists
-        if (!noMatchMsgElement) {
-            const message = document.createElement('p');
-            message.id = 'noDevicesMatchMessage';
-            message.className = 'text-muted text-center p-3';
-            message.textContent = 'No devices match your filter.';
-            DOMElements.deviceSelectList.appendChild(message);
-        }
-    } else {
-        // Remove the message if it exists
-        if (noMatchMsgElement) noMatchMsgElement.remove();
-    }
-    
-    checkSelectAllState(); // Update select-all based on visible items
+    checkSelectAllState();
 }
 
 function handleSelectAllToggle(event) {
     const isChecked = event.target.checked;
-    DOMElements.deviceSelectList.querySelectorAll('.device-select-checkbox').forEach(checkbox => {
-        if (checkbox.closest('.device-select-item').style.display !== 'none') { // Only affect visible items
+    document.getElementById('deviceSelectList').querySelectorAll('.device-select-checkbox').forEach(checkbox => {
+        if (checkbox.closest('.device-select-item').style.display !== 'none') {
             checkbox.checked = isChecked;
         }
     });
 }
 
 function checkSelectAllState() {
-    const allCheckboxes = DOMElements.deviceSelectList.querySelectorAll('.device-select-checkbox');
-    const visibleCheckboxes = Array.from(allCheckboxes).filter(cb => cb.closest('.device-select-item').style.display !== 'none');
+    const allCheckboxes = document.getElementById('deviceSelectList').querySelectorAll('.device-select-checkbox');
+    const visibleCheckboxes = Array.from(allCheckboxes).filter(cb => 
+        cb.closest('.device-select-item').style.display !== 'none'
+    );
+    
+    const selectAllCheckbox = document.getElementById('selectAllDevicesCheckbox');
     
     if (visibleCheckboxes.length === 0) {
-        DOMElements.selectAllDevicesCheckbox.checked = false;
-        DOMElements.selectAllDevicesCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
         return;
     }
     
     const checkedVisibleCount = visibleCheckboxes.filter(cb => cb.checked).length;
     
     if (checkedVisibleCount === 0) {
-        DOMElements.selectAllDevicesCheckbox.checked = false; 
-        DOMElements.selectAllDevicesCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
     } else if (checkedVisibleCount === visibleCheckboxes.length) {
-        DOMElements.selectAllDevicesCheckbox.checked = true; 
-        DOMElements.selectAllDevicesCheckbox.indeterminate = false;
+        selectAllCheckbox.checked = true;
+        selectAllCheckbox.indeterminate = false;
     } else {
-        DOMElements.selectAllDevicesCheckbox.checked = false; 
-        DOMElements.selectAllDevicesCheckbox.indeterminate = true;
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = true;
     }
 }
 
 function selectOnlineDevicesOnly() {
-    // Get all online devices
     const onlineDeviceIDs = allDevices
         .filter(dev => dev._status === 'online')
         .map(dev => dev.deviceId);
-        
-    // Set all checkboxes to unchecked first, then check online ones
-    DOMElements.deviceSelectList.querySelectorAll('.device-select-checkbox').forEach(checkbox => {
-        const deviceId = checkbox.value;
-        checkbox.checked = onlineDeviceIDs.includes(deviceId);
+    
+    document.getElementById('deviceSelectList').querySelectorAll('.device-select-checkbox').forEach(checkbox => {
+        checkbox.checked = onlineDeviceIDs.includes(checkbox.value);
     });
     
-    // Update select all state
     checkSelectAllState();
-    
     showToastSuccess('Selected online devices only');
 }
 
 function saveDeviceSelection() {
-    const checkedCheckboxes = DOMElements.deviceSelectList.querySelectorAll('.device-select-checkbox:checked');
+    const checkedCheckboxes = document.getElementById('deviceSelectList').querySelectorAll('.device-select-checkbox:checked');
     const newlySelectedIDs = Array.from(checkedCheckboxes).map(cb => cb.value);
 
-    // Compare against *all* available devices, not just visible ones
     if (newlySelectedIDs.length === allDevices.length && allDevices.length > 0) {
-        selectedDeviceIDs = null; // Use null for "Show All"
+        selectedDeviceIDs = null;
         localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY);
-        console.log("Selection saved as 'Show All'.");
     } else {
         selectedDeviceIDs = newlySelectedIDs;
         localStorage.setItem(SELECTED_DEVICES_STORAGE_KEY, JSON.stringify(selectedDeviceIDs));
-        console.log("Saved specific device selection:", selectedDeviceIDs);
     }
 
     deviceSelectModal.hide();
-    applyFiltersAndSort(); // Re-filter overview based on new selection
-    renderDevices(); // Re-render the overview
-    
-    // Update device counters
+    applyFiltersAndSort();
+    renderDevices();
     updateDashboardCounters();
-    
     showToastSuccess('Device selection updated');
 }
 
-// --- Charting Utilities ---
-function commonChartOptions(titleText, xLabel, yLabel, scalesOverride = {}) {
-    const defaultScales = {
-        x: {
-            title: { display: !!xLabel, text: xLabel },
-            ticks: { autoSkip: true, maxRotation: 0, minRotation: 0, padding: 10 } // Improved defaults
-        },
-        y: {
-            title: { display: !!yLabel, text: yLabel },
-            beginAtZero: false, // Default Y doesn't force zero
-            grid: { drawBorder: false },
-            ticks: { padding: 10 }
-        }
-    };
-
-    // Merge default scales with overrides
-    const mergedScales = { ...defaultScales, ...scalesOverride };
-
-    // If multiple Y-axes are defined in overrides, remove the default 'y'
-    if (Object.keys(scalesOverride).some(key => key.startsWith('y') && key !== 'y')) {
-        delete mergedScales.y;
-    }
-
-    const options = {
-        responsive: true, maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        plugins: {
-            title: { display: !!titleText, text: titleText, padding: { top: 5, bottom: 15 }, font: { size: 16 } }, // Adjust title padding/size
-            legend: { display: true, position: 'bottom', labels: { boxWidth: 12, padding: 20 } }, // Legend at bottom
-            tooltip: { mode: 'index', intersect: false, bodySpacing: 5, titleSpacing: 6, footerSpacing: 6, padding: 10 } // Tooltip padding
-        },
-        scales: mergedScales,
-        // animation: { duration: 0 } // Disable animations for faster rendering if needed
-    };
-    // Hide legend if only one dataset
-    options.plugins.legend.display = (scalesOverride.datasets?.length ?? 1) > 1;
-
-    return options;
-}
-
-function destroyChart(chartInstance) { if (chartInstance) { chartInstance.destroy(); } }
-
-function clearAllCharts() {
-    destroyChart(detailFlowChart); detailFlowChart = null;
-    destroyChart(detailProbeChart); detailProbeChart = null;
-    destroyChart(historyChart); historyChart = null;
-    destroyChart(fleetPerformanceChart); fleetPerformanceChart = null;
-    destroyChart(statusDistributionChart); statusDistributionChart = null;
-    destroyChart(deviceComparisonChart); deviceComparisonChart = null;
-    
-    // Clear flow mini charts if they exist
-    Object.values(flowMiniCharts).forEach(chart => destroyChart(chart));
-    flowMiniCharts = {};
-}
-
-// --- Auto Refresh & Visibility ---
+// --- Auto Refresh ---
 function startAutoRefresh() {
     stopAutoRefresh();
-    if (!AUTO_REFRESH_INTERVAL || AUTO_REFRESH_INTERVAL < 10000) { return; }
-    console.log(`Starting auto-refresh interval: ${AUTO_REFRESH_INTERVAL / 1000}s.`);
+    if (!AUTO_REFRESH_INTERVAL || AUTO_REFRESH_INTERVAL < 10000) return;
+    
+    console.log(`Starting auto-refresh (${AUTO_REFRESH_INTERVAL / 1000}s)`);
     autoRefreshTimer = setInterval(() => {
-        // Only refresh if tab is visible, logged in (apiKey exists), and on overview page
-        if (isTabVisible && apiKey && !DOMElements.overviewSection.classList.contains('d-none')) {
-            console.log("Auto-refreshing device list...");
-            refreshDeviceList(); // Refresh summary data
-        } else { /* Skip refresh */ }
+        if (isTabVisible && apiKey && !document.getElementById('overviewSection').classList.contains('d-none')) {
+            console.log("Auto-refreshing...");
+            refreshDeviceList();
+        }
     }, AUTO_REFRESH_INTERVAL);
 }
 
-function stopAutoRefresh() { 
-    if (autoRefreshTimer) { 
-        clearInterval(autoRefreshTimer); 
-        autoRefreshTimer = null; 
-        console.log("Auto-refresh stopped."); 
-    } 
-}
-
-function handleVisibilityChange() { 
-    isTabVisible = document.visibilityState === 'visible'; 
-    console.log(`Tab visibility: ${isTabVisible}`); 
-    if (isTabVisible && apiKey) startAutoRefresh(); // Start refresh if tab becomes visible and logged in
-} 
-
-// --- Utilities ---
-function formatDateTime(dateString) {
-    if (!dateString) return 'N/A';
-    try {
-        // First, try parsing as-is (ISO 8601 should work)
-        let date = new Date(dateString);
-        
-        // If that fails, try to handle the custom format from safeTimestamp
-        if (isNaN(date.getTime()) && typeof dateString === 'string') {
-            // For format with milliseconds: YYYY-MM-DD_HH-MM-SS-mmm
-            if (dateString.match(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}-\d{3}$/)) {
-                const isoString = dateString
-                    .replace('_', 'T')
-                    .replace(/-(\d{2})-(\d{2})-(\d{3})$/, ':$1:$2.$3') + 'Z'; // Assume UTC if Z is added
-                date = new Date(isoString);
-            }
-            // For format without milliseconds: YYYY-MM-DD_HH-MM-SS
-            else if (dateString.match(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/)) {
-                const isoString = dateString
-                    .replace('_', 'T')
-                    .replace(/-(\d{2})-(\d{2})$/, ':$1:$2') + 'Z'; // Assume UTC
-                date = new Date(isoString);
-            }
-        }
-        
-        if (isNaN(date.getTime())) return 'Invalid Date';
-        return date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
-    } catch (e) { 
-        console.error("Date parsing error:", e, "for string:", dateString);
-        return 'Date Error'; 
+function stopAutoRefresh() {
+    if (autoRefreshTimer) {
+        clearInterval(autoRefreshTimer);
+        autoRefreshTimer = null;
     }
 }
 
-function formatTime(dateString) {
-    if (!dateString) return 'N/A';
-    try {
-        let date = new Date(dateString);
-        
-        // Handle custom format
-        if (isNaN(date.getTime()) && typeof dateString === 'string') {
-             if (dateString.match(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}-\d{3}$/)) {
-                const isoString = dateString.replace('_', 'T').replace(/-(\d{2})-(\d{2})-(\d{3})$/, ':$1:$2.$3') + 'Z';
-                date = new Date(isoString);
-            } else if (dateString.match(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/)) {
-                const isoString = dateString.replace('_', 'T').replace(/-(\d{2})-(\d{2})$/, ':$1:$2') + 'Z';
-                date = new Date(isoString);
-            }
-        }
-        
-        if (isNaN(date.getTime())) return 'Invalid Time';
-        return date.toLocaleTimeString(undefined, { timeStyle: 'short' });
-    } catch (e) { return 'Time Error'; }
+function handleVisibilityChange() {
+    isTabVisible = document.visibilityState === 'visible';
+    if (isTabVisible && apiKey) {
+        startAutoRefresh();
+    }
 }
 
-function formatDate(dateString) {
+// --- Chart Utilities ---
+function destroyChart(chartInstance) {
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+}
+
+function clearAllCharts() {
+    destroyChart(detailFlowChart);
+    detailFlowChart = null;
+    destroyChart(detailPpmChart);
+    detailPpmChart = null;
+    destroyChart(historyChart);
+    historyChart = null;
+}
+
+// --- Date/Time Utilities ---
+function formatDateTime(dateString) {
     if (!dateString) return 'N/A';
     try {
-        let date = new Date(dateString);
-        
-        // Handle custom format
-        if (isNaN(date.getTime()) && typeof dateString === 'string') {
-            if (dateString.match(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}-\d{3}$/)) {
-                const isoString = dateString.replace('_', 'T').replace(/-(\d{2})-(\d{2})-(\d{3})$/, ':$1:$2.$3') + 'Z';
-                date = new Date(isoString);
-            } else if (dateString.match(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/)) {
-                const isoString = dateString.replace('_', 'T').replace(/-(\d{2})-(\d{2})$/, ':$1:$2') + 'Z';
-                date = new Date(isoString);
-            }
-        }
-        
+        const date = new Date(dateString);
         if (isNaN(date.getTime())) return 'Invalid Date';
-        return date.toLocaleDateString(undefined, { dateStyle: 'medium' });
-    } catch (e) { return 'Date Error'; }
+        return date.toLocaleString(undefined, { 
+            dateStyle: 'medium', 
+            timeStyle: 'short' 
+        });
+    } catch (e) {
+        return 'Date Error';
+    }
 }
 
-function getTimeDifference(timestamp) { // In minutes
+function formatDateForFilename(date) {
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
+        date = new Date();
+    }
+    return date.toISOString().split('T')[0];
+}
+
+function getTimeDifference(timestamp) {
     if (!timestamp) return Infinity;
-    try { 
-        let date = new Date(timestamp);
-        
-        if (isNaN(date.getTime()) && typeof timestamp === 'string') {
-             if (timestamp.match(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}-\d{3}$/)) {
-                const isoString = timestamp.replace('_', 'T').replace(/-(\d{2})-(\d{2})-(\d{3})$/, ':$1:$2.$3') + 'Z';
-                date = new Date(isoString);
-            } else if (timestamp.match(/^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$/)) {
-                const isoString = timestamp.replace('_', 'T').replace(/-(\d{2})-(\d{2})$/, ':$1:$2') + 'Z';
-                date = new Date(isoString);
-            }
-        }
-        
-        if (isNaN(date.getTime())) return Infinity; 
+    try {
+        const date = new Date(timestamp);
+        if (isNaN(date.getTime())) return Infinity;
         return (Date.now() - date.getTime()) / (1000 * 60);
-    } catch (e) { 
-        console.error("Time difference error:", e, "for timestamp:", timestamp);
-        return Infinity; 
+    } catch (e) {
+        return Infinity;
     }
 }
 
 function getRelativeTimeString(dateString) {
     if (!dateString) return 'never';
     try {
-        const diffMin = getTimeDifference(dateString); // This already handles custom formats
+        const diffMin = getTimeDifference(dateString);
         if (diffMin === Infinity) return 'invalid date';
         
-        if (diffMin < 1) return 'just now'; 
+        if (diffMin < 1) return 'just now';
         if (diffMin < 60) return `${Math.floor(diffMin)} min ago`;
-        const diffHour = Math.floor(diffMin / 60); 
+        const diffHour = Math.floor(diffMin / 60);
         if (diffHour < 24) return `${diffHour} hour${diffHour > 1 ? 's' : ''} ago`;
-        const diffDay = Math.floor(diffHour / 24); 
+        const diffDay = Math.floor(diffHour / 24);
         if (diffDay < 7) return `${diffDay} day${diffDay > 1 ? 's' : ''} ago`;
-        return formatDate(dateString); // Fallback for older dates (already handles custom format for display)
-    } catch (e) { return 'time error'; }
-}
-
-function formatDateForFilename(date) { 
-    if (!(date instanceof Date) || isNaN(date.getTime())) {
-        date = new Date(); // fallback to now if invalid
+        return formatDateTime(dateString);
+    } catch (e) {
+        return 'time error';
     }
-    return date.toISOString().split('T')[0]; 
 }
 
-function showLoading(message = "Loading...") { 
-    DOMElements.loadingMessage.textContent = message; 
-    DOMElements.loadingIndicator.style.display = 'flex'; 
+// --- UI Utilities ---
+function showLoading(message = "Loading...") {
+    document.getElementById('loadingMessage').textContent = message;
+    document.getElementById('loadingIndicator').style.display = 'flex';
 }
 
-function hideLoading() { 
-    DOMElements.loadingIndicator.style.display = 'none'; 
+function hideLoading() {
+    document.getElementById('loadingIndicator').style.display = 'none';
 }
 
-function showToastError(message) { 
-    console.error("Toast Error:", message); 
-    DOMElements.errorToastMessage.textContent = message; 
-    if (errorToast) errorToast.show(); 
-    else alert("Error: " + message); 
+function showToastError(message) {
+    console.error("Error:", message);
+    document.getElementById('toastErrorMessage').textContent = message;
+    if (errorToast) errorToast.show();
 }
 
-function showToastSuccess(message) { 
-    console.log("Toast Success:", message); 
-    DOMElements.successToastMessage.textContent = message; 
-    if (successToast) successToast.show(); 
-    else alert("Success: " + message); 
+function showToastSuccess(message) {
+    console.log("Success:", message);
+    document.getElementById('toastSuccessMessage').textContent = message;
+    if (successToast) successToast.show();
 }
 
 function escapeHtml(unsafe) {
