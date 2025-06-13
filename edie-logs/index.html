@@ -76,13 +76,21 @@
     <!-- Auth Screen -->
     <div id="authScreen" class="container auth-container">
         <div class="card shadow-sm">
-            <div class="card-header"><h4 class="mb-0"><i class="bi bi-key-fill me-2"></i>EDIE Dashboard Login</h4></div>
+            <div class="card-header">
+                <h4 class="mb-0"><i class="bi bi-key-fill me-2"></i>EDIE Dashboard Login</h4>
+            </div>
             <div class="card-body p-4">
                 <div class="mb-3">
                     <label for="apiKeyInput" class="form-label">API Key</label>
-                    <div class="input-group"><input type="password" class="form-control" id="apiKeyInput" placeholder="Enter your API key" required><button class="btn btn-outline-secondary" type="button" id="toggleApiKeyVisibilityBtn"><i class="bi bi-eye-slash"></i></button></div>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="apiKeyInput" placeholder="Enter your API key" required>
+                        <button class="btn btn-outline-secondary" type="button" id="toggleApiKeyVisibilityBtn"><i class="bi bi-eye-slash"></i></button>
+                    </div>
                 </div>
-                <div class="form-check mb-3"><input class="form-check-input" type="checkbox" id="rememberKeyCheckbox"><label class="form-check-label" for="rememberKeyCheckbox">Remember API key</label></div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="rememberKeyCheckbox">
+                    <label class="form-check-label" for="rememberKeyCheckbox">Remember API key</label>
+                </div>
                 <button id="loginBtn" class="btn btn-primary w-100"><i class="bi bi-box-arrow-in-right me-2"></i>Login</button>
                 <div id="authError" class="alert alert-danger mt-3 p-2 text-center d-none" role="alert"></div>
             </div>
@@ -94,16 +102,28 @@
         <nav class="navbar navbar-expand-lg navbar-dark mb-4 shadow-sm">
             <div class="container-fluid">
                 <a class="navbar-brand" href="#"><i class="bi bi-speedometer2 me-1"></i> EDIE Fleet Dashboard</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto">
-                        <li class="nav-item"><a class="nav-link" href="#" id="navOverviewLink" data-section="overviewSection"><i class="bi bi-grid-fill me-1"></i>Overview</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#" id="navHistoryLink" data-section="historySection"><i class="bi bi-graph-up me-1"></i>Analytics</a></li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="navOverviewLink" data-section="overviewSection"><i class="bi bi-grid-fill me-1"></i>Overview</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="navHistoryLink" data-section="historySection"><i class="bi bi-graph-up me-1"></i>Analytics</a>
+                        </li>
                     </ul>
                     <div class="d-flex align-items-center">
-                        <button id="selectDevicesBtn" class="btn btn-sm btn-outline-light me-2"><i class="bi bi-list-check me-1"></i><span class="d-none d-md-inline">Devices</span></button>
-                        <button id="refreshBtn" class="btn btn-sm btn-outline-light me-2"><i class="bi bi-arrow-clockwise me-1"></i><span class="d-none d-md-inline">Refresh</span></button>
-                        <button id="logoutBtn" class="btn btn-sm btn-outline-light"><i class="bi bi-box-arrow-right me-1"></i><span class="d-none d-md-inline">Logout</span></button>
+                        <button id="selectDevicesBtn" class="btn btn-sm btn-outline-light me-2" title="Select Devices to Display">
+                            <i class="bi bi-list-check me-1"></i><span class="d-none d-md-inline">Devices</span>
+                        </button>
+                        <button id="refreshBtn" class="btn btn-sm btn-outline-light me-2" title="Refresh Data">
+                            <i class="bi bi-arrow-clockwise me-1"></i><span class="d-none d-md-inline">Refresh</span>
+                        </button>
+                        <button id="logoutBtn" class="btn btn-sm btn-outline-light" title="Logout">
+                            <i class="bi bi-box-arrow-right me-1"></i><span class="d-none d-md-inline">Logout</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -112,39 +132,123 @@
         <div class="container-fluid px-3 px-md-4">
             <!-- Overview Section -->
             <div id="overviewSection">
-                <div class="timezone-info"><i class="bi bi-clock"></i> All times shown in local timezone: <strong id="userTimezone"></strong></div>
-                <div class="row mb-4 g-3" id="statCards"></div>
+                <div class="timezone-info">
+                    <i class="bi bi-clock"></i> All times shown in local timezone: <strong id="userTimezone"></strong>
+                </div>
+                <div class="row mb-4 g-3" id="statCardsContainer">
+                    <!-- Stat cards will be inserted here -->
+                </div>
                 <div class="row mb-3 g-2 align-items-center">
-                    <div class="col-md-5 col-lg-4"><div class="search-container"><i class="bi bi-search"></i><input type="text" id="searchDevicesInput" class="form-control" placeholder="Search by Device ID..."></div></div>
+                    <div class="col-md-5 col-lg-4">
+                        <div class="search-container">
+                            <i class="bi bi-search"></i>
+                            <input type="text" id="searchDevicesInput" class="form-control" placeholder="Search by Device ID...">
+                        </div>
+                    </div>
                     <div class="col-md-7 col-lg-8 d-flex flex-wrap justify-content-md-end mt-2 mt-md-0">
-                        <div class="btn-group btn-group-sm me-2 mb-2 mb-md-0" role="group"><input type="radio" class="btn-check" name="viewOptions" id="viewGridBtn" checked><label class="btn btn-outline-secondary" for="viewGridBtn"><i class="bi bi-grid"></i></label><input type="radio" class="btn-check" name="viewOptions" id="viewListBtn"><label class="btn btn-outline-secondary" for="viewListBtn"><i class="bi bi-list-ul"></i></label></div>
-                        <div class="btn-group btn-group-sm" role="group"><input type="radio" class="btn-check" name="sortOptions" id="sortByNameBtn" checked data-sort="name"><label class="btn btn-outline-secondary" for="sortByNameBtn"><i class="bi bi-sort-alpha-down"></i> Name</label><input type="radio" class="btn-check" name="sortOptions" id="sortByStatusBtn" data-sort="status"><label class="btn btn-outline-secondary" for="sortByStatusBtn"><i class="bi bi-shield-check"></i> Status</label><input type="radio" class="btn-check" name="sortOptions" id="sortByLastUpdateBtn" data-sort="lastUpdate"><label class="btn btn-outline-secondary" for="sortByLastUpdateBtn"><i class="bi bi-calendar-event"></i> Last Update</label></div>
+                        <div class="btn-group btn-group-sm me-2 mb-2 mb-md-0" role="group">
+                            <input type="radio" class="btn-check" name="viewOptions" id="viewGridBtn" checked>
+                            <label class="btn btn-outline-secondary" for="viewGridBtn"><i class="bi bi-grid"></i></label>
+                            <input type="radio" class="btn-check" name="viewOptions" id="viewListBtn">
+                            <label class="btn btn-outline-secondary" for="viewListBtn"><i class="bi bi-list-ul"></i></label>
+                        </div>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <input type="radio" class="btn-check" name="sortOptions" id="sortByNameBtn" checked data-sort="name">
+                            <label class="btn btn-outline-secondary" for="sortByNameBtn"><i class="bi bi-sort-alpha-down"></i> Name</label>
+                            <input type="radio" class="btn-check" name="sortOptions" id="sortByStatusBtn" data-sort="status">
+                            <label class="btn btn-outline-secondary" for="sortByStatusBtn"><i class="bi bi-shield-check"></i> Status</label>
+                            <input type="radio" class="btn-check" name="sortOptions" id="sortByLastUpdateBtn" data-sort="lastUpdate">
+                            <label class="btn btn-outline-secondary" for="sortByLastUpdateBtn"><i class="bi bi-calendar-event"></i> Last Update</label>
+                        </div>
                     </div>
                 </div>
                 <div id="devicesGrid" class="row g-3"></div>
-                <div id="devicesList" class="d-none"><div class="table-responsive"><table class="table table-hover"><thead><tr><th>Device ID</th><th>Status</th><th>Last Seen</th><th>Last Value</th><th>Actions</th></tr></thead><tbody id="devicesListBody"></tbody></table></div></div>
-                <div class="col-12 message-area" id="overviewMessageArea" style="display: none;"><p id="overviewMessageText" class="info-message"></p></div>
+                <div id="devicesList" class="d-none">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead><tr><th>Device ID</th><th>Status</th><th>Last Seen</th><th>Last Value</th><th>Actions</th></tr></thead>
+                            <tbody id="devicesListBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-12 message-area" id="overviewMessageArea" style="display: none;">
+                    <p id="overviewMessageText" class="info-message"></p>
+                </div>
             </div>
 
             <!-- History/Analytics Section -->
             <div id="historySection" class="d-none">
                 <div class="card shadow-sm">
-                    <div class="card-header bg-light"><h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Analytics & History</h5></div>
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Analytics & History</h5>
+                    </div>
                     <div class="card-body p-4">
                         <div class="row g-3 mb-4 align-items-end">
-                            <div class="col-md-6 col-lg-3"><label class="form-label">Device</label><select id="historyDeviceSelect" class="form-select"></select></div>
-                            <div class="col-md-6 col-lg-3"><label class="form-label">Date Selection Mode</label><div class="btn-group w-100"><input type="radio" class="btn-check" name="dateSelectionMode" id="dateModeRange" checked><label class="btn btn-sm btn-outline-secondary" for="dateModeRange">Date Range</label><input type="radio" class="btn-check" name="dateSelectionMode" id="dateModeRunDay"><label class="btn btn-sm btn-outline-secondary" for="dateModeRunDay">Last Run Days</label></div></div>
-                            <div class="col-md-12" id="dateRangeControls"><div class="row g-3"><div class="col-md-6"><label class="form-label">Start Date</label><input type="date" id="historyStartDateInput" class="form-control"></div><div class="col-md-6"><label class="form-label">End Date</label><input type="date" id="historyEndDateInput" class="form-control"></div></div></div>
-                            <div class="col-md-12 d-none" id="runDayControls"><label class="form-label">Number of previous run days to show</label><input type="number" id="runDayCountInput" class="form-control" value="3" min="1" max="30"></div>
-                            <div class="col-md-6 col-lg-3"><label class="form-label">Resolution</label><select id="historyResolutionSelect" class="form-select"><option value="auto" selected>Auto</option><option value="raw">Raw (1-min)</option><option value="15min">15-minute</option><option value="hourly">Hourly</option><option value="daily">Daily</option></select></div>
-                            <div class="col-md-6 col-lg-3"><button id="searchHistoryBtn" class="btn btn-primary w-100"><i class="bi bi-search me-1"></i>Get Data</button></div>
+                            <div class="col-md-6 col-lg-3">
+                                <label for="historyDeviceSelect" class="form-label">Device</label>
+                                <select id="historyDeviceSelect" class="form-select"></select>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <label class="form-label">Date Selection Mode</label>
+                                <div class="btn-group w-100">
+                                    <input type="radio" class="btn-check" name="dateSelectionMode" id="dateModeRange" checked>
+                                    <label class="btn btn-sm btn-outline-secondary" for="dateModeRange">Date Range</label>
+                                    <input type="radio" class="btn-check" name="dateSelectionMode" id="dateModeRunDay">
+                                    <label class="btn btn-sm btn-outline-secondary" for="dateModeRunDay">Last Run Days</label>
+                                </div>
+                            </div>
+                            <div class="col-md-12" id="dateRangeControls">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="historyStartDateInput" class="form-label">Start Date</label>
+                                        <input type="date" id="historyStartDateInput" class="form-control">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="historyEndDateInput" class="form-label">End Date</label>
+                                        <input type="date" id="historyEndDateInput" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12 d-none" id="runDayControls">
+                                <label for="runDayCountInput" class="form-label">Number of previous run days to show</label>
+                                <input type="number" id="runDayCountInput" class="form-control" value="3" min="1" max="30">
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <label for="historyResolutionSelect" class="form-label">Resolution</label>
+                                <select id="historyResolutionSelect" class="form-select">
+                                    <option value="auto" selected>Auto</option>
+                                    <option value="raw">Raw (1-min)</option>
+                                    <option value="15min">15-minute</option>
+                                    <option value="hourly">Hourly</option>
+                                    <option value="daily">Daily</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <button id="searchHistoryBtn" class="btn btn-primary w-100"><i class="bi bi-search me-1"></i>Get Data</button>
+                            </div>
                         </div>
-                        <div id="historyChartContainer" class="mb-4" style="height: 350px; display: none;"><canvas id="historyChart"></canvas></div>
+
+                        <div id="historyChartContainer" class="mb-4" style="height: 350px; display: none;">
+                            <canvas id="historyChart"></canvas>
+                        </div>
                         <div id="historyTableContainer" class="table-responsive" style="display: none;">
-                            <table class="table table-striped table-hover table-sm"><thead><tr><th>Timestamp</th><th>Status</th><th>Flow (GPM)</th><th>PPM</th><th>Totalizer Usage</th></tr></thead><tbody id="historyTableBody"></tbody></table>
-                            <div class="d-flex justify-content-between align-items-center mt-3"><span id="historyRowCounter" class="text-muted small"></span><nav><ul class="pagination pagination-sm"><li class="page-item disabled"><a class="page-link" href="#" id="historyPrevPage">Previous</a></li><li class="page-item disabled"><a class="page-link" href="#" id="historyNextPage">Next</a></li></ul></nav></div>
+                            <table class="table table-striped table-hover table-sm">
+                                <thead><tr><th>Timestamp</th><th>Status</th><th>Flow (GPM)</th><th>PPM</th><th>Totalizer Usage</th></tr></thead>
+                                <tbody id="historyTableBody"></tbody>
+                            </table>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span id="historyRowCounter" class="text-muted small"></span>
+                                <nav>
+                                    <ul class="pagination pagination-sm">
+                                        <li class="page-item disabled"><a class="page-link" href="#" id="historyPrevPage">Previous</a></li>
+                                        <li class="page-item disabled"><a class="page-link" href="#" id="historyNextPage">Next</a></li>
+                                    </ul>
+                                </nav>
+                            </div>
                         </div>
-                        <div class="col-12 message-area" id="historyMessageArea"><p id="historyMessageText" class="info-message">Select a device and criteria to view analytics.</p></div>
+                        <div class="col-12 message-area" id="historyMessageArea">
+                            <p id="historyMessageText" class="info-message">Select a device and criteria to view analytics.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -152,47 +256,89 @@
     </div>
 
     <!-- Modals -->
-    <div class="modal fade" id="deviceDetailModal" tabindex="-1"><div class="modal-dialog modal-xl"><div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title" id="deviceDetailTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-        <div class="modal-body p-0">
-            <ul class="nav nav-tabs nav-fill" role="tablist"><li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#detailOverviewPane"><i class="bi bi-bar-chart-line-fill me-1"></i>Overview</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#detailAllDataPane"><i class="bi bi-journal-text me-1"></i>All Data</button></li></ul>
-            <div class="tab-content p-4">
-                <div class="tab-pane fade show active" id="detailOverviewPane"><div class="device-metrics-row" id="detailMetricsContainer"></div></div>
-                <div class="tab-pane fade" id="detailAllDataPane"><h6>Last Complete Log Entry</h6><div class="table-responsive mt-2"><table class="table table-sm table-striped table-hover"><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody id="detailAllDataTableBody"></tbody></table></div></div>
-            </div>
-        </div>
-    </div></div></div>
-
-    <div class="modal fade" id="deviceSelectModal" tabindex="-1"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">Select Devices</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-        <div class="modal-body">
-            <div class="mb-3"><div class="search-container"><i class="bi bi-search"></i><input type="text" id="filterDeviceSelectInput" class="form-control form-control-sm" placeholder="Filter devices..."></div></div>
-            <div class="d-flex justify-content-between mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="selectAllDevicesCheckbox"><label class="form-check-label fw-bold" for="selectAllDevicesCheckbox">Select/Deselect All</label></div><div><button class="btn btn-sm btn-outline-primary" id="selectOnlineOnlyBtn"><i class="bi bi-check-circle me-1"></i>Online Only</button></div></div>
-            <div id="deviceSelectList" class="list-group list-group-flush border rounded"></div>
-        </div>
-        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-primary" id="saveDeviceSelectionBtn">Save Selection</button></div>
-    </div></div></div>
-    
-    <div class="modal fade" id="adminModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
-        <div class="modal-header"><h5 class="modal-title">Admin Console</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-        <div class="modal-body">
-            <div id="adminAuthView">
-                <p class="text-muted">Enter the Admin Password to access administrative functions.</p>
-                <div class="mb-3"><label for="adminPasswordInput" class="form-label">Admin Password</label><input type="password" class="form-control" id="adminPasswordInput"></div>
-                <button id="adminUnlockBtn" class="btn btn-primary">Unlock</button><div id="adminAuthError" class="alert alert-danger mt-3 d-none"></div>
-            </div>
-            <div id="adminBackfillView" class="d-none">
-                <h5>Backfill Historical Data</h5><p class="text-muted small">This tool processes legacy log files for one month at a time, creating the necessary aggregates and indexes for the new analytics system. Run this for each month of historical data.</p>
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-5"><label class="form-label">Device</label><select id="backfillDeviceSelect" class="form-select"></select></div>
-                    <div class="col-md-3"><label class="form-label">Year</label><select id="backfillYearSelect" class="form-select"></select></div>
-                    <div class="col-md-4"><label class="form-label">Month</label><select id="backfillMonthSelect" class="form-select"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></div>
+    <div class="modal fade" id="deviceDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deviceDetailTitle"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <button id="startBackfillBtn" class="btn btn-danger mt-3"><i class="bi bi-hdd-rack-fill me-1"></i> Start Backfill</button>
-                <h6 class="mt-4">Backfill Log</h6><pre id="backfillLogOutput">Waiting for process to start...</pre>
+                <div class="modal-body p-0">
+                    <ul class="nav nav-tabs nav-fill" role="tablist">
+                        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#detailOverviewPane"><i class="bi bi-bar-chart-line-fill me-1"></i>Overview</button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#detailAllDataPane"><i class="bi bi-journal-text me-1"></i>All Data</button></li>
+                    </ul>
+                    <div class="tab-content p-4">
+                        <div class="tab-pane fade show active" id="detailOverviewPane">
+                            <div class="device-metrics-row" id="detailMetricsContainer"></div>
+                        </div>
+                        <div class="tab-pane fade" id="detailAllDataPane">
+                            <h6>Last Complete Log Entry</h6>
+                            <div class="table-responsive mt-2">
+                                <table class="table table-sm table-striped table-hover">
+                                    <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+                                    <tbody id="detailAllDataTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div></div></div>
+    </div>
+
+    <div class="modal fade" id="deviceSelectModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Select Devices</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <div class="search-container"><i class="bi bi-search"></i><input type="text" id="filterDeviceSelectInput" class="form-control form-control-sm" placeholder="Filter devices..."></div>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <div class="form-check"><input class="form-check-input" type="checkbox" id="selectAllDevicesCheckbox"><label class="form-check-label fw-bold" for="selectAllDevicesCheckbox">Select/Deselect All</label></div>
+                        <div><button class="btn btn-sm btn-outline-primary" id="selectOnlineOnlyBtn"><i class="bi bi-check-circle me-1"></i>Online Only</button></div>
+                    </div>
+                    <div id="deviceSelectList" class="list-group list-group-flush border rounded" style="max-height: 350px; overflow-y: auto;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveDeviceSelectionBtn">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="adminModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">Admin Console</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <div id="adminAuthView">
+                        <p class="text-muted">Enter the Admin Password to access administrative functions.</p>
+                        <div class="mb-3"><label for="adminPasswordInput" class="form-label">Admin Password</label><input type="password" class="form-control" id="adminPasswordInput"></div>
+                        <button id="adminUnlockBtn" class="btn btn-primary">Unlock</button>
+                        <div id="adminAuthError" class="alert alert-danger mt-3 d-none"></div>
+                    </div>
+                    <div id="adminBackfillView" class="d-none">
+                        <h5>Backfill Historical Data</h5>
+                        <p class="text-muted small">This tool processes legacy log files for one month at a time, creating the necessary aggregates and indexes for the new analytics system. Run this for each month of historical data.</p>
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-5"><label class="form-label">Device</label><select id="backfillDeviceSelect" class="form-select"></select></div>
+                            <div class="col-md-3"><label class="form-label">Year</label><select id="backfillYearSelect" class="form-select"></select></div>
+                            <div class="col-md-4"><label class="form-label">Month</label><select id="backfillMonthSelect" class="form-select"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></div>
+                        </div>
+                        <button id="startBackfillBtn" class="btn btn-danger mt-3"><i class="bi bi-hdd-rack-fill me-1"></i> Start Backfill</button>
+                        <h6 class="mt-4">Backfill Log</h6>
+                        <pre id="backfillLogOutput">Waiting for process to start...</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -205,11 +351,11 @@ const API_ENDPOINT = 'https://jolly-queen-8e6f.larry-schrimpfff6544.workers.dev'
 const API_KEY_STORAGE_KEY = 'edieApiKey';
 const SELECTED_DEVICES_STORAGE_KEY = 'edieSelectedDevices';
 const DEFAULT_API_KEY = "k32BWMByEJrCihED0YEmhs0AaUJCeontFUC_qbeB"; // RESTORED as requested
-const AUTO_REFRESH_INTERVAL = 60000; // 60 seconds
+const AUTO_REFRESH_INTERVAL = 60000;
 const OFFLINE_THRESHOLD_MINUTES = 15;
 const VIEW_MODE_STORAGE_KEY = 'edieViewMode';
 
-// --- State Variables ---
+// --- State ---
 let apiKey = '', adminPassword = '', currentViewMode = 'grid', currentSortCriteria = 'name';
 let allDevices = [], displayedDevices = [], selectedDeviceIDs = null;
 let historyAllData = [], historyCurrentPage = 0, historyPageSize = 25;
@@ -219,9 +365,9 @@ let autoRefreshTimer = null, isTabVisible = true;
 // --- Bootstrap & Chart Instances ---
 let deviceDetailModal, deviceSelectModal, adminModal, appToast;
 
-// --- INITIALIZE APP ---
+// --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("Initializing EDIE Dashboard v3.2");
+    console.log("Initializing EDIE Dashboard v3.2 - Readable");
     initializeComponents();
     setupEventListeners();
     loadStateFromStorage();
@@ -258,40 +404,43 @@ function initializeComponents() {
 }
 
 function setupEventListeners() {
-    // --- Global ---
     document.addEventListener('keydown', e => { if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) { e.preventDefault(); showAdminModal(); } });
     
-    // --- Auth ---
     document.getElementById('loginBtn').addEventListener('click', handleLogin);
     document.getElementById('apiKeyInput').addEventListener('keypress', e => e.key === 'Enter' && handleLogin());
     document.getElementById('toggleApiKeyVisibilityBtn').addEventListener('click', () => toggleInputVisibility('apiKeyInput', '#toggleApiKeyVisibilityBtn i'));
     document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 
-    // --- Main UI ---
     document.querySelectorAll('.navbar .nav-link').forEach(link => link.addEventListener('click', e => showSection(e, e.target.dataset.section)));
     document.getElementById('refreshBtn').addEventListener('click', () => refreshDeviceList(true));
     document.getElementById('selectDevicesBtn').addEventListener('click', () => { populateDeviceSelectModal(); deviceSelectModal.show(); });
     
-    // --- Overview ---
     document.getElementById('searchDevicesInput').addEventListener('input', () => { applyFiltersAndSort(); renderDevices(); });
     document.querySelectorAll('input[name="viewOptions"]').forEach(radio => radio.addEventListener('change', e => setViewMode(e.target.id === 'viewGridBtn' ? 'grid' : 'list')));
     document.querySelectorAll('input[name="sortOptions"]').forEach(radio => radio.addEventListener('change', e => { currentSortCriteria = e.target.dataset.sort; applyFiltersAndSort(); renderDevices(); }));
     document.getElementById('devicesGrid').addEventListener('click', handleDeviceAction);
     document.getElementById('devicesListBody').addEventListener('click', handleDeviceAction);
 
-    // --- Analytics ---
     document.getElementById('searchHistoryBtn').addEventListener('click', fetchHistoricalData);
     document.querySelectorAll('input[name="dateSelectionMode"]').forEach(radio => radio.addEventListener('change', toggleDateControls));
     document.getElementById('historyPrevPage').addEventListener('click', e => { e.preventDefault(); if (historyCurrentPage > 0) { historyCurrentPage--; updateHistoryTable(); } });
     document.getElementById('historyNextPage').addEventListener('click', e => { e.preventDefault(); const maxPage = Math.ceil(historyAllData.length / historyPageSize) - 1; if (historyCurrentPage < maxPage) { historyCurrentPage++; updateHistoryTable(); } });
     
-    // --- Modals ---
     document.getElementById('saveDeviceSelectionBtn').addEventListener('click', saveDeviceSelection);
+    document.getElementById('selectOnlineOnlyBtn').addEventListener('click', selectOnlineDevices);
+    document.getElementById('selectAllDevicesCheckbox').addEventListener('change', e => { document.querySelectorAll('.device-select-checkbox').forEach(cb => cb.checked = e.target.checked); });
+    document.getElementById('filterDeviceSelectInput').addEventListener('input', e => {
+        const term = e.target.value.toLowerCase();
+        document.querySelectorAll('#deviceSelectList .list-group-item').forEach(item => {
+            item.style.display = item.textContent.toLowerCase().includes(term) ? '' : 'none';
+        });
+    });
+
     document.getElementById('adminUnlockBtn').addEventListener('click', unlockAdmin);
     document.getElementById('startBackfillBtn').addEventListener('click', startBackfill);
 }
 
-// --- AUTH & STATE MGMT ---
+// --- AUTH & STATE ---
 function loadStateFromStorage() {
     apiKey = localStorage.getItem(API_KEY_STORAGE_KEY) || '';
     selectedDeviceIDs = JSON.parse(localStorage.getItem(SELECTED_DEVICES_STORAGE_KEY));
@@ -323,10 +472,11 @@ async function validateApiKeyAndProceed(key, isAutoLogin = false, remember = fal
     } catch (error) {
         showToast('error', error.message, 'Authentication Failed');
         if (isAutoLogin) handleLogout();
-        else document.getElementById('authError').textContent = error.message; document.getElementById('authError').classList.remove('d-none');
-    } finally {
-        hideLoading();
-    }
+        else {
+            document.getElementById('authError').textContent = error.message;
+            document.getElementById('authError').classList.remove('d-none');
+        }
+    } finally { hideLoading(); }
 }
 
 function handleLogout() {
@@ -349,8 +499,13 @@ function showSection(e, sectionId) {
 }
 function setViewMode(mode) {
     localStorage.setItem(VIEW_MODE_STORAGE_KEY, mode);
-    document.getElementById('devicesGrid').classList.toggle('d-none', mode !== 'grid');
-    document.getElementById('devicesList').classList.toggle('d-none', mode !== 'list');
+    if(mode === 'grid'){
+        document.getElementById('devicesGrid').classList.remove('d-none');
+        document.getElementById('devicesList').classList.add('d-none');
+    } else {
+        document.getElementById('devicesGrid').classList.add('d-none');
+        document.getElementById('devicesList').classList.remove('d-none');
+    }
 }
 function toggleDateControls() {
     const isRangeMode = document.getElementById('dateModeRange').checked;
@@ -373,9 +528,8 @@ async function refreshDeviceList(force = false) {
         updateDashboardCounters();
         populateAllSelects();
         if (force) showToast("success", "Device list updated.");
-    } catch (error) {
-        showToast("error", `Failed to refresh: ${error.message}`);
-    } finally { hideLoading(); }
+    } catch (error) { showToast("error", `Failed to refresh: ${error.message}`); } 
+    finally { hideLoading(); }
 }
 
 function getDeviceStatus(device) {
@@ -406,14 +560,9 @@ function renderDevices() {
     const gridContainer = document.getElementById('devicesGrid');
     const listBody = document.getElementById('devicesListBody');
     gridContainer.innerHTML = ''; listBody.innerHTML = '';
+    const message = `<p class="text-center text-muted col-12 py-3">No devices to display.</p>`;
+    if (displayedDevices.length === 0) { gridContainer.innerHTML = message; listBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">No devices to display.</td></tr>`; return; }
     
-    if (displayedDevices.length === 0) {
-        const msg = '<p class="text-center text-muted col-12 py-3">No devices to display.</p>';
-        gridContainer.innerHTML = msg;
-        listBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">No devices to display.</td></tr>`;
-        return;
-    }
-
     const gridFragment = document.createDocumentFragment();
     const listFragment = document.createDocumentFragment();
     displayedDevices.forEach(device => {
@@ -427,34 +576,45 @@ function renderDevices() {
 function createDeviceCard(device) {
     const card = document.createElement('div');
     card.className = 'col-xl-3 col-lg-4 col-md-6';
-    const latestValue = device.latestData?.flow?.actual?.toFixed(1) + ' GPM' || device.latestData?.ppm + ' PPM' || '--';
+    const latestValue = (device.latestData?.flow?.actual?.toFixed(1) + ' GPM') || (device.latestData?.ppm + ' PPM') || '--';
     card.innerHTML = `
         <div class="card device-card h-100 status-${device._status}">
-            <div class="card-header"><span class="device-id text-truncate">${device.deviceId}</span><span class="badge rounded-pill text-bg-${getStatusColor(device._status)}">${device._status}</span></div>
+            <div class="card-header">
+                <span class="device-id text-truncate">${device.deviceId}</span>
+                <span class="badge rounded-pill text-bg-${getStatusColor(device._status)}">${device._status}</span>
+            </div>
             <div class="card-body text-center d-flex flex-column justify-content-center">
-                <div class="metric-label">Latest Value</div><div class="metric-value">${latestValue}</div>
+                <div class="metric-label">Latest Value</div>
+                <div class="metric-value">${latestValue}</div>
                 <div class="last-update-time mt-2" style="font-size:0.8rem">${getRelativeTimeString(device.lastUpdated)}</div>
             </div>
-            <div class="card-footer bg-transparent border-0 pb-3"><button class="btn btn-sm btn-outline-secondary w-100 view-details-btn" data-device-id="${device.deviceId}">View Details</button></div>
+            <div class="card-footer bg-transparent border-0 pb-3">
+                <button class="btn btn-sm btn-outline-secondary w-100 view-details-btn" data-device-id="${device.deviceId}">View Details</button>
+            </div>
         </div>`;
     return card;
 }
 
 function createDeviceRow(device) {
     const row = document.createElement('tr');
-    const latestValue = device.latestData?.flow?.actual?.toFixed(1) + ' GPM' || device.latestData?.ppm + ' PPM' || '--';
-    row.innerHTML = `<td>${device.deviceId}</td><td><span class="badge text-bg-${getStatusColor(device._status)}">${device._status}</span></td><td>${getRelativeTimeString(device.lastUpdated)}</td><td>${latestValue}</td><td><button class="btn btn-sm btn-outline-secondary view-details-btn" data-device-id="${device.deviceId}">Details</button></td>`;
+    const latestValue = (device.latestData?.flow?.actual?.toFixed(1) + ' GPM') || (device.latestData?.ppm + ' PPM') || '--';
+    row.innerHTML = `
+        <td>${device.deviceId}</td>
+        <td><span class="badge text-bg-${getStatusColor(device._status)}">${device._status}</span></td>
+        <td>${getRelativeTimeString(device.lastUpdated)}</td>
+        <td>${latestValue}</td>
+        <td><button class="btn btn-sm btn-outline-secondary view-details-btn" data-device-id="${device.deviceId}">Details</button></td>`;
     return row;
 }
 
 function handleDeviceAction(e) {
-    if (e.target.classList.contains('view-details-btn')) {
+    if (e.target.matches('.view-details-btn')) {
         showDeviceDetails(e.target.dataset.deviceId);
     }
 }
 
 function updateDashboardCounters() {
-    const container = document.getElementById('statCards');
+    const container = document.getElementById('statCardsContainer');
     container.innerHTML = '';
     const stats = {
         'Total Devices': { count: allDevices.length, icon: 'hdd-rack', color: 'primary' },
@@ -463,7 +623,16 @@ function updateDashboardCounters() {
         'Offline': { count: allDevices.filter(d => d._status === 'offline').length, icon: 'wifi-off', color: 'secondary' }
     };
     for(const [title, data] of Object.entries(stats)) {
-        container.innerHTML += `<div class="col-sm-6 col-md-3"><div class="card h-100 shadow-sm"><div class="card-body text-center"><i class="bi bi-${data.icon} fs-4 text-${data.color} mb-2"></i><h5 class="fs-2 fw-bold mb-0">${data.count}</h5><p class="text-muted mb-0">${title}</p></div></div></div>`;
+        container.innerHTML += `
+            <div class="col-sm-6 col-md-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-${data.icon} fs-4 text-${data.color} mb-2"></i>
+                        <h5 class="fs-2 fw-bold mb-0">${data.count}</h5>
+                        <p class="text-muted mb-0">${title}</p>
+                    </div>
+                </div>
+            </div>`;
     }
 }
 
@@ -471,7 +640,8 @@ function populateAllSelects() {
     const sortedDevices = [...allDevices].sort((a,b) => a.deviceId.localeCompare(b.deviceId));
     const options = sortedDevices.map(d => `<option value="${d.deviceId}">${d.deviceId}</option>`).join('');
     document.getElementById('historyDeviceSelect').innerHTML = `<option value="">Select a device...</option>${options}`;
-    document.getElementById('backfillDeviceSelect').innerHTML = options;
+    document.getElementById('backfillDeviceSelect').innerHTML = `<option value="">Select a device...</option>${options}`;
+    
     const yearSelect = document.getElementById('backfillYearSelect');
     if(yearSelect.options.length === 0) {
         for(let i = new Date().getFullYear(); i >= 2022; i--) yearSelect.innerHTML += `<option value="${i}">${i}</option>`;
@@ -483,28 +653,34 @@ function populateDeviceSelectModal() {
     container.innerHTML = '';
     allDevices.sort((a,b) => a.deviceId.localeCompare(b.deviceId)).forEach(device => {
         const isChecked = !selectedDeviceIDs || selectedDeviceIDs.includes(device.deviceId);
-        container.innerHTML += `<label class="list-group-item"><input class="form-check-input me-2 device-select-checkbox" type="checkbox" value="${device.deviceId}" ${isChecked}>${device.deviceId}</label>`;
+        container.innerHTML += `
+            <label class="list-group-item">
+                <input class="form-check-input me-2 device-select-checkbox" type="checkbox" value="${device.deviceId}" ${isChecked}>
+                ${device.deviceId}
+            </label>`;
     });
 }
 
 function saveDeviceSelection() {
     const selected = Array.from(document.querySelectorAll('.device-select-checkbox:checked')).map(cb => cb.value);
-    if (selected.length === allDevices.length) {
-        selectedDeviceIDs = null;
-        localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY);
-    } else {
-        selectedDeviceIDs = selected;
-        localStorage.setItem(SELECTED_DEVICES_STORAGE_KEY, JSON.stringify(selected));
-    }
+    selectedDeviceIDs = (selected.length === allDevices.length) ? null : selected;
+    localStorage.setItem(SELECTED_DEVICES_STORAGE_KEY, JSON.stringify(selectedDeviceIDs));
     deviceSelectModal.hide();
     applyFiltersAndSort();
     renderDevices();
 }
 
+function selectOnlineDevices() {
+    const onlineIDs = allDevices.filter(d => d._status === 'online').map(d => d.deviceId);
+    document.querySelectorAll('.device-select-checkbox').forEach(cb => {
+        cb.checked = onlineIDs.includes(cb.value);
+    });
+}
+
 // --- DEVICE DETAIL MODAL ---
 async function showDeviceDetails(deviceId) {
     document.getElementById('deviceDetailTitle').textContent = `Details for ${deviceId}`;
-    document.getElementById('detailMetricsContainer').innerHTML = '<div class="text-center p-3 text-muted">Loading metrics...</div>';
+    document.getElementById('detailMetricsContainer').innerHTML = `<div class="text-center p-3 text-muted">Loading metrics...</div>`;
     document.getElementById('detailAllDataTableBody').innerHTML = '<tr><td colspan="2" class="text-center text-muted">Loading...</td></tr>';
     deviceDetailModal.show();
 
@@ -522,18 +698,18 @@ async function showDeviceDetails(deviceId) {
 function renderDetailMetrics(data) {
     const container = document.getElementById('detailMetricsContainer');
     container.innerHTML = '';
-    const fragment = document.createDocumentFragment();
     for (const key in data) {
         const value = data[key];
         if (typeof value === 'object' && value !== null && 'actual' in value) {
             if (value.actual === 0 && value.totalizer === 0 && value.average === 0) continue;
-            const card = document.createElement('div');
-            card.className = 'metric-card';
-            card.innerHTML = `<div class="metric-label">${key.replace(/([A-Z])/g, ' $1').toUpperCase()}</div><div class="metric-value">${value.actual.toFixed(2)}</div><div class="metric-sub-value">Total: ${value.totalizer.toFixed(2)}</div>`;
-            fragment.appendChild(card);
+            container.innerHTML += `
+                <div class="metric-card">
+                    <div class="metric-label">${key.replace(/([A-Z])/g, ' $1').toUpperCase()}</div>
+                    <div class="metric-value">${value.actual?.toFixed(2) ?? '--'}</div>
+                    <div class="metric-sub-value">Total: ${value.totalizer?.toFixed(2) ?? '--'}</div>
+                </div>`;
         }
     }
-    container.appendChild(fragment);
     if(container.innerHTML === '') container.innerHTML = '<p class="text-center text-muted col-12">No active probes detected in the latest log.</p>';
 }
 
@@ -564,8 +740,11 @@ async function fetchHistoricalData() {
     try {
         const isRunDayMode = document.getElementById('dateModeRunDay').checked;
         let url = `${API_ENDPOINT}/analytics?deviceId=${deviceId}&resolution=${document.getElementById('historyResolutionSelect').value}`;
-        if (isRunDayMode) url += `&lastRunDay=true&previousDays=${document.getElementById('runDayCountInput').value}`;
-        else url += `&startDate=${document.getElementById('historyStartDateInput').value}&endDate=${document.getElementById('historyEndDateInput').value}`;
+        if (isRunDayMode) {
+            url += `&lastRunDay=true&previousDays=${document.getElementById('runDayCountInput').value}`;
+        } else {
+            url += `&startDate=${document.getElementById('historyStartDateInput').value}&endDate=${document.getElementById('historyEndDateInput').value}`;
+        }
         
         const response = await fetchWithAuth(url);
         const result = await response.json();
@@ -612,16 +791,21 @@ function updateHistoryTable() {
     const tbody = document.getElementById('historyTableBody');
     const startIndex = historyCurrentPage * historyPageSize;
     const pageData = historyAllData.slice(startIndex, startIndex + historyPageSize);
+    
     tbody.innerHTML = pageData.map(d => {
         let usage = '--';
         if (d.flow?.totalizer_start != null && d.flow?.totalizer_end != null) {
             usage = `${(d.flow.totalizer_end - d.flow.totalizer_start).toFixed(2)} gal`;
         }
         return `<tr class="${d.type === 'alarm' ? 'table-alarm' : ''}">
-            <td>${formatDateTime(d.timestamp)}</td><td>${d.errorCode || d.type || 'OK'}</td>
-            <td>${(d.flow?.avg ?? d.flow?.actual)?.toFixed(2) ?? '--'}</td><td>${(d.ppm?.avg ?? d.ppm)?.toFixed(0) ?? '--'}</td><td>${usage}</td>
+            <td>${formatDateTime(d.timestamp)}</td>
+            <td>${d.errorCode || d.type || 'OK'}</td>
+            <td>${(d.flow?.avg ?? d.flow?.actual)?.toFixed(2) ?? '--'}</td>
+            <td>${(d.ppm?.avg ?? d.ppm)?.toFixed(0) ?? '--'}</td>
+            <td>${usage}</td>
         </tr>`;
     }).join('');
+
     document.getElementById('historyRowCounter').textContent = `Showing ${startIndex + 1}-${Math.min(startIndex + historyPageSize, historyAllData.length)} of ${historyAllData.length}`;
     document.getElementById('historyPrevPage').parentElement.classList.toggle('disabled', historyCurrentPage === 0);
     document.getElementById('historyNextPage').parentElement.classList.toggle('disabled', (startIndex + historyPageSize) >= historyAllData.length);
@@ -633,6 +817,7 @@ function showAdminModal() {
     document.getElementById('adminBackfillView').classList.add('d-none');
     document.getElementById('adminPasswordInput').value = '';
     document.getElementById('adminAuthError').classList.add('d-none');
+    populateAllSelects();
     adminModal.show();
 }
 
@@ -648,7 +833,9 @@ function unlockAdmin() {
 }
 
 async function startBackfill() {
-    const deviceId = document.getElementById('backfillDeviceSelect').value, year = document.getElementById('backfillYearSelect').value, month = document.getElementById('backfillMonthSelect').value;
+    const deviceId = document.getElementById('backfillDeviceSelect').value;
+    const year = document.getElementById('backfillYearSelect').value;
+    const month = document.getElementById('backfillMonthSelect').value;
     if (!deviceId) return showToast('error', 'Please select a device.');
     
     const logOutput = document.getElementById('backfillLogOutput');
@@ -658,7 +845,8 @@ async function startBackfill() {
 
     try {
         const response = await fetch(`${API_ENDPOINT}/admin/backfill`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json', 'X-API-KEY': apiKey, 'X-Admin-Pass': adminPassword },
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-API-KEY': apiKey, 'X-Admin-Pass': adminPassword },
             body: JSON.stringify({ deviceId, year: parseInt(year), month: parseInt(month) })
         });
         const result = await response.json();
@@ -701,7 +889,7 @@ function toggleInputVisibility(inputId, iconSelector) {
 }
 function startAutoRefresh() {
     stopAutoRefresh();
-    autoRefreshTimer = setInterval(() => { if (isTabVisible && document.getElementById('overviewSection').style.display !== 'none') refreshDeviceList(); }, AUTO_REFRESH_INTERVAL);
+    autoRefreshTimer = setInterval(() => { if (isTabVisible && !document.getElementById('overviewSection').classList.contains('d-none')) refreshDeviceList(); }, AUTO_REFRESH_INTERVAL);
     document.addEventListener('visibilitychange', () => { isTabVisible = document.visibilityState === 'visible'; });
 }
 function stopAutoRefresh() { if (autoRefreshTimer) clearInterval(autoRefreshTimer); }
