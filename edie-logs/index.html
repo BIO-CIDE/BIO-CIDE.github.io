@@ -23,2647 +23,688 @@
             --border-radius: 0.375rem;
             --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
             --box-shadow-hover: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-            --transition-speed: 0.3s;
         }
-
-        body {
-            background-color: var(--background-color);
-            color: var(--text-color);
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-            transition: background-color var(--transition-speed);
-        }
-
-        .navbar { 
-            background-color: var(--primary-color); 
-            position: sticky;
-            top: 0;
-            z-index: 1020;
-        }
+        body { background-color: var(--background-color); color: var(--text-color); font-family: system-ui, -apple-system, sans-serif; }
+        .navbar { background-color: var(--primary-color); position: sticky; top: 0; z-index: 1020; }
         .navbar-brand, .nav-link, .navbar-toggler-icon { color: white !important; }
-        .btn-outline-light:hover { background-color: rgba(255,255,255,0.2); color: white; }
-
-        .btn-primary {
-          --bs-btn-bg: var(--primary-color); --bs-btn-border-color: var(--primary-color);
-          --bs-btn-hover-bg: var(--primary-dark); --bs-btn-hover-border-color: #96181d;
-          --bs-btn-active-bg: #96181d; --bs-btn-active-border-color: #8a161a;
-          --bs-btn-disabled-bg: var(--primary-color); --bs-btn-disabled-border-color: var(--primary-color);
-        }
-
-        .auth-container { max-width: 450px; margin: 5rem auto; animation: fadeIn 0.5s ease; }
-        .auth-container .card { transition: all 0.3s ease; }
-        .auth-container .card:hover { transform: translateY(-5px); box-shadow: var(--box-shadow-hover); }
-        .auth-container .card-header { background-color: var(--primary-color); color: white; }
-
-        .device-card {
-            transition: all var(--transition-speed) ease;
-            border: 1px solid #dee2e6; 
-            border-left-width: 4px; 
-            border-left-color: transparent;
-            box-shadow: var(--box-shadow);
-            height: 100%;
-        }
-        .device-card:hover { 
-            transform: translateY(-4px); 
-            box-shadow: var(--box-shadow-hover);
-            background-color: var(--highlight-color);
-        }
+        .btn-primary { --bs-btn-bg: var(--primary-color); --bs-btn-border-color: var(--primary-color); --bs-btn-hover-bg: var(--primary-dark); --bs-btn-hover-border-color: #96181d; }
+        .auth-container { max-width: 450px; margin: 5rem auto; }
+        .device-card { transition: all 0.3s ease; border: 1px solid #dee2e6; border-left-width: 4px; border-left-color: transparent; height: 100%; }
+        .device-card:hover { transform: translateY(-4px); box-shadow: var(--box-shadow-hover); }
         .device-card.status-online { border-left-color: var(--success-color); }
         .device-card.status-warning { border-left-color: var(--warning-color); }
         .device-card.status-error { border-left-color: var(--error-color); }
         .device-card.status-offline { border-left-color: var(--offline-color); }
-
         .card-header { display: flex; justify-content: space-between; align-items: center; }
-        .device-id { font-weight: 600; word-break: break-all; }
-        .status-badge { font-size: 0.8em; }
-
-        .mini-chart-container { 
-            height: 80px; 
-            margin-bottom: 1rem; 
-        }
-        .chart-placeholder {
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #6c757d;
-            font-size: 0.9rem;
-            background-color: rgba(0,0,0,0.02);
-            border-radius: var(--border-radius);
-        }
+        .device-id { font-weight: 600; }
         .metric-value { font-size: 1.1rem; font-weight: 600; }
+        .metric-sub-value { font-size: 0.8rem; color: #6c757d; }
         .metric-label { color: #6c757d; font-size: 0.8rem; text-transform: uppercase; }
-        .last-update-time { font-size: 0.85rem; color: #6c757d; }
-
-        #loadingIndicator {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center;
-            align-items: center; z-index: 1060; color: white; flex-direction: column; gap: 1rem;
-            backdrop-filter: blur(5px);
-        }
-        #loadingIndicator .spinner-border { width: 3rem; height: 3rem; }
-
-        .timezone-info {
-            font-size: 0.9rem; padding: 0.75rem 1rem; border-radius: var(--border-radius);
-            background-color: rgba(203, 32, 38, 0.08); border-left: 3px solid var(--primary-color);
-            margin-bottom: 1.25rem; color: #555;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .device-select-list { 
-            max-height: 350px; 
-            overflow-y: auto; 
-            border: 1px solid #dee2e6; 
-            padding: 10px; 
-            border-radius: var(--border-radius);
-        }
-        .device-select-item { display: block; padding: 0.35rem 0; }
-        .device-select-item:hover { background-color: var(--primary-lighter); }
-
-        .detail-chart-container { 
-            height: 280px; 
-            margin-bottom: 1.5rem;
-            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
-            border-radius: var(--border-radius);
-            padding: 10px;
-        }
-
+        #loadingIndicator { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1060; color: white; flex-direction: column; gap: 1rem; backdrop-filter: blur(5px); }
+        .timezone-info { font-size: 0.9rem; padding: 0.75rem 1rem; border-radius: var(--border-radius); background-color: var(--primary-lighter); border-left: 3px solid var(--primary-color); margin-bottom: 1.25rem; }
         .table th { font-weight: 600; }
-        .table-hover tbody tr:hover { background-color: var(--primary-lighter) !important; }
-        .table-sm td, .table-sm th { padding: 0.5rem; }
-
-        .message-area { padding: 1.5rem; text-align: center; }
-        .error-message { color: var(--error-color); font-weight: 500; }
-        .info-message { color: #555; }
-
+        .table-alarm { background-color: rgba(220, 53, 69, 0.1) !important; font-weight: 500;}
         .toast-container { z-index: 1100; }
-        
-        .device-metrics-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 1rem;
-        }
-        
-        .metric-card {
-            flex: 1 0 calc(25% - 10px);
-            min-width: 150px;
-            padding: 12px;
-            border-radius: var(--border-radius);
-            background-color: var(--card-bg);
-            box-shadow: var(--box-shadow);
-            text-align: center;
-            transition: transform 0.2s ease;
-        }
-        
-        .metric-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        .search-container {
-            position: relative;
-        }
-        
-        .search-container .bi-search {
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6c757d;
-            z-index: 10;
-        }
-        
-        #searchDevicesInput {
-            padding-left: 35px;
-        }
-        
-        /* Data resolution indicator */
-        .resolution-badge {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.25rem;
-            background-color: rgba(var(--bs-info-rgb), 0.1);
-            color: var(--bs-info);
-            font-weight: 500;
-        }
-        
-        /* Loading progress */
-        .progress-info {
-            font-size: 0.875rem;
-            color: var(--bs-secondary);
-            margin-top: 0.5rem;
-        }
-        
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes slideInUp {
-            from { 
-                transform: translateY(30px);
-                opacity: 0;
-            }
-            to { 
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-        
-        /* Animation classes */
-        .animate-fade-in {
-            animation: fadeIn 0.5s ease forwards;
-        }
-        
-        .animate-slide-up {
-            animation: slideInUp 0.5s ease forwards;
-        }
-        
-        /* Data quality indicators */
-        .data-quality-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            font-size: 0.75rem;
-            color: var(--bs-secondary);
-        }
-        
-        .data-quality-indicator i {
-            font-size: 0.875rem;
-        }
-        
-        /* Responsive improvements */
-        @media (max-width: 767.98px) {
-            .auth-container { 
-                margin: 2rem auto;
-                padding: 0 15px;
-            }
-            
-            .detail-chart-container {
-                height: 220px;
-                margin-bottom: 1rem;
-            }
-            
-            .metric-card {
-                flex: 1 0 calc(50% - 10px);
-            }
-            
-            .navbar .container-fluid {
-                padding: 0 10px;
-            }
-            
-            .navbar-brand {
-                font-size: 1.1rem;
-            }
-            
-            .timezone-info {
-                padding: 0.5rem 0.75rem;
-                font-size: 0.8rem;
-            }
-        }
-        
-        /* Print styles */
-        @media print {
-            .navbar, 
-            .btn-toolbar, 
-            .no-print {
-                display: none !important;
-            }
-            
-            body, .card {
-                background-color: white !important;
-                color: black !important;
-                box-shadow: none !important;
-            }
-            
-            .card {
-                border: 1px solid #ddd !important;
-            }
-            
-            .container-fluid {
-                width: 100% !important;
-                max-width: 100% !important;
-                padding: 0 !important;
-                margin: 0 !important;
-            }
-        }
+        .device-metrics-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 1rem; }
+        .metric-card { flex: 1 1 200px; padding: 12px; border-radius: var(--border-radius); background-color: var(--card-bg); box-shadow: var(--box-shadow); text-align: center; }
+        .search-container { position: relative; }
+        .search-container .bi-search { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #6c757d; }
+        #searchDevicesInput { padding-left: 35px; }
+        #backfillLogOutput { background-color: #212529; color: #f8f9fa; font-family: 'Courier New', monospace; font-size: 0.875rem; height: 300px; overflow-y: scroll; white-space: pre-wrap; border-radius: var(--border-radius); padding: 10px; border: 1px solid #495057; }
     </style>
 </head>
 <body>
 
     <!-- Loading Indicator -->
     <div id="loadingIndicator" style="display: none;">
-        <div class="spinner-border" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
+        <div class="spinner-border text-light" style="width: 3rem; height: 3rem;" role="status"></div>
         <div id="loadingMessage" class="mt-2 fs-5">Loading...</div>
-        <div id="loadingProgress" class="progress-info"></div>
     </div>
 
-    <!-- Toast Container for Notifications -->
+    <!-- Toast Container -->
     <div class="toast-container position-fixed top-0 end-0 p-3">
-      <div id="errorToast" class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-          <div class="toast-body">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            <span id="toastErrorMessage">Error message goes here.</span>
-          </div>
-          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        <div id="appToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i id="toastIcon" class="bi me-2"></i>
+                <strong id="toastTitle" class="me-auto">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div id="toastBody" class="toast-body"></div>
         </div>
-      </div>
-      
-      <!-- Success Toast -->
-      <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-          <div class="toast-body">
-            <i class="bi bi-check-circle-fill me-2"></i>
-            <span id="toastSuccessMessage">Success message goes here.</span>
-          </div>
-          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-      </div>
     </div>
 
-    <!-- === Authentication Screen (API Key) === -->
+    <!-- Auth Screen -->
     <div id="authScreen" class="container auth-container">
         <div class="card shadow-sm">
-            <div class="card-header">
-                <h4 class="mb-0"><i class="bi bi-key-fill me-2"></i>EDIE Dashboard Login</h4>
-            </div>
+            <div class="card-header"><h4 class="mb-0"><i class="bi bi-key-fill me-2"></i>EDIE Dashboard Login</h4></div>
             <div class="card-body p-4">
                 <div class="mb-3">
                     <label for="apiKeyInput" class="form-label">API Key</label>
-                    <div class="input-group">
-                        <input type="password" class="form-control" id="apiKeyInput" placeholder="Enter your API key" required>
-                        <button class="btn btn-outline-secondary" type="button" id="toggleApiKeyVisibilityBtn" title="Show/Hide API Key">
-                            <i class="bi bi-eye-slash"></i>
-                        </button>
-                    </div>
+                    <div class="input-group"><input type="password" class="form-control" id="apiKeyInput" placeholder="Enter your API key" required><button class="btn btn-outline-secondary" type="button" id="toggleApiKeyVisibilityBtn"><i class="bi bi-eye-slash"></i></button></div>
                 </div>
-                <div class="form-check mb-3">
-                    <input class="form-check-input" type="checkbox" id="rememberKeyCheckbox">
-                    <label class="form-check-label" for="rememberKeyCheckbox">
-                        Remember API key
-                    </label>
-                </div>
-                <button id="loginBtn" class="btn btn-primary w-100">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Login
-                </button>
+                <div class="form-check mb-3"><input class="form-check-input" type="checkbox" id="rememberKeyCheckbox"><label class="form-check-label" for="rememberKeyCheckbox">Remember API key</label></div>
+                <button id="loginBtn" class="btn btn-primary w-100"><i class="bi bi-box-arrow-in-right me-2"></i>Login</button>
                 <div id="authError" class="alert alert-danger mt-3 p-2 text-center d-none" role="alert"></div>
             </div>
         </div>
     </div>
 
-    <!-- Main Dashboard Area -->
+    <!-- Main Dashboard -->
     <div id="mainDashboard" class="d-none">
-        <!-- Navigation Bar -->
         <nav class="navbar navbar-expand-lg navbar-dark mb-4 shadow-sm">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">
-                    <i class="bi bi-speedometer2 me-1"></i> EDIE Fleet Dashboard
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+                <a class="navbar-brand" href="#"><i class="bi bi-speedometer2 me-1"></i> EDIE Fleet Dashboard</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="#" id="navOverviewLink" aria-current="page">
-                                <i class="bi bi-grid-fill me-1"></i>Overview
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#" id="navHistoryLink">
-                                <i class="bi bi-clock-history me-1"></i>History
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#" id="navAnalyticsLink">
-                                <i class="bi bi-graph-up me-1"></i>Analytics
-                            </a>
-                        </li>
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item"><a class="nav-link" href="#" id="navOverviewLink" data-section="overviewSection"><i class="bi bi-grid-fill me-1"></i>Overview</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#" id="navHistoryLink" data-section="historySection"><i class="bi bi-graph-up me-1"></i>Analytics</a></li>
                     </ul>
                     <div class="d-flex align-items-center">
-                        <button id="selectDevicesBtn" class="btn btn-sm btn-outline-light me-2" title="Select Devices to Display">
-                            <i class="bi bi-list-check me-1"></i><span class="d-none d-md-inline">Devices</span>
-                        </button>
-                        <button id="refreshBtn" class="btn btn-sm btn-outline-light me-2" title="Refresh Data">
-                            <i class="bi bi-arrow-clockwise me-1"></i><span class="d-none d-md-inline">Refresh</span>
-                        </button>
-                        <button id="logoutBtn" class="btn btn-sm btn-outline-light" title="Logout">
-                            <i class="bi bi-box-arrow-right me-1"></i><span class="d-none d-md-inline">Logout</span>
-                        </button>
+                        <button id="selectDevicesBtn" class="btn btn-sm btn-outline-light me-2"><i class="bi bi-list-check me-1"></i><span class="d-none d-md-inline">Devices</span></button>
+                        <button id="refreshBtn" class="btn btn-sm btn-outline-light me-2"><i class="bi bi-arrow-clockwise me-1"></i><span class="d-none d-md-inline">Refresh</span></button>
+                        <button id="logoutBtn" class="btn btn-sm btn-outline-light"><i class="bi bi-box-arrow-right me-1"></i><span class="d-none d-md-inline">Logout</span></button>
                     </div>
                 </div>
             </div>
         </nav>
 
-        <!-- Content Area -->
         <div class="container-fluid px-3 px-md-4">
-
             <!-- Overview Section -->
             <div id="overviewSection">
-                <div class="timezone-info" id="overviewTimezoneInfo">
-                    <i class="bi bi-clock"></i> All times shown in local timezone: <strong id="userTimezoneOverview"></strong>
-                </div>
-                
-                <!-- Dashboard Stats Summary -->
-                <div class="row mb-4 g-3">
-                    <div class="col-sm-6 col-md-3">
-                        <div class="card h-100 shadow-sm">
-                            <div class="card-body text-center">
-                                <i class="bi bi-hdd-rack fs-4 text-primary mb-2"></i>
-                                <h5 class="fs-2 fw-bold mb-0 counter" id="totalDevicesCounter">0</h5>
-                                <p class="text-muted mb-0">Total Devices</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-6 col-md-3">
-                        <div class="card h-100 shadow-sm">
-                            <div class="card-body text-center">
-                                <i class="bi bi-check-circle fs-4 text-success mb-2"></i>
-                                <h5 class="fs-2 fw-bold mb-0 counter" id="onlineDevicesCounter">0</h5>
-                                <p class="text-muted mb-0">Online Devices</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-6 col-md-3">
-                        <div class="card h-100 shadow-sm">
-                            <div class="card-body text-center">
-                                <i class="bi bi-exclamation-triangle fs-4 text-warning mb-2"></i>
-                                <h5 class="fs-2 fw-bold mb-0 counter" id="warningDevicesCounter">0</h5>
-                                <p class="text-muted mb-0">Devices with Warnings</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-6 col-md-3">
-                        <div class="card h-100 shadow-sm">
-                            <div class="card-body text-center">
-                                <i class="bi bi-wifi-off fs-4 text-secondary mb-2"></i>
-                                <h5 class="fs-2 fw-bold mb-0 counter" id="offlineDevicesCounter">0</h5>
-                                <p class="text-muted mb-0">Offline Devices</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
+                <div class="timezone-info"><i class="bi bi-clock"></i> All times shown in local timezone: <strong id="userTimezone"></strong></div>
+                <div class="row mb-4 g-3" id="statCards"></div>
                 <div class="row mb-3 g-2 align-items-center">
-                    <div class="col-md-5 col-lg-4">
-                        <div class="search-container">
-                            <i class="bi bi-search"></i>
-                            <input type="text" id="searchDevicesInput" class="form-control" placeholder="Search by Device ID...">
-                        </div>
-                    </div>
+                    <div class="col-md-5 col-lg-4"><div class="search-container"><i class="bi bi-search"></i><input type="text" id="searchDevicesInput" class="form-control" placeholder="Search by Device ID..."></div></div>
                     <div class="col-md-7 col-lg-8 d-flex flex-wrap justify-content-md-end mt-2 mt-md-0">
-                        <div class="btn-group btn-group-sm me-2 mb-2 mb-md-0" role="group" aria-label="View options">
-                            <input type="radio" class="btn-check" name="viewOptions" id="viewGridBtn" autocomplete="off" checked>
-                            <label class="btn btn-outline-secondary" for="viewGridBtn"><i class="bi bi-grid"></i></label>
-                            
-                            <input type="radio" class="btn-check" name="viewOptions" id="viewListBtn" autocomplete="off">
-                            <label class="btn btn-outline-secondary" for="viewListBtn"><i class="bi bi-list-ul"></i></label>
-                        </div>
-                        
-                        <div class="btn-group btn-group-sm" role="group" aria-label="Sort devices">
-                            <input type="radio" class="btn-check" name="sortOptions" id="sortByNameBtn" autocomplete="off" checked data-sort="name">
-                            <label class="btn btn-outline-secondary" for="sortByNameBtn"><i class="bi bi-sort-alpha-down"></i> Name</label>
-
-                            <input type="radio" class="btn-check" name="sortOptions" id="sortByStatusBtn" autocomplete="off" data-sort="status">
-                            <label class="btn btn-outline-secondary" for="sortByStatusBtn"><i class="bi bi-shield-check"></i> Status</label>
-
-                            <input type="radio" class="btn-check" name="sortOptions" id="sortByLastUpdateBtn" autocomplete="off" data-sort="lastUpdate">
-                            <label class="btn btn-outline-secondary" for="sortByLastUpdateBtn"><i class="bi bi-calendar-event"></i> Last Update</label>
-                        </div>
+                        <div class="btn-group btn-group-sm me-2 mb-2 mb-md-0" role="group"><input type="radio" class="btn-check" name="viewOptions" id="viewGridBtn" checked><label class="btn btn-outline-secondary" for="viewGridBtn"><i class="bi bi-grid"></i></label><input type="radio" class="btn-check" name="viewOptions" id="viewListBtn"><label class="btn btn-outline-secondary" for="viewListBtn"><i class="bi bi-list-ul"></i></label></div>
+                        <div class="btn-group btn-group-sm" role="group"><input type="radio" class="btn-check" name="sortOptions" id="sortByNameBtn" checked data-sort="name"><label class="btn btn-outline-secondary" for="sortByNameBtn"><i class="bi bi-sort-alpha-down"></i> Name</label><input type="radio" class="btn-check" name="sortOptions" id="sortByStatusBtn" data-sort="status"><label class="btn btn-outline-secondary" for="sortByStatusBtn"><i class="bi bi-shield-check"></i> Status</label><input type="radio" class="btn-check" name="sortOptions" id="sortByLastUpdateBtn" data-sort="lastUpdate"><label class="btn btn-outline-secondary" for="sortByLastUpdateBtn"><i class="bi bi-calendar-event"></i> Last Update</label></div>
                     </div>
                 </div>
-                
-                <div id="devicesGrid" class="row g-3">
-                    <!-- Device cards will be inserted here -->
-                </div>
-                
-                <div id="devicesList" class="d-none">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Device ID</th>
-                                    <th>Status</th>
-                                    <th>Last Seen</th>
-                                    <th>Last Value</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="devicesListBody">
-                                <!-- List items will be inserted here -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <div class="col-12 message-area" id="overviewMessageArea" style="display: none;">
-                    <p id="overviewMessageText" class="info-message">Loading devices...</p>
-                </div>
+                <div id="devicesGrid" class="row g-3"></div>
+                <div id="devicesList" class="d-none"><div class="table-responsive"><table class="table table-hover"><thead><tr><th>Device ID</th><th>Status</th><th>Last Seen</th><th>Last Value</th><th>Actions</th></tr></thead><tbody id="devicesListBody"></tbody></table></div></div>
+                <div class="col-12 message-area" id="overviewMessageArea" style="display: none;"><p id="overviewMessageText" class="info-message"></p></div>
             </div>
 
-            <!-- History Section -->
+            <!-- History/Analytics Section -->
             <div id="historySection" class="d-none">
-                <div class="timezone-info" id="historyTimezoneInfo">
-                     <i class="bi bi-clock"></i> All times shown in local timezone: <strong id="userTimezoneHistory"></strong>
-                </div>
                 <div class="card shadow-sm">
-                    <div class="card-header d-flex justify-content-between align-items-center bg-light">
-                        <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Historical Data</h5>
-                        <div>
-                            <span id="dataResolutionBadge" class="resolution-badge me-2" style="display: none;">
-                                <i class="bi bi-speedometer2"></i> <span id="dataResolutionText">Raw</span>
-                            </span>
-                            <button id="exportCsvBtn" class="btn btn-sm btn-outline-primary me-2" disabled>
-                                <i class="bi bi-download me-1"></i>Export CSV
-                            </button>
-                            <button id="printHistoryBtn" class="btn btn-sm btn-outline-secondary no-print" disabled>
-                                <i class="bi bi-printer me-1"></i>Print
-                            </button>
-                        </div>
-                    </div>
+                    <div class="card-header bg-light"><h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Analytics & History</h5></div>
                     <div class="card-body p-4">
-                        <div class="row g-3 mb-3 align-items-end no-print">
-                            <div class="col-md-4 col-lg-3">
-                                <label for="historyDeviceSelect" class="form-label">Device</label>
-                                <select id="historyDeviceSelect" class="form-select form-select-sm">
-                                    <option value="" selected>Select a device...</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3 col-lg-2">
-                                <label for="historyStartDateInput" class="form-label">Start Date</label>
-                                <input type="date" id="historyStartDateInput" class="form-control form-control-sm">
-                            </div>
-                            <div class="col-md-3 col-lg-2">
-                                <label for="historyEndDateInput" class="form-label">End Date</label>
-                                <input type="date" id="historyEndDateInput" class="form-control form-control-sm">
-                            </div>
-                            <div class="col-md-2 col-lg-2">
-                                <label for="historyResolutionSelect" class="form-label">Resolution</label>
-                                <select id="historyResolutionSelect" class="form-select form-select-sm">
-                                    <option value="auto" selected>Auto</option>
-                                    <option value="raw">Raw (1 min)</option>
-                                    <option value="hourly">Hourly</option>
-                                    <option value="daily">Daily</option>
-                                </select>
-                            </div>
-                            <div class="col-md-12 col-lg-3">
-                                <button id="searchHistoryBtn" class="btn btn-primary btn-sm w-100">
-                                    <i class="bi bi-search me-1"></i>Search History
-                                </button>
-                            </div>
+                        <div class="row g-3 mb-4 align-items-end">
+                            <div class="col-md-6 col-lg-3"><label class="form-label">Device</label><select id="historyDeviceSelect" class="form-select"></select></div>
+                            <div class="col-md-6 col-lg-3"><label class="form-label">Date Selection Mode</label><div class="btn-group w-100"><input type="radio" class="btn-check" name="dateSelectionMode" id="dateModeRange" checked><label class="btn btn-sm btn-outline-secondary" for="dateModeRange">Date Range</label><input type="radio" class="btn-check" name="dateSelectionMode" id="dateModeRunDay"><label class="btn btn-sm btn-outline-secondary" for="dateModeRunDay">Last Run Days</label></div></div>
+                            <div class="col-md-12" id="dateRangeControls"><div class="row g-3"><div class="col-md-6"><label class="form-label">Start Date</label><input type="date" id="historyStartDateInput" class="form-control"></div><div class="col-md-6"><label class="form-label">End Date</label><input type="date" id="historyEndDateInput" class="form-control"></div></div></div>
+                            <div class="col-md-12 d-none" id="runDayControls"><label class="form-label">Number of previous run days to show</label><input type="number" id="runDayCountInput" class="form-control" value="3" min="1" max="30"></div>
+                            <div class="col-md-6 col-lg-3"><label class="form-label">Resolution</label><select id="historyResolutionSelect" class="form-select"><option value="auto" selected>Auto</option><option value="raw">Raw (1-min)</option><option value="15min">15-minute</option><option value="hourly">Hourly</option><option value="daily">Daily</option></select></div>
+                            <div class="col-md-6 col-lg-3"><button id="searchHistoryBtn" class="btn btn-primary w-100"><i class="bi bi-search me-1"></i>Get Data</button></div>
                         </div>
-
-                        <div id="historyChartContainer" class="mb-4" style="height: 300px; display: none;">
-                            <canvas id="historyChart"></canvas>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center mb-3 no-print" id="historyTableControls" style="display: none !important;">
-                            <div>
-                                <span id="historyRecordsInfo" class="text-muted">0 records loaded</span>
-                                <span class="data-quality-indicator ms-3" id="dataQualityIndicator" style="display: none;">
-                                    <i class="bi bi-info-circle"></i>
-                                    <span id="dataQualityText"></span>
-                                </span>
-                            </div>
-                            <div>
-                                <select id="historyPageSizeSelect" class="form-select form-select-sm" style="width: auto; display: inline-block;">
-                                    <option value="10">10 rows</option>
-                                    <option value="25" selected>25 rows</option>
-                                    <option value="50">50 rows</option>
-                                    <option value="100">100 rows</option>
-                                </select>
-                            </div>
-                        </div>
-
+                        <div id="historyChartContainer" class="mb-4" style="height: 350px; display: none;"><canvas id="historyChart"></canvas></div>
                         <div id="historyTableContainer" class="table-responsive" style="display: none;">
-                            <table class="table table-striped table-hover table-sm" id="historyTable">
-                                <thead>
-                                    <tr>
-                                        <th>Timestamp</th>
-                                        <th>Flow (GPM)</th>
-                                        <th>PPM</th>
-                                        <th>pH</th>
-                                        <th>ORP</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- History data rows -->
-                                </tbody>
-                            </table>
-                            
-                            <!-- Pagination Controls -->
-                            <div class="d-flex justify-content-between align-items-center mt-3 no-print" id="historyPagination">
-                                <span id="historyRowCounter" class="text-muted small">Showing 0 of 0 entries</span>
-                                <nav aria-label="History pagination">
-                                    <ul class="pagination pagination-sm">
-                                        <li class="page-item disabled">
-                                            <a class="page-link" href="#" id="historyPrevPage">Previous</a>
-                                        </li>
-                                        <li class="page-item disabled">
-                                            <a class="page-link" href="#" id="historyNextPage">Next</a>
-                                        </li>
-                                    </ul>
-                                </nav>
-                            </div>
+                            <table class="table table-striped table-hover table-sm"><thead><tr><th>Timestamp</th><th>Status</th><th>Flow (GPM)</th><th>PPM</th><th>Totalizer Usage</th></tr></thead><tbody id="historyTableBody"></tbody></table>
+                            <div class="d-flex justify-content-between align-items-center mt-3"><span id="historyRowCounter" class="text-muted small"></span><nav><ul class="pagination pagination-sm"><li class="page-item disabled"><a class="page-link" href="#" id="historyPrevPage">Previous</a></li><li class="page-item disabled"><a class="page-link" href="#" id="historyNextPage">Next</a></li></ul></nav></div>
                         </div>
-                        
-                        <div class="col-12 message-area" id="historyMessageArea">
-                            <p id="historyMessageText" class="info-message">Select criteria and search to view history.</p>
-                        </div>
+                        <div class="col-12 message-area" id="historyMessageArea"><p id="historyMessageText" class="info-message">Select a device and criteria to view analytics.</p></div>
                     </div>
-                </div>
-            </div>
-            
-            <!-- Analytics Section (Simplified) -->
-            <div id="analyticsSection" class="d-none">
-                <div class="timezone-info">
-                    <i class="bi bi-clock"></i> All times shown in local timezone: <strong id="userTimezoneAnalytics"></strong>
-                </div>
-                
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-light">
-                                <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Analytics (Coming Soon)</h5>
-                            </div>
-                            <div class="card-body text-center p-5">
-                                <p class="text-muted">Advanced analytics features will be available in a future update.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div> <!-- End Container Fluid -->
-
-    </div> <!-- End Main Dashboard -->
-
-
-    <!-- Device Detail Modal -->
-    <div class="modal fade" id="deviceDetailModal" tabindex="-1" aria-labelledby="deviceDetailTitle" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deviceDetailTitle">Device Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-0">
-                    <ul class="nav nav-tabs nav-fill" id="deviceDetailTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="detail-overview-tab" data-bs-toggle="tab" data-bs-target="#detailOverviewPane" type="button" role="tab">
-                                <i class="bi bi-bar-chart-line-fill me-1"></i>Overview
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="detail-data-tab" data-bs-toggle="tab" data-bs-target="#detailDataPane" type="button" role="tab">
-                                <i class="bi bi-table me-1"></i>Data Log
-                            </button>
-                        </li>
-                    </ul>
-                    <div class="tab-content p-4" id="deviceDetailTabContent">
-                        <!-- Overview Tab Pane -->
-                        <div class="tab-pane fade show active" id="detailOverviewPane" role="tabpanel">
-                            <div class="row mb-4">
-                                <div class="col-md-6">
-                                    <div class="detail-chart-container">
-                                        <canvas id="detailFlowChart"></canvas>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                     <div class="detail-chart-container">
-                                        <canvas id="detailPpmChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                            <h6 class="mb-3">Latest Metrics</h6>
-                            <div class="device-metrics-row mb-4" id="detailMetricsContainer">
-                                <div class="metric-card">
-                                    <div class="metric-label">Flow Rate</div>
-                                    <div class="metric-value" id="detailFlowMetric">--</div>
-                                </div>
-                                <div class="metric-card">
-                                    <div class="metric-label">PPM Reading</div>
-                                    <div class="metric-value" id="detailPpmMetric">--</div>
-                                </div>
-                                <div class="metric-card">
-                                    <div class="metric-label">pH Reading</div>
-                                    <div class="metric-value" id="detailPHMetric">--</div>
-                                </div>
-                                <div class="metric-card">
-                                    <div class="metric-label">ORP Reading</div>
-                                    <div class="metric-value" id="detailORPMetric">--</div>
-                                </div>
-                            </div>
-                            
-                            <div class="device-metrics-row" id="detailAdditionalMetricsContainer">
-                                <div class="metric-card">
-                                    <div class="metric-label">Status</div>
-                                    <div class="metric-value" id="detailStatusMetric">--</div>
-                                </div>
-                                <div class="metric-card">
-                                    <div class="metric-label">Last Update</div>
-                                    <div class="metric-value small" id="detailLastUpdateMetric">--</div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Data Log Tab Pane -->
-                        <div class="tab-pane fade" id="detailDataPane" role="tabpanel">
-                             <h6>Recent Data Log Entries</h6>
-                             <div class="table-responsive mt-2">
-                                <table class="table table-sm table-striped table-hover" id="detailDataTable">
-                                    <thead>
-                                        <tr>
-                                            <th>Timestamp</th>
-                                            <th>Flow</th>
-                                            <th>PPM</th>
-                                            <th>pH</th>
-                                            <th>ORP</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                         <tr><td colspan="6" class="text-center text-muted p-3">Loading data...</td></tr>
-                                    </tbody>
-                                </table>
-                                
-                                <!-- Detail Data Pagination -->
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <span id="detailDataCounter" class="text-muted small">Showing 0 of 0 entries</span>
-                                    <nav aria-label="Detail data pagination">
-                                        <ul class="pagination pagination-sm">
-                                            <li class="page-item disabled">
-                                                <a class="page-link" href="#" id="detailPrevPage">Previous</a>
-                                            </li>
-                                            <li class="page-item disabled">
-                                                <a class="page-link" href="#" id="detailNextPage">Next</a>
-                                            </li>
-                                        </ul>
-                                    </nav>
-                                </div>
-                             </div>
-                        </div>
-                    </div>
-                </div>
-                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="detailRefreshBtn">
-                        <i class="bi bi-arrow-clockwise me-1"></i>Refresh Data
-                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Device Selection Modal -->
-    <div class="modal fade" id="deviceSelectModal" tabindex="-1" aria-labelledby="deviceSelectModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deviceSelectModalLabel">Select Devices to Display</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p class="text-muted small">Choose which devices appear on the overview dashboard.</p>
-                    <div class="mb-3">
-                        <div class="search-container">
-                            <i class="bi bi-search"></i>
-                            <input type="text" id="filterDeviceSelectInput" class="form-control form-control-sm" placeholder="Filter devices...">
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="selectAllDevicesCheckbox">
-                            <label class="form-check-label fw-bold" for="selectAllDevicesCheckbox">
-                                Select/Deselect All
-                            </label>
-                        </div>
-                        <div>
-                            <button class="btn btn-sm btn-outline-primary" id="selectOnlineOnlyBtn">
-                                <i class="bi bi-check-circle me-1"></i>Online Only
-                            </button>
-                        </div>
-                    </div>
-                    <div id="deviceSelectList" class="device-select-list">
-                        <p class="text-center text-muted p-3">Loading available devices...</p>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="saveDeviceSelectionBtn">Save Selection</button>
-                </div>
+    <!-- Modals -->
+    <div class="modal fade" id="deviceDetailModal" tabindex="-1"><div class="modal-dialog modal-xl"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="deviceDetailTitle"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body p-0">
+            <ul class="nav nav-tabs nav-fill" role="tablist"><li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#detailOverviewPane"><i class="bi bi-bar-chart-line-fill me-1"></i>Overview</button></li><li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#detailAllDataPane"><i class="bi bi-journal-text me-1"></i>All Data</button></li></ul>
+            <div class="tab-content p-4">
+                <div class="tab-pane fade show active" id="detailOverviewPane"><div class="device-metrics-row" id="detailMetricsContainer"></div></div>
+                <div class="tab-pane fade" id="detailAllDataPane"><h6>Last Complete Log Entry</h6><div class="table-responsive mt-2"><table class="table table-sm table-striped table-hover"><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody id="detailAllDataTableBody"></tbody></table></div></div>
             </div>
         </div>
-    </div>
+    </div></div></div>
 
-    <!-- Scripts -->
+    <div class="modal fade" id="deviceSelectModal" tabindex="-1"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Select Devices</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <div class="mb-3"><div class="search-container"><i class="bi bi-search"></i><input type="text" id="filterDeviceSelectInput" class="form-control form-control-sm" placeholder="Filter devices..."></div></div>
+            <div class="d-flex justify-content-between mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="selectAllDevicesCheckbox"><label class="form-check-label fw-bold" for="selectAllDevicesCheckbox">Select/Deselect All</label></div><div><button class="btn btn-sm btn-outline-primary" id="selectOnlineOnlyBtn"><i class="bi bi-check-circle me-1"></i>Online Only</button></div></div>
+            <div id="deviceSelectList" class="list-group list-group-flush border rounded"></div>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-primary" id="saveDeviceSelectionBtn">Save Selection</button></div>
+    </div></div></div>
+    
+    <div class="modal fade" id="adminModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Admin Console</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <div id="adminAuthView">
+                <p class="text-muted">Enter the Admin Password to access administrative functions.</p>
+                <div class="mb-3"><label for="adminPasswordInput" class="form-label">Admin Password</label><input type="password" class="form-control" id="adminPasswordInput"></div>
+                <button id="adminUnlockBtn" class="btn btn-primary">Unlock</button><div id="adminAuthError" class="alert alert-danger mt-3 d-none"></div>
+            </div>
+            <div id="adminBackfillView" class="d-none">
+                <h5>Backfill Historical Data</h5><p class="text-muted small">This tool processes legacy log files for one month at a time, creating the necessary aggregates and indexes for the new analytics system. Run this for each month of historical data.</p>
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-5"><label class="form-label">Device</label><select id="backfillDeviceSelect" class="form-select"></select></div>
+                    <div class="col-md-3"><label class="form-label">Year</label><select id="backfillYearSelect" class="form-select"></select></div>
+                    <div class="col-md-4"><label class="form-label">Month</label><select id="backfillMonthSelect" class="form-select"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></div>
+                </div>
+                <button id="startBackfillBtn" class="btn btn-danger mt-3"><i class="bi bi-hdd-rack-fill me-1"></i> Start Backfill</button>
+                <h6 class="mt-4">Backfill Log</h6><pre id="backfillLogOutput">Waiting for process to start...</pre>
+            </div>
+        </div>
+    </div></div></div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.30.0/index.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    
     <script>
 // --- Configuration ---
-const API_ENDPOINT = 'https://jolly-queen-8e6f.larry-schrimpfff6544.workers.dev'; // Worker URL
+const API_ENDPOINT = 'https://jolly-queen-8e6f.larry-schrimpfff6544.workers.dev';
 const API_KEY_STORAGE_KEY = 'edieApiKey';
 const SELECTED_DEVICES_STORAGE_KEY = 'edieSelectedDevices';
-const DEFAULT_API_KEY = ""; // Set your default API key here if desired
+const DEFAULT_API_KEY = "k32BWMByEJrCihED0YEmhs0AaUJCeontFUC_qbeB"; // RESTORED as requested
 const AUTO_REFRESH_INTERVAL = 60000; // 60 seconds
 const OFFLINE_THRESHOLD_MINUTES = 15;
 const VIEW_MODE_STORAGE_KEY = 'edieViewMode';
-const DATA_CACHE_KEY = 'edieDataCache';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 // --- State Variables ---
-let apiKey = '';
-let allDevices = []; // Raw device summary data
-let displayedDevices = []; // Filtered/sorted subset
-let selectedDeviceIDs = null; // null = show all
-let currentSortCriteria = 'name';
-let currentSearchTerm = '';
-let currentViewMode = 'grid';
-let autoRefreshTimer = null;
-let isTabVisible = true;
-let dataCache = new Map();
-
-// Detail modal state
-let detailCurrentPage = 0;
-let detailPageSize = 25;
-let detailAllData = [];
-let detailDeviceId = null;
-
-// History state
-let historyAllData = [];
-let historyCurrentPage = 0;
-let historyPageSize = 25;
-let historyDataResolution = 'auto';
-
-// Chart instances
-let detailFlowChart = null;
-let detailPpmChart = null;
+let apiKey = '', adminPassword = '', currentViewMode = 'grid', currentSortCriteria = 'name';
+let allDevices = [], displayedDevices = [], selectedDeviceIDs = null;
+let historyAllData = [], historyCurrentPage = 0, historyPageSize = 25;
 let historyChart = null;
+let autoRefreshTimer = null, isTabVisible = true;
 
-// Modal instances
-let deviceDetailModal = null;
-let deviceSelectModal = null;
-let errorToast = null;
-let successToast = null;
+// --- Bootstrap & Chart Instances ---
+let deviceDetailModal, deviceSelectModal, adminModal, appToast;
 
-// --- Initialize App ---
-document.addEventListener('DOMContentLoaded', initializeApp);
-
-function initializeApp() {
-    console.log("Initializing EDIE Dashboard...");
-    initializeTimezone();
-    initializeModalsAndToast();
+// --- INITIALIZE APP ---
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("Initializing EDIE Dashboard v3.2");
+    initializeComponents();
     setupEventListeners();
     loadStateFromStorage();
-    initializeDateInputs();
-
+    
     if (apiKey) {
-        console.log("API key found in storage. Attempting auto-login.");
         document.getElementById('apiKeyInput').value = apiKey;
         document.getElementById('rememberKeyCheckbox').checked = true;
         validateApiKeyAndProceed(apiKey, true);
     } else {
-        console.log("No API key in storage. Showing login screen.");
         document.getElementById('apiKeyInput').value = DEFAULT_API_KEY;
         showAuthScreen();
     }
+});
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    initializeChartDefaults();
-}
-
-// --- Utility Functions ---
-function initializeTimezone() {
-    try {
-        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        document.getElementById('userTimezoneOverview').textContent = userTimezone;
-        document.getElementById('userTimezoneHistory').textContent = userTimezone;
-        document.getElementById('userTimezoneAnalytics').textContent = userTimezone;
-    } catch (e) { 
-        console.error("Could not determine timezone:", e); 
-    }
-}
-
-function initializeModalsAndToast() {
-    try {
-        deviceDetailModal = new bootstrap.Modal(document.getElementById('deviceDetailModal'));
-        deviceSelectModal = new bootstrap.Modal(document.getElementById('deviceSelectModal'));
-        errorToast = new bootstrap.Toast(document.getElementById('errorToast'));
-        successToast = new bootstrap.Toast(document.getElementById('successToast'));
-    } catch(e) { 
-        console.error("Error initializing Bootstrap components:", e); 
-    }
-}
-
-function initializeDateInputs() {
-    const today = new Date();
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(today.getDate() - 7);
+function initializeComponents() {
+    deviceDetailModal = new bootstrap.Modal('#deviceDetailModal');
+    deviceSelectModal = new bootstrap.Modal('#deviceSelectModal');
+    adminModal = new bootstrap.Modal('#adminModal');
+    appToast = new bootstrap.Toast('#appToast');
     
+    Chart.register(ChartjsPluginAnnotation.default);
+    Chart.defaults.maintainAspectRatio = false;
+    Chart.defaults.responsive = true;
+    Chart.defaults.plugins.legend.position = 'bottom';
+    
+    try {
+        document.getElementById('userTimezone').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch(e) { console.error("Could not determine timezone", e); }
+    
+    const today = new Date(), oneWeekAgo = new Date();
+    oneWeekAgo.setDate(today.getDate() - 7);
     document.getElementById('historyEndDateInput').valueAsDate = today;
     document.getElementById('historyStartDateInput').valueAsDate = oneWeekAgo;
 }
 
-function initializeChartDefaults() {
-    Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
-    Chart.defaults.font.size = 12;
-    Chart.defaults.color = '#6c757d';
-    Chart.defaults.plugins.legend.position = 'top';
-    Chart.defaults.maintainAspectRatio = false;
-    Chart.defaults.responsive = true;
-}
-
 function setupEventListeners() {
-    // Auth
+    // --- Global ---
+    document.addEventListener('keydown', e => { if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) { e.preventDefault(); showAdminModal(); } });
+    
+    // --- Auth ---
     document.getElementById('loginBtn').addEventListener('click', handleLogin);
-    document.getElementById('apiKeyInput').addEventListener('keypress', (e) => { 
-        if (e.key === 'Enter') handleLogin(); 
-    });
-    document.getElementById('toggleApiKeyVisibilityBtn').addEventListener('click', toggleApiKeyVisibility);
+    document.getElementById('apiKeyInput').addEventListener('keypress', e => e.key === 'Enter' && handleLogin());
+    document.getElementById('toggleApiKeyVisibilityBtn').addEventListener('click', () => toggleInputVisibility('apiKeyInput', '#toggleApiKeyVisibilityBtn i'));
     document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-    
-    // Navigation
-    document.getElementById('navOverviewLink').addEventListener('click', showOverviewSection);
-    document.getElementById('navHistoryLink').addEventListener('click', showHistorySection);
-    document.getElementById('navAnalyticsLink').addEventListener('click', showAnalyticsSection);
-    
-    // Overview controls
+
+    // --- Main UI ---
+    document.querySelectorAll('.navbar .nav-link').forEach(link => link.addEventListener('click', e => showSection(e, e.target.dataset.section)));
     document.getElementById('refreshBtn').addEventListener('click', () => refreshDeviceList(true));
-    document.getElementById('selectDevicesBtn').addEventListener('click', openDeviceSelectionModal);
-    document.getElementById('searchDevicesInput').addEventListener('input', handleSearchInput);
-    document.getElementById('viewGridBtn').addEventListener('change', () => setViewMode('grid'));
-    document.getElementById('viewListBtn').addEventListener('change', () => setViewMode('list'));
+    document.getElementById('selectDevicesBtn').addEventListener('click', () => { populateDeviceSelectModal(); deviceSelectModal.show(); });
     
-    // Sort options
-    document.querySelectorAll('input[name="sortOptions"]').forEach(radio => {
-        radio.addEventListener('change', handleSortChange);
-    });
-    
-    // History controls
+    // --- Overview ---
+    document.getElementById('searchDevicesInput').addEventListener('input', () => { applyFiltersAndSort(); renderDevices(); });
+    document.querySelectorAll('input[name="viewOptions"]').forEach(radio => radio.addEventListener('change', e => setViewMode(e.target.id === 'viewGridBtn' ? 'grid' : 'list')));
+    document.querySelectorAll('input[name="sortOptions"]').forEach(radio => radio.addEventListener('change', e => { currentSortCriteria = e.target.dataset.sort; applyFiltersAndSort(); renderDevices(); }));
+    document.getElementById('devicesGrid').addEventListener('click', handleDeviceAction);
+    document.getElementById('devicesListBody').addEventListener('click', handleDeviceAction);
+
+    // --- Analytics ---
     document.getElementById('searchHistoryBtn').addEventListener('click', fetchHistoricalData);
-    document.getElementById('exportCsvBtn').addEventListener('click', exportHistoryToCSV);
-    document.getElementById('printHistoryBtn').addEventListener('click', () => window.print());
-    document.getElementById('historyPrevPage').addEventListener('click', showPreviousHistoryPage);
-    document.getElementById('historyNextPage').addEventListener('click', showNextHistoryPage);
-    document.getElementById('historyPageSizeSelect').addEventListener('change', changeHistoryPageSize);
-    document.getElementById('historyResolutionSelect').addEventListener('change', handleResolutionChange);
+    document.querySelectorAll('input[name="dateSelectionMode"]').forEach(radio => radio.addEventListener('change', toggleDateControls));
+    document.getElementById('historyPrevPage').addEventListener('click', e => { e.preventDefault(); if (historyCurrentPage > 0) { historyCurrentPage--; updateHistoryTable(); } });
+    document.getElementById('historyNextPage').addEventListener('click', e => { e.preventDefault(); const maxPage = Math.ceil(historyAllData.length / historyPageSize) - 1; if (historyCurrentPage < maxPage) { historyCurrentPage++; updateHistoryTable(); } });
     
-    // Device selection modal
+    // --- Modals ---
     document.getElementById('saveDeviceSelectionBtn').addEventListener('click', saveDeviceSelection);
-    document.getElementById('selectAllDevicesCheckbox').addEventListener('change', handleSelectAllToggle);
-    document.getElementById('filterDeviceSelectInput').addEventListener('input', filterDeviceSelectionList);
-    document.getElementById('selectOnlineOnlyBtn').addEventListener('click', selectOnlineDevicesOnly);
-    
-    // Detail modal
-    document.getElementById('detailRefreshBtn').addEventListener('click', refreshCurrentDeviceDetails);
-    document.getElementById('detailPrevPage').addEventListener('click', showPreviousDetailPage);
-    document.getElementById('detailNextPage').addEventListener('click', showNextDetailPage);
-    
-    // Clean up charts on modal close
-    document.getElementById('deviceDetailModal').addEventListener('hidden.bs.modal', () => {
-        destroyChart(detailFlowChart); 
-        detailFlowChart = null;
-        destroyChart(detailPpmChart); 
-        detailPpmChart = null;
-        detailAllData = [];
-        detailDeviceId = null;
-    });
+    document.getElementById('adminUnlockBtn').addEventListener('click', unlockAdmin);
+    document.getElementById('startBackfillBtn').addEventListener('click', startBackfill);
 }
 
+// --- AUTH & STATE MGMT ---
 function loadStateFromStorage() {
-    // Load API Key
-    const savedKey = localStorage.getItem(API_KEY_STORAGE_KEY);
-    if (savedKey) {
-        apiKey = savedKey;
-    }
-
-    // Load Device Selection
-    const savedSelection = localStorage.getItem(SELECTED_DEVICES_STORAGE_KEY);
-    if (savedSelection) {
-        try {
-            selectedDeviceIDs = JSON.parse(savedSelection);
-            if (!Array.isArray(selectedDeviceIDs)) {
-                selectedDeviceIDs = null;
-                localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY);
-            }
-        } catch (e) { 
-            selectedDeviceIDs = null; 
-        }
-    }
-    
-    // Load View Mode
-    const savedViewMode = localStorage.getItem(VIEW_MODE_STORAGE_KEY);
-    if (savedViewMode === 'list') {
-        currentViewMode = 'list';
-        document.getElementById('viewListBtn').checked = true;
-    }
-    
-    // Load cached data
-    loadCachedData();
+    apiKey = localStorage.getItem(API_KEY_STORAGE_KEY) || '';
+    selectedDeviceIDs = JSON.parse(localStorage.getItem(SELECTED_DEVICES_STORAGE_KEY));
+    currentViewMode = localStorage.getItem(VIEW_MODE_STORAGE_KEY) || 'grid';
+    document.getElementById(currentViewMode === 'grid' ? 'viewGridBtn' : 'viewListBtn').checked = true;
+    setViewMode(currentViewMode);
 }
 
-function loadCachedData() {
-    try {
-        const cached = localStorage.getItem(DATA_CACHE_KEY);
-        if (cached) {
-            const { data, timestamp } = JSON.parse(cached);
-            if (Date.now() - timestamp < CACHE_DURATION) {
-                console.log('Loading devices from cache');
-                allDevices = data;
-                applyFiltersAndSort();
-                renderDevices();
-                updateDashboardCounters();
-            }
-        }
-    } catch (e) {
-        console.error('Error loading cached data:', e);
-    }
-}
-
-function saveCachedData(data) {
-    try {
-        localStorage.setItem(DATA_CACHE_KEY, JSON.stringify({
-            data: data,
-            timestamp: Date.now()
-        }));
-    } catch (e) {
-        console.error('Error saving cache:', e);
-    }
-}
-
-// --- Authentication ---
 async function handleLogin() {
     const inputKey = document.getElementById('apiKeyInput').value.trim();
-    const remember = document.getElementById('rememberKeyCheckbox').checked;
-    document.getElementById('authError').classList.add('d-none');
-
-    if (!inputKey) {
-        showAuthError("Please enter your API key.");
-        return;
-    }
-
-    await validateApiKeyAndProceed(inputKey, false, remember);
+    if (!inputKey) return showToast('error', 'API Key is required.');
+    await validateApiKeyAndProceed(inputKey, false, document.getElementById('rememberKeyCheckbox').checked);
 }
 
-async function validateApiKeyAndProceed(keyToValidate, isAutoLogin = false, remember = false) {
-    showLoading(isAutoLogin ? "Authenticating..." : "Validating API Key...");
+async function validateApiKeyAndProceed(key, isAutoLogin = false, remember = false) {
+    showLoading("Authenticating...");
+    document.getElementById('authError').classList.add('d-none');
     try {
-        // Test API key by fetching device list
-        const response = await fetchWithAuth(`${API_ENDPOINT}/devices`, {}, keyToValidate);
-
-        if (response.ok) {
-            apiKey = keyToValidate;
-            if (!isAutoLogin) {
-                if (remember) {
-                    localStorage.setItem(API_KEY_STORAGE_KEY, apiKey);
-                    showToastSuccess("API key saved for future sessions");
-                } else {
-                    localStorage.removeItem(API_KEY_STORAGE_KEY);
-                }
-            }
-            showMainDashboard();
-            startAutoRefresh();
-            await refreshDeviceList();
-        } else if (response.status === 401) {
-            if (isAutoLogin) {
-                handleLogout();
-                showAuthScreen();
-                showAuthError("Stored API Key is invalid. Please login again.");
-            } else {
-                showAuthError("Invalid API Key. Please check and try again.");
-            }
-            apiKey = '';
-        } else {
-            throw new Error(`Validation failed: ${response.statusText}`);
+        const response = await fetch(`${API_ENDPOINT}/devices`, { headers: { 'X-API-KEY': key } });
+        if (!response.ok) throw new Error('Invalid API Key or Network Error');
+        apiKey = key;
+        if (!isAutoLogin) {
+            if (remember) localStorage.setItem(API_KEY_STORAGE_KEY, apiKey);
+            else localStorage.removeItem(API_KEY_STORAGE_KEY);
         }
+        showMainDashboard();
+        await refreshDeviceList();
+        startAutoRefresh();
     } catch (error) {
-        console.error("API Key validation error:", error);
-        showAuthError("Connection error. Could not reach the server.");
-        apiKey = '';
+        showToast('error', error.message, 'Authentication Failed');
+        if (isAutoLogin) handleLogout();
+        else document.getElementById('authError').textContent = error.message; document.getElementById('authError').classList.remove('d-none');
     } finally {
         hideLoading();
     }
 }
 
 function handleLogout() {
-    console.log("Logging out...");
-    apiKey = '';
-    allDevices = [];
-    displayedDevices = [];
-    selectedDeviceIDs = null;
+    apiKey = adminPassword = '';
     localStorage.removeItem(API_KEY_STORAGE_KEY);
-    localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY);
-    localStorage.removeItem(DATA_CACHE_KEY);
     document.getElementById('apiKeyInput').value = DEFAULT_API_KEY;
-    document.getElementById('rememberKeyCheckbox').checked = false;
     stopAutoRefresh();
-    clearAllCharts();
     showAuthScreen();
-    resetHistoryView();
 }
 
-function showAuthError(message) {
-    const errorDiv = document.getElementById('authError');
-    errorDiv.textContent = message;
-    errorDiv.classList.remove('d-none');
-}
-
-function toggleApiKeyVisibility() {
-    const input = document.getElementById('apiKeyInput');
-    const icon = document.querySelector('#toggleApiKeyVisibilityBtn i');
-    if (input.type === "password") {
-        input.type = "text";
-        icon.classList.remove('bi-eye-slash');
-        icon.classList.add('bi-eye');
-    } else {
-        input.type = "password";
-        icon.classList.remove('bi-eye');
-        icon.classList.add('bi-eye-slash');
-    }
-}
-
-// --- UI Navigation ---
-function showAuthScreen() {
-    document.getElementById('authScreen').classList.remove('d-none');
-    document.getElementById('mainDashboard').classList.add('d-none');
-}
-
-function showMainDashboard() {
-    document.getElementById('authScreen').classList.add('d-none');
-    document.getElementById('mainDashboard').classList.remove('d-none');
-    showOverviewSection();
-}
-
-function showOverviewSection(e) {
+// --- UI & NAVIGATION ---
+function showAuthScreen() { document.getElementById('authScreen').classList.remove('d-none'); document.getElementById('mainDashboard').classList.add('d-none'); }
+function showMainDashboard() { document.getElementById('authScreen').classList.add('d-none'); document.getElementById('mainDashboard').classList.remove('d-none'); showSection(null, 'overviewSection'); }
+function showSection(e, sectionId) {
     if (e) e.preventDefault();
-    document.getElementById('overviewSection').classList.remove('d-none');
-    document.getElementById('historySection').classList.add('d-none');
-    document.getElementById('analyticsSection').classList.add('d-none');
-    setActiveNav('navOverviewLink');
+    ['overviewSection', 'historySection'].forEach(id => document.getElementById(id).classList.add('d-none'));
+    document.getElementById(sectionId).classList.remove('d-none');
+    document.querySelectorAll('.navbar .nav-link').forEach(link => link.classList.remove('active'));
+    document.querySelector(`.navbar .nav-link[data-section="${sectionId}"]`).classList.add('active');
 }
-
-function showHistorySection(e) {
-    if (e) e.preventDefault();
-    document.getElementById('overviewSection').classList.add('d-none');
-    document.getElementById('historySection').classList.remove('d-none');
-    document.getElementById('analyticsSection').classList.add('d-none');
-    setActiveNav('navHistoryLink');
-    populateHistoryDeviceDropdown();
-}
-
-function showAnalyticsSection(e) {
-    if (e) e.preventDefault();
-    document.getElementById('overviewSection').classList.add('d-none');
-    document.getElementById('historySection').classList.add('d-none');
-    document.getElementById('analyticsSection').classList.remove('d-none');
-    setActiveNav('navAnalyticsLink');
-}
-
-function setActiveNav(activeId) {
-    ['navOverviewLink', 'navHistoryLink', 'navAnalyticsLink'].forEach(id => {
-        const link = document.getElementById(id);
-        if (id === activeId) {
-            link.classList.add('active');
-            link.setAttribute('aria-current', 'page');
-        } else {
-            link.classList.remove('active');
-            link.removeAttribute('aria-current');
-        }
-    });
-}
-
 function setViewMode(mode) {
-    currentViewMode = mode;
     localStorage.setItem(VIEW_MODE_STORAGE_KEY, mode);
-    
-    if (mode === 'grid') {
-        document.getElementById('devicesGrid').classList.remove('d-none');
-        document.getElementById('devicesList').classList.add('d-none');
-    } else {
-        document.getElementById('devicesGrid').classList.add('d-none');
-        document.getElementById('devicesList').classList.remove('d-none');
-    }
-    
-    renderDevices();
+    document.getElementById('devicesGrid').classList.toggle('d-none', mode !== 'grid');
+    document.getElementById('devicesList').classList.toggle('d-none', mode !== 'list');
+}
+function toggleDateControls() {
+    const isRangeMode = document.getElementById('dateModeRange').checked;
+    document.getElementById('dateRangeControls').classList.toggle('d-none', !isRangeMode);
+    document.getElementById('runDayControls').classList.toggle('d-none', isRangeMode);
 }
 
-// --- API Communication ---
-async function fetchWithAuth(url, options = {}, keyOverride = null) {
-    const keyToUse = keyOverride || apiKey;
-    if (!keyToUse) {
-        console.error("Attempted fetch without API key.");
-        throw new Error("Authentication required.");
-    }
-    const headers = {
-        ...options.headers,
-        'X-API-KEY': keyToUse,
-    };
-    return fetch(url, { ...options, headers });
-}
-
-// --- Device List Management ---
+// --- DEVICE LIST & OVERVIEW ---
 async function refreshDeviceList(force = false) {
     if (!apiKey) return;
-    console.log("Refreshing device list...");
-    showLoading("Fetching devices...");
-    
+    showLoading("Refreshing Devices...");
     try {
         const response = await fetchWithAuth(`${API_ENDPOINT}/devices`);
-        if (!response.ok) {
-            if (response.status === 401) {
-                showToastError("Authentication failed. Please log in again.");
-                handleLogout();
-                return;
-            }
-            throw new Error(`Failed to fetch devices: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        if (data.success && Array.isArray(data.devices)) {
-            console.log(`Fetched ${data.devices.length} devices.`);
-            allDevices = data.devices;
-            
-            // Process devices - handle actual data structure
-            allDevices.forEach(dev => {
-                // The latestData is already parsed from the worker
-                dev._parsedData = dev.latestData || null;
-                
-                // Determine status based on lastUpdated time
-                dev._status = getDeviceStatus(dev);
-                dev._lastUpdateTimestamp = dev.lastUpdated;
-            });
-            
-            // Save to cache
-            saveCachedData(allDevices);
-            
-            applyFiltersAndSort();
-            renderDevices();
-            populateHistoryDeviceDropdown();
-            updateDashboardCounters();
-            
-            if (force) {
-                showToastSuccess(`Successfully refreshed ${data.devices.length} devices`);
-            }
-        } else {
-            throw new Error("Invalid data structure received");
-        }
-    } catch (error) {
-        console.error("Error refreshing device list:", error);
-        showToastError(`Error fetching devices: ${error.message}`);
-        allDevices = [];
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message || 'Failed to fetch devices');
+        
+        allDevices = result.devices.map(dev => ({ ...dev, _status: getDeviceStatus(dev) }));
         applyFiltersAndSort();
         renderDevices();
-    } finally {
-        hideLoading();
-    }
+        updateDashboardCounters();
+        populateAllSelects();
+        if (force) showToast("success", "Device list updated.");
+    } catch (error) {
+        showToast("error", `Failed to refresh: ${error.message}`);
+    } finally { hideLoading(); }
 }
 
 function getDeviceStatus(device) {
-    const timestamp = device.lastUpdated || device.latestData?.timestamp;
-    if (!timestamp) return 'offline';
-    
-    const timeDiffMinutes = getTimeDifference(timestamp);
-    
-    if (timeDiffMinutes > OFFLINE_THRESHOLD_MINUTES) {
-        return 'offline';
-    } else if (device.latestData && device.latestData.errorCode && device.latestData.errorCode !== 'OK') {
-        return 'warning';
-    } else {
-        return 'online';
-    }
-}
-
-function updateDashboardCounters() {
-    const total = allDevices.length;
-    const online = allDevices.filter(d => d._status === 'online').length;
-    const warning = allDevices.filter(d => d._status === 'warning').length;
-    const offline = allDevices.filter(d => d._status === 'offline').length;
-    
-    animateCounter(document.getElementById('totalDevicesCounter'), total);
-    animateCounter(document.getElementById('onlineDevicesCounter'), online);
-    animateCounter(document.getElementById('warningDevicesCounter'), warning);
-    animateCounter(document.getElementById('offlineDevicesCounter'), offline);
-}
-
-function animateCounter(element, targetValue) {
-    const startValue = parseInt(element.innerText) || 0;
-    const duration = 1000;
-    const stepTime = 50;
-    const steps = duration / stepTime;
-    const increment = (targetValue - startValue) / steps;
-    let currentValue = startValue;
-    let step = 0;
-    
-    const counterInterval = setInterval(() => {
-        currentValue += increment;
-        step++;
-        
-        if (step >= steps) {
-            clearInterval(counterInterval);
-            currentValue = targetValue;
-        }
-        
-        element.innerText = Math.round(currentValue);
-    }, stepTime);
-}
-
-// --- Filtering and Sorting ---
-function handleSearchInput(event) {
-    currentSearchTerm = event.target.value.toLowerCase().trim();
-    applyFiltersAndSort();
-    renderDevices();
-}
-
-function handleSortChange(event) {
-    currentSortCriteria = event.target.dataset.sort;
-    applyFiltersAndSort();
-    renderDevices();
-}
-
-function handleResolutionChange() {
-    historyDataResolution = document.getElementById('historyResolutionSelect').value;
+    if (!device.lastUpdated) return 'offline';
+    const diffMinutes = (Date.now() - new Date(device.lastUpdated).getTime()) / 60000;
+    if (diffMinutes > OFFLINE_THRESHOLD_MINUTES) return 'offline';
+    if (device.latestData?.errorCode && !['SYSTEM OK', 'OK'].includes(device.latestData.errorCode)) return 'warning';
+    return 'online';
 }
 
 function applyFiltersAndSort() {
     let filtered = [...allDevices];
-
-    // Filter by selection
-    if (selectedDeviceIDs !== null && Array.isArray(selectedDeviceIDs)) {
-        filtered = filtered.filter(device => selectedDeviceIDs.includes(device.deviceId));
-    }
-
-    // Filter by search
-    if (currentSearchTerm) {
-        filtered = filtered.filter(device => 
-            device.deviceId.toLowerCase().includes(currentSearchTerm)
-        );
-    }
-
-    // Sort
+    if (selectedDeviceIDs) filtered = filtered.filter(d => selectedDeviceIDs.includes(d.deviceId));
+    const searchTerm = document.getElementById('searchDevicesInput').value.toLowerCase();
+    if (searchTerm) filtered = filtered.filter(d => d.deviceId.toLowerCase().includes(searchTerm));
     const statusPriority = { 'online': 0, 'warning': 1, 'offline': 2 };
     filtered.sort((a, b) => {
         switch (currentSortCriteria) {
-            case 'status':
-                const priorityA = statusPriority[a._status] ?? 99;
-                const priorityB = statusPriority[b._status] ?? 99;
-                if (priorityA !== priorityB) return priorityA - priorityB;
-                return a.deviceId.localeCompare(b.deviceId);
-            case 'lastUpdate':
-                const dateA = a._lastUpdateTimestamp ? new Date(a._lastUpdateTimestamp) : new Date(0);
-                const dateB = b._lastUpdateTimestamp ? new Date(b._lastUpdateTimestamp) : new Date(0);
-                return dateB - dateA;
-            case 'name':
-            default:
-                return a.deviceId.localeCompare(b.deviceId);
+            case 'status': return (statusPriority[a._status] ?? 99) - (statusPriority[b._status] ?? 99);
+            case 'lastUpdate': return new Date(b.lastUpdated || 0).getTime() - new Date(a.lastUpdated || 0).getTime();
+            default: return a.deviceId.localeCompare(b.deviceId);
         }
     });
-
     displayedDevices = filtered;
 }
 
-// --- Rendering ---
 function renderDevices() {
-    if (currentViewMode === 'grid') {
-        renderDeviceCards();
-    } else {
-        renderDeviceList();
-    }
-}
-
-function renderDeviceCards() {
-    const container = document.getElementById('devicesGrid');
-    container.innerHTML = '';
-
+    const gridContainer = document.getElementById('devicesGrid');
+    const listBody = document.getElementById('devicesListBody');
+    gridContainer.innerHTML = ''; listBody.innerHTML = '';
+    
     if (displayedDevices.length === 0) {
-        showOverviewMessage("No devices found.");
+        const msg = '<p class="text-center text-muted col-12 py-3">No devices to display.</p>';
+        gridContainer.innerHTML = msg;
+        listBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">No devices to display.</td></tr>`;
         return;
     }
 
-    hideOverviewMessage();
-    
-    const fragment = document.createDocumentFragment();
-    
-    displayedDevices.forEach((device, index) => {
-        // Get latest value to display - handle both parsed and latestData formats
-        let latestValue = '--';
-        const data = device._parsedData || device.latestData;
-        if (data) {
-            if (data.flow?.actual !== undefined) {
-                latestValue = `${data.flow.actual.toFixed(1)} GPM`;
-            } else if (data.ppm !== undefined) {
-                latestValue = `${data.ppm} PPM`;
-            }
-        }
-        
-        const card = document.createElement('div');
-        card.className = `col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-3 animate-fade-in`;
-        card.style.animationDelay = `${index * 50}ms`;
-        
-        card.innerHTML = `
-            <div class="card device-card h-100 shadow-sm status-${device._status}">
-                <div class="card-header bg-light">
-                    <span class="device-id text-truncate" title="${device.deviceId}">${device.deviceId}</span>
-                    <span class="badge rounded-pill status-badge text-uppercase ${getStatusBadgeClass(device._status)}">${device._status}</span>
-                </div>
-                <div class="card-body d-flex flex-column">
-                    <div class="text-center mb-3">
-                        <div class="metric-label">Latest Value</div>
-                        <div class="metric-value">${latestValue}</div>
-                    </div>
-                    <div class="mt-auto text-center">
-                        <div class="metric-label">Last Seen</div>
-                        <div class="last-update-time" title="${formatDateTime(device.lastUpdated)}">
-                            ${getRelativeTimeString(device.lastUpdated)}
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer bg-white border-top-0 pt-0 pb-2">
-                    <button class="btn btn-sm btn-outline-secondary w-100 view-details-btn" data-device-id="${device.deviceId}">
-                        <i class="bi bi-search me-1"></i> View Details
-                    </button>
-                </div>
+    const gridFragment = document.createDocumentFragment();
+    const listFragment = document.createDocumentFragment();
+    displayedDevices.forEach(device => {
+        gridFragment.appendChild(createDeviceCard(device));
+        listFragment.appendChild(createDeviceRow(device));
+    });
+    gridContainer.appendChild(gridFragment);
+    listBody.appendChild(listFragment);
+}
+
+function createDeviceCard(device) {
+    const card = document.createElement('div');
+    card.className = 'col-xl-3 col-lg-4 col-md-6';
+    const latestValue = device.latestData?.flow?.actual?.toFixed(1) + ' GPM' || device.latestData?.ppm + ' PPM' || '--';
+    card.innerHTML = `
+        <div class="card device-card h-100 status-${device._status}">
+            <div class="card-header"><span class="device-id text-truncate">${device.deviceId}</span><span class="badge rounded-pill text-bg-${getStatusColor(device._status)}">${device._status}</span></div>
+            <div class="card-body text-center d-flex flex-column justify-content-center">
+                <div class="metric-label">Latest Value</div><div class="metric-value">${latestValue}</div>
+                <div class="last-update-time mt-2" style="font-size:0.8rem">${getRelativeTimeString(device.lastUpdated)}</div>
             </div>
-        `;
-        fragment.appendChild(card);
-    });
-    
-    container.appendChild(fragment);
-    
-    // Add event listeners
-    container.querySelectorAll('.view-details-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const deviceId = e.currentTarget.dataset.deviceId;
-            showDeviceDetails(deviceId);
-        });
-    });
+            <div class="card-footer bg-transparent border-0 pb-3"><button class="btn btn-sm btn-outline-secondary w-100 view-details-btn" data-device-id="${device.deviceId}">View Details</button></div>
+        </div>`;
+    return card;
 }
 
-function renderDeviceList() {
-    const tbody = document.getElementById('devicesListBody');
-    tbody.innerHTML = '';
-    
-    if (displayedDevices.length === 0) {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td colspan="5" class="text-center p-4">No devices found.</td>`;
-        tbody.appendChild(row);
-        return;
-    }
-    
-    const fragment = document.createDocumentFragment();
-    
-    displayedDevices.forEach((device, index) => {
-        // Get latest value - handle both parsed and latestData formats
-        let latestValue = 'N/A';
-        const data = device._parsedData || device.latestData;
-        if (data) {
-            if (data.flow?.actual !== undefined) {
-                latestValue = `${data.flow.actual.toFixed(1)} GPM`;
-            } else if (data.ppm !== undefined) {
-                latestValue = `${data.ppm} PPM`;
-            }
-        }
-        
-        const row = document.createElement('tr');
-        row.className = 'animate-fade-in';
-        row.style.animationDelay = `${index * 30}ms`;
-        
-        row.innerHTML = `
-            <td>
-                <div class="d-flex align-items-center">
-                    <div class="status-indicator me-2" style="width: 10px; height: 10px; border-radius: 50%; background-color: ${getStatusColor(device._status)};"></div>
-                    ${device.deviceId}
-                </div>
-            </td>
-            <td><span class="badge ${getStatusBadgeClass(device._status)}">${device._status}</span></td>
-            <td title="${formatDateTime(device.lastUpdated)}">${getRelativeTimeString(device.lastUpdated)}</td>
-            <td>${latestValue}</td>
-            <td>
-                <button class="btn btn-sm btn-outline-secondary view-details-btn" data-device-id="${device.deviceId}">
-                    <i class="bi bi-search me-1"></i> Details
-                </button>
-            </td>
-        `;
-        
-        fragment.appendChild(row);
-    });
-    
-    tbody.appendChild(fragment);
-    
-    // Add event listeners
-    tbody.querySelectorAll('.view-details-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const deviceId = e.currentTarget.dataset.deviceId;
-            showDeviceDetails(deviceId);
-        });
-    });
+function createDeviceRow(device) {
+    const row = document.createElement('tr');
+    const latestValue = device.latestData?.flow?.actual?.toFixed(1) + ' GPM' || device.latestData?.ppm + ' PPM' || '--';
+    row.innerHTML = `<td>${device.deviceId}</td><td><span class="badge text-bg-${getStatusColor(device._status)}">${device._status}</span></td><td>${getRelativeTimeString(device.lastUpdated)}</td><td>${latestValue}</td><td><button class="btn btn-sm btn-outline-secondary view-details-btn" data-device-id="${device.deviceId}">Details</button></td>`;
+    return row;
 }
 
-function getStatusBadgeClass(status) {
-    switch (status) {
-        case 'online': return 'text-bg-success';
-        case 'warning': return 'text-bg-warning';
-        case 'error': return 'text-bg-danger';
-        case 'offline':
-        default: return 'text-bg-secondary';
+function handleDeviceAction(e) {
+    if (e.target.classList.contains('view-details-btn')) {
+        showDeviceDetails(e.target.dataset.deviceId);
     }
 }
 
-function getStatusColor(status) {
-    switch (status) {
-        case 'online': return 'var(--success-color)';
-        case 'warning': return 'var(--warning-color)';
-        case 'error': return 'var(--error-color)';
-        case 'offline':
-        default: return 'var(--offline-color)';
+function updateDashboardCounters() {
+    const container = document.getElementById('statCards');
+    container.innerHTML = '';
+    const stats = {
+        'Total Devices': { count: allDevices.length, icon: 'hdd-rack', color: 'primary' },
+        'Online': { count: allDevices.filter(d => d._status === 'online').length, icon: 'check-circle', color: 'success' },
+        'Warnings': { count: allDevices.filter(d => d._status === 'warning').length, icon: 'exclamation-triangle', color: 'warning' },
+        'Offline': { count: allDevices.filter(d => d._status === 'offline').length, icon: 'wifi-off', color: 'secondary' }
+    };
+    for(const [title, data] of Object.entries(stats)) {
+        container.innerHTML += `<div class="col-sm-6 col-md-3"><div class="card h-100 shadow-sm"><div class="card-body text-center"><i class="bi bi-${data.icon} fs-4 text-${data.color} mb-2"></i><h5 class="fs-2 fw-bold mb-0">${data.count}</h5><p class="text-muted mb-0">${title}</p></div></div></div>`;
     }
 }
 
-function showOverviewMessage(message) {
-    document.getElementById('overviewMessageText').textContent = message;
-    document.getElementById('overviewMessageArea').style.display = 'block';
-}
-
-function hideOverviewMessage() {
-    document.getElementById('overviewMessageArea').style.display = 'none';
-}
-
-// --- Device Details with Optimized History ---
-async function showDeviceDetails(deviceId) {
-    if (!apiKey) return;
-    
-    detailDeviceId = deviceId;
-    document.getElementById('deviceDetailTitle').textContent = `Device Details: ${deviceId}`;
-    resetDetailModal();
-    deviceDetailModal.show();
-    
-    showLoading(`Loading details for ${deviceId}...`);
-    
-    try {
-        // First, get the latest data from the device summary
-        const device = allDevices.find(d => d.deviceId === deviceId);
-        if (device && device.latestData) {
-            // Show latest data immediately
-            updateDetailMetrics(device.latestData);
-        }
-        
-        // Fetch historical data using the optimized endpoint
-        const url = `${API_ENDPOINT}/device/${deviceId}/history-optimized?limit=100&resolution=raw`;
-        const response = await fetchWithAuth(url);
-        
-        if (!response.ok) {
-            // Fallback to regular history endpoint
-            if (response.status === 404) {
-                console.log("Optimized history endpoint not found, falling back to regular history");
-                return await showDeviceDetailsLegacy(deviceId);
-            }
-            throw new Error(`Failed to fetch history: ${response.statusText}`);
-        }
-        
-        const result = await response.json();
-        if (!result.success || !Array.isArray(result.data)) {
-            throw new Error("Invalid data structure received");
-        }
-        
-        // Process data
-        detailAllData = result.data.sort((a, b) => 
-            new Date(b.timestamp) - new Date(a.timestamp)
-        );
-        
-        console.log(`Loaded ${detailAllData.length} records for ${deviceId} (resolution: ${result.resolution})`);
-        
-        if (detailAllData.length > 0) {
-            detailCurrentPage = 0;
-            populateDetailModal();
-        } else {
-            showDetailMessage("No historical data available for this device.");
-        }
-        
-    } catch (error) {
-        console.error(`Error fetching details for ${deviceId}:`, error);
-        showToastError(`Could not load details: ${error.message}`);
-        showDetailMessage(`Error loading data: ${error.message}`, true);
-    } finally {
-        hideLoading();
+function populateAllSelects() {
+    const sortedDevices = [...allDevices].sort((a,b) => a.deviceId.localeCompare(b.deviceId));
+    const options = sortedDevices.map(d => `<option value="${d.deviceId}">${d.deviceId}</option>`).join('');
+    document.getElementById('historyDeviceSelect').innerHTML = `<option value="">Select a device...</option>${options}`;
+    document.getElementById('backfillDeviceSelect').innerHTML = options;
+    const yearSelect = document.getElementById('backfillYearSelect');
+    if(yearSelect.options.length === 0) {
+        for(let i = new Date().getFullYear(); i >= 2022; i--) yearSelect.innerHTML += `<option value="${i}">${i}</option>`;
     }
 }
 
-// Legacy method for existing worker format
-async function showDeviceDetailsLegacy(deviceId) {
-    try {
-        // Use the existing endpoint format
-        const url = `${API_ENDPOINT}/device/${deviceId}/history?limit=100`;
-        const response = await fetchWithAuth(url);
-        
-        if (!response.ok) {
-            throw new Error(`Failed to fetch history: ${response.statusText}`);
-        }
-        
-        const result = await response.json();
-        if (!result.success || !Array.isArray(result.data)) {
-            throw new Error("Invalid data structure received");
-        }
-        
-        // Process data
-        detailAllData = result.data.sort((a, b) => 
-            new Date(b.timestamp) - new Date(a.timestamp)
-        );
-        
-        console.log(`Loaded ${detailAllData.length} records for ${deviceId}`);
-        
-        if (detailAllData.length > 0) {
-            detailCurrentPage = 0;
-            populateDetailModal();
-        } else {
-            showDetailMessage("No historical data available for this device.");
-        }
-        
-    } catch (error) {
-        console.error(`Error in legacy fetch for ${deviceId}:`, error);
-        showToastError(`Could not load details: ${error.message}`);
-        showDetailMessage(`Error loading data: ${error.message}`, true);
-    }
-}
-
-function refreshCurrentDeviceDetails() {
-    if (detailDeviceId) {
-        showDeviceDetails(detailDeviceId);
-    }
-}
-
-function resetDetailModal() {
-    // Clear metrics
-    ['detailFlowMetric', 'detailPpmMetric', 'detailPHMetric', 'detailORPMetric', 
-     'detailStatusMetric', 'detailLastUpdateMetric'].forEach(id => {
-        document.getElementById(id).textContent = '--';
-    });
-    
-    // Clear table
-    document.querySelector('#detailDataTable tbody').innerHTML = 
-        '<tr><td colspan="6" class="text-center text-muted p-3">Loading data...</td></tr>';
-    
-    // Reset pagination
-    document.getElementById('detailDataCounter').textContent = "Showing 0 of 0 entries";
-    document.getElementById('detailPrevPage').parentElement.classList.add('disabled');
-    document.getElementById('detailNextPage').parentElement.classList.add('disabled');
-    
-    // Clear charts
-    destroyChart(detailFlowChart);
-    detailFlowChart = null;
-    destroyChart(detailPpmChart);
-    detailPpmChart = null;
-    
-    // Reset to overview tab
-    const overviewTab = document.getElementById('detail-overview-tab');
-    if (overviewTab) {
-        bootstrap.Tab.getOrCreateInstance(overviewTab).show();
-    }
-}
-
-function showDetailMessage(message, isError = false) {
-    const messageClass = isError ? 'text-danger' : 'text-muted';
-    document.querySelector('#detailDataTable tbody').innerHTML = 
-        `<tr><td colspan="6" class="text-center p-3 ${messageClass}">${escapeHtml(message)}</td></tr>`;
-}
-
-function updateDetailMetrics(data) {
-    if (!data) return;
-    
-    document.getElementById('detailFlowMetric').textContent = 
-        data.flow?.actual !== undefined ? `${data.flow.actual.toFixed(1)} GPM` : '--';
-    
-    document.getElementById('detailPpmMetric').textContent = 
-        data.ppm !== undefined ? `${data.ppm}` : '--';
-    
-    document.getElementById('detailPHMetric').textContent = 
-        data.pH?.actual !== undefined ? `${data.pH.actual.toFixed(1)}` : '--';
-    
-    document.getElementById('detailORPMetric').textContent = 
-        data.orp?.actual !== undefined ? `${data.orp.actual.toFixed(0)} mV` : '--';
-    
-    document.getElementById('detailStatusMetric').textContent = 
-        data.errorCode ? escapeHtml(data.errorCode) : 'OK';
-    
-    document.getElementById('detailLastUpdateMetric').textContent = 
-        data.timestamp ? formatDateTime(data.timestamp) : '--';
-}
-
-function populateDetailModal() {
-    if (!detailAllData || detailAllData.length === 0) {
-        showDetailMessage("No data available to display.");
-        return;
-    }
-    
-    // Update metrics with latest entry
-    updateDetailMetrics(detailAllData[0]);
-    
-    // Create charts
-    createDetailCharts();
-    
-    // Populate data table
-    populateDetailDataTable();
-}
-
-function createDetailCharts() {
-    if (!detailAllData || detailAllData.length < 2) return;
-    
-    // Prepare data for charts (chronological order, limit to recent data)
-    const chartData = [...detailAllData].reverse().slice(-100);
-    
-    createDetailFlowChart(chartData);
-    createDetailPpmChart(chartData);
-}
-
-function createDetailFlowChart(entries) {
-    destroyChart(detailFlowChart);
-    
-    const canvas = document.getElementById('detailFlowChart');
-    if (!canvas) return;
-    
-    const data = entries.map(e => ({
-        x: new Date(e.timestamp),
-        y: e.flow?.actual ?? null
-    })).filter(d => d.y !== null);
-    
-    if (data.length < 2) {
-        canvas.parentElement.style.display = 'none';
-        return;
-    }
-    
-    canvas.parentElement.style.display = 'block';
-    
-    detailFlowChart = new Chart(canvas, {
-        type: 'line',
-        data: {
-            datasets: [{
-                label: 'Flow Rate (GPM)',
-                data: data,
-                borderColor: 'rgba(203, 32, 38, 0.8)',
-                backgroundColor: 'rgba(203, 32, 38, 0.1)',
-                borderWidth: 2,
-                tension: 0.3,
-                fill: true,
-                pointRadius: 2,
-                pointHoverRadius: 5
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: {
-                    type: 'time',
-                    time: {
-                        unit: 'hour',
-                        displayFormats: {
-                            hour: 'MMM d, HH:mm'
-                        }
-                    },
-                    title: { display: true, text: 'Time' }
-                },
-                y: {
-                    title: { display: true, text: 'GPM' },
-                    beginAtZero: false
-                }
-            },
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Flow Rate Trend'
-                },
-                legend: { display: false }
-            }
-        }
-    });
-}
-
-function createDetailPpmChart(entries) {
-    destroyChart(detailPpmChart);
-    
-    const canvas = document.getElementById('detailPpmChart');
-    if (!canvas) return;
-    
-    const data = entries.map(e => ({
-        x: new Date(e.timestamp),
-        y: e.ppm ?? null
-    })).filter(d => d.y !== null);
-    
-    if (data.length < 2) {
-        canvas.parentElement.style.display = 'none';
-        return;
-    }
-    
-    canvas.parentElement.style.display = 'block';
-    
-    detailPpmChart = new Chart(canvas, {
-        type: 'line',
-        data: {
-            datasets: [{
-                label: 'PPM',
-                data: data,
-                borderColor: 'rgba(66, 135, 245, 0.8)',
-                backgroundColor: 'rgba(66, 135, 245, 0.1)',
-                borderWidth: 2,
-                tension: 0.3,
-                fill: true,
-                pointRadius: 2,
-                pointHoverRadius: 5
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                x: {
-                    type: 'time',
-                    time: {
-                        unit: 'hour',
-                        displayFormats: {
-                            hour: 'MMM d, HH:mm'
-                        }
-                    },
-                    title: { display: true, text: 'Time' }
-                },
-                y: {
-                    title: { display: true, text: 'PPM' },
-                    beginAtZero: false
-                }
-            },
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'PPM Trend'
-                },
-                legend: { display: false }
-            }
-        }
-    });
-}
-
-function populateDetailDataTable() {
-    const tbody = document.querySelector('#detailDataTable tbody');
-    tbody.innerHTML = '';
-    
-    if (!detailAllData || detailAllData.length === 0) {
-        showDetailMessage("No data log entries found.");
-        return;
-    }
-    
-    // Pagination
-    const totalEntries = detailAllData.length;
-    const maxPage = Math.ceil(totalEntries / detailPageSize) - 1;
-    const startIndex = detailCurrentPage * detailPageSize;
-    const endIndex = Math.min(startIndex + detailPageSize, totalEntries);
-    
-    const currentPageEntries = detailAllData.slice(startIndex, endIndex);
-    const fragment = document.createDocumentFragment();
-    
-    currentPageEntries.forEach(entry => {
-        const row = document.createElement('tr');
-        
-        // Handle different data formats (raw vs aggregated)
-        let flowValue = '--';
-        let ppmValue = '--';
-        
-        if (entry.type === 'hourly' || entry.type === 'daily') {
-            // Aggregated data
-            if (entry.flow) {
-                flowValue = `${entry.flow.avg.toFixed(1)} (${entry.flow.min.toFixed(1)}-${entry.flow.max.toFixed(1)})`;
-            }
-            if (entry.ppm) {
-                ppmValue = `${entry.ppm.avg.toFixed(0)} (${entry.ppm.min}-${entry.ppm.max})`;
-            }
-        } else {
-            // Raw data
-            flowValue = entry.flow?.actual?.toFixed(1) ?? '--';
-            ppmValue = entry.ppm ?? '--';
-        }
-        
-        row.innerHTML = `
-            <td>${formatDateTime(entry.timestamp)}</td>
-            <td>${flowValue}</td>
-            <td>${ppmValue}</td>
-            <td>${entry.pH?.actual?.toFixed(1) ?? '--'}</td>
-            <td>${entry.orp?.actual?.toFixed(0) ?? '--'}</td>
-            <td>${escapeHtml(entry.errorCode || 'OK')}</td>
-        `;
-        fragment.appendChild(row);
-    });
-    
-    tbody.appendChild(fragment);
-    
-    // Update pagination controls
-    document.getElementById('detailDataCounter').textContent = 
-        `Showing ${startIndex + 1} to ${endIndex} of ${totalEntries} entries`;
-    
-    const prevBtn = document.getElementById('detailPrevPage').parentElement;
-    const nextBtn = document.getElementById('detailNextPage').parentElement;
-    
-    if (detailCurrentPage > 0) {
-        prevBtn.classList.remove('disabled');
-    } else {
-        prevBtn.classList.add('disabled');
-    }
-    
-    if (detailCurrentPage < maxPage) {
-        nextBtn.classList.remove('disabled');
-    } else {
-        nextBtn.classList.add('disabled');
-    }
-}
-
-function showPreviousDetailPage(e) {
-    e.preventDefault();
-    if (detailCurrentPage > 0) {
-        detailCurrentPage--;
-        populateDetailDataTable();
-    }
-}
-
-function showNextDetailPage(e) {
-    e.preventDefault();
-    const maxPage = Math.ceil(detailAllData.length / detailPageSize) - 1;
-    if (detailCurrentPage < maxPage) {
-        detailCurrentPage++;
-        populateDetailDataTable();
-    }
-}
-
-// --- History Section with Optimizations ---
-function populateHistoryDeviceDropdown() {
-    const select = document.getElementById('historyDeviceSelect');
-    const currentVal = select.value;
-    select.innerHTML = '<option value="" selected>Select a device...</option>';
-
-    const sorted = [...allDevices].sort((a, b) => a.deviceId.localeCompare(b.deviceId));
-    
-    sorted.forEach(dev => {
-        const option = document.createElement('option');
-        option.value = dev.deviceId;
-        option.textContent = dev.deviceId;
-        select.appendChild(option);
-    });
-
-    if (currentVal && sorted.some(d => d.deviceId === currentVal)) {
-        select.value = currentVal;
-    }
-}
-
-function resetHistoryView() {
-    document.getElementById('historyMessageText').textContent = "Select criteria and search to view history.";
-    document.getElementById('historyMessageArea').style.display = 'block';
-    document.getElementById('historyChartContainer').style.display = 'none';
-    document.getElementById('historyTableContainer').style.display = 'none';
-    document.getElementById('dataResolutionBadge').style.display = 'none';
-    document.getElementById('dataQualityIndicator').style.display = 'none';
-    document.querySelector('#historyTable tbody').innerHTML = '';
-    document.getElementById('exportCsvBtn').disabled = true;
-    document.getElementById('printHistoryBtn').disabled = true;
-    
-    destroyChart(historyChart);
-    historyChart = null;
-    historyAllData = [];
-    historyCurrentPage = 0;
-}
-
-async function fetchHistoricalData() {
-    const deviceId = document.getElementById('historyDeviceSelect').value;
-    const startDate = document.getElementById('historyStartDateInput').value;
-    const endDate = document.getElementById('historyEndDateInput').value;
-    const resolution = document.getElementById('historyResolutionSelect').value;
-
-    if (!deviceId) {
-        showToastError("Please select a device.");
-        return;
-    }
-
-    resetHistoryView();
-    showLoading("Fetching historical data...", "Please wait, this may take longer for large date ranges...");
-
-    try {
-        // Use optimized endpoint
-        let url = `${API_ENDPOINT}/device/${deviceId}/history-optimized?resolution=${resolution}`;
-        if (startDate) url += `&startDate=${startDate}`;
-        if (endDate) url += `&endDate=${endDate}`;
-        
-        const response = await fetchWithAuth(url);
-        
-        if (!response.ok) {
-            // Fallback to regular history endpoint
-            if (response.status === 404) {
-                console.log("Optimized endpoint not found, falling back to regular history");
-                return await fetchHistoricalDataLegacy();
-            }
-            throw new Error(`Failed to fetch history: ${response.statusText}`);
-        }
-
-        const result = await response.json();
-        if (!result.success || !Array.isArray(result.data)) {
-            throw new Error("Invalid data structure received");
-        }
-
-        // Sort chronologically (oldest first for table/chart)
-        historyAllData = result.data.sort((a, b) => 
-            new Date(a.timestamp) - new Date(b.timestamp)
-        );
-        
-        console.log(`Fetched ${historyAllData.length} records (resolution: ${result.resolution})`);
-        
-        if (historyAllData.length > 0) {
-            historyCurrentPage = 0;
-            renderHistoricalData();
-            document.getElementById('historyMessageArea').style.display = 'none';
-            document.getElementById('exportCsvBtn').disabled = false;
-            document.getElementById('printHistoryBtn').disabled = false;
-            document.getElementById('historyRecordsInfo').textContent = 
-                `${historyAllData.length} records loaded`;
-            
-            // Show resolution badge
-            const resolutionBadge = document.getElementById('dataResolutionBadge');
-            const resolutionText = document.getElementById('dataResolutionText');
-            resolutionBadge.style.display = 'inline-block';
-            resolutionText.textContent = result.resolution ? 
-                result.resolution.charAt(0).toUpperCase() + result.resolution.slice(1) : 'Raw';
-            
-            // Show data quality indicator for aggregated data
-            if (result.resolution === 'hourly' || result.resolution === 'daily') {
-                const qualityIndicator = document.getElementById('dataQualityIndicator');
-                const qualityText = document.getElementById('dataQualityText');
-                qualityIndicator.style.display = 'inline-flex';
-                qualityText.textContent = `Aggregated from ${result.filesProcessed || 'multiple'} files`;
-            }
-            
-            showToastSuccess(`Found ${historyAllData.length} records (${result.resolution} resolution)`);
-        } else {
-            document.getElementById('historyMessageText').textContent = 
-                "No data found for the selected criteria.";
-            showToastError("No data found");
-        }
-
-    } catch (error) {
-        console.error("Error fetching historical data:", error);
-        showToastError(`Could not load history: ${error.message}`);
-        document.getElementById('historyMessageText').textContent = 
-            `Error loading history: ${error.message}`;
-    } finally {
-        hideLoading();
-    }
-}
-
-// Legacy fallback
-async function fetchHistoricalDataLegacy() {
-    const deviceId = document.getElementById('historyDeviceSelect').value;
-    const startDate = document.getElementById('historyStartDateInput').value;
-    const endDate = document.getElementById('historyEndDateInput').value;
-    const limit = 1000; // Get more data since we can't control resolution
-
-    try {
-        let url = `${API_ENDPOINT}/device/${deviceId}/history?limit=${limit}`;
-        if (startDate) url += `&startDate=${startDate}`;
-        if (endDate) url += `&endDate=${endDate}`;
-        
-        const response = await fetchWithAuth(url);
-        
-        if (!response.ok) {
-            throw new Error(`Failed to fetch history: ${response.statusText}`);
-        }
-
-        const result = await response.json();
-        if (!result.success || !Array.isArray(result.data)) {
-            throw new Error("Invalid data structure received");
-        }
-
-        // Sort chronologically
-        historyAllData = result.data.sort((a, b) => 
-            new Date(a.timestamp) - new Date(b.timestamp)
-        );
-        
-        console.log(`Fetched ${historyAllData.length} historical records`);
-        
-        if (historyAllData.length > 0) {
-            historyCurrentPage = 0;
-            renderHistoricalData();
-            document.getElementById('historyMessageArea').style.display = 'none';
-            document.getElementById('exportCsvBtn').disabled = false;
-            document.getElementById('printHistoryBtn').disabled = false;
-            document.getElementById('historyRecordsInfo').textContent = 
-                `${historyAllData.length} records loaded`;
-            showToastSuccess(`Found ${historyAllData.length} records`);
-        } else {
-            document.getElementById('historyMessageText').textContent = 
-                "No data found for the selected criteria.";
-            showToastError("No data found");
-        }
-
-    } catch (error) {
-        console.error("Error fetching historical data:", error);
-        showToastError(`Could not load history: ${error.message}`);
-        document.getElementById('historyMessageText').textContent = 
-            `Error loading history: ${error.message}`;
-    }
-}
-
-function renderHistoricalData() {
-    if (!historyAllData || historyAllData.length === 0) return;
-    
-    // Create chart
-    createHistoryChart();
-    document.getElementById('historyChartContainer').style.display = 'block';
-    
-    // Populate table
-    updateHistoryTable();
-    document.getElementById('historyTableContainer').style.display = 'block';
-}
-
-function createHistoryChart() {
-    destroyChart(historyChart);
-    
-    const canvas = document.getElementById('historyChart');
-    if (!canvas || !historyAllData || historyAllData.length < 2) return;
-    
-    // Limit data points for performance
-    const maxPoints = 500;
-    let chartData = historyAllData;
-    if (historyAllData.length > maxPoints) {
-        const step = Math.ceil(historyAllData.length / maxPoints);
-        chartData = historyAllData.filter((_, index) => index % step === 0);
-    }
-    
-    const datasets = [];
-    
-    // Flow data
-    const flowData = chartData.map(e => {
-        if (e.type === 'hourly' || e.type === 'daily') {
-            return { x: new Date(e.timestamp || e.hour || e.date), y: e.flow?.avg ?? null };
-        }
-        return { x: new Date(e.timestamp), y: e.flow?.actual ?? null };
-    }).filter(d => d.y !== null);
-    
-    if (flowData.length > 0) {
-        datasets.push({
-            label: 'Flow Rate (GPM)',
-            data: flowData,
-            yAxisID: 'y',
-            borderColor: 'rgba(203, 32, 38, 0.8)',
-            backgroundColor: 'rgba(203, 32, 38, 0.1)',
-            borderWidth: 1.5,
-            tension: 0.2,
-            fill: false,
-            pointRadius: historyAllData.length > 100 ? 0 : 2,
-            pointHoverRadius: 3
-        });
-    }
-    
-    // PPM data
-    const ppmData = chartData.map(e => {
-        if (e.type === 'hourly' || e.type === 'daily') {
-            return { x: new Date(e.timestamp || e.hour || e.date), y: e.ppm?.avg ?? null };
-        }
-        return { x: new Date(e.timestamp), y: e.ppm ?? null };
-    }).filter(d => d.y !== null);
-    
-    if (ppmData.length > 0) {
-        datasets.push({
-            label: 'PPM',
-            data: ppmData,
-            yAxisID: 'y1',
-            borderColor: 'rgba(66, 135, 245, 0.8)',
-            backgroundColor: 'rgba(66, 135, 245, 0.1)',
-            borderWidth: 1.5,
-            tension: 0.2,
-            fill: false,
-            pointRadius: historyAllData.length > 100 ? 0 : 2,
-            pointHoverRadius: 3
-        });
-    }
-    
-    if (datasets.length === 0) return;
-    
-    historyChart = new Chart(canvas, {
-        type: 'line',
-        data: { datasets },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false,
-            },
-            scales: {
-                x: {
-                    type: 'time',
-                    time: {
-                        unit: determineTimeUnit(chartData),
-                        displayFormats: {
-                            hour: 'MMM d, HH:mm',
-                            day: 'MMM d',
-                            week: 'MMM d',
-                            month: 'MMM yyyy'
-                        }
-                    },
-                    title: { display: true, text: 'Time' }
-                },
-                y: {
-                    type: 'linear',
-                    display: flowData.length > 0,
-                    position: 'left',
-                    title: { display: true, text: 'Flow (GPM)' }
-                },
-                y1: {
-                    type: 'linear',
-                    display: ppmData.length > 0,
-                    position: 'right',
-                    title: { display: true, text: 'PPM' },
-                    grid: {
-                        drawOnChartArea: flowData.length === 0,
-                    }
-                }
-            },
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Historical Data'
-                },
-                tooltip: {
-                    callbacks: {
-                        afterLabel: function(context) {
-                            const dataPoint = historyAllData[context.dataIndex];
-                            if (dataPoint && (dataPoint.type === 'hourly' || dataPoint.type === 'daily')) {
-                                return `${dataPoint.count} samples`;
-                            }
-                            return '';
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
-function determineTimeUnit(data) {
-    if (data.length < 2) return 'hour';
-    
-    const firstTime = new Date(data[0].timestamp || data[0].hour || data[0].date);
-    const lastTime = new Date(data[data.length - 1].timestamp || data[data.length - 1].hour || data[data.length - 1].date);
-    const diffHours = (lastTime - firstTime) / (1000 * 60 * 60);
-    
-    if (diffHours < 24) return 'hour';
-    if (diffHours < 24 * 7) return 'day';
-    if (diffHours < 24 * 30) return 'week';
-    return 'month';
-}
-
-function updateHistoryTable() {
-    const tbody = document.querySelector('#historyTable tbody');
-    tbody.innerHTML = '';
-    
-    // Pagination
-    const totalEntries = historyAllData.length;
-    const maxPage = Math.ceil(totalEntries / historyPageSize) - 1;
-    const startIndex = historyCurrentPage * historyPageSize;
-    const endIndex = Math.min(startIndex + historyPageSize, totalEntries);
-    
-    const currentPageEntries = historyAllData.slice(startIndex, endIndex);
-    const fragment = document.createDocumentFragment();
-    
-    currentPageEntries.forEach(entry => {
-        const row = document.createElement('tr');
-        
-        // Handle different data formats
-        let flowValue = '--';
-        let ppmValue = '--';
-        let phValue = '--';
-        let orpValue = '--';
-        
-        if (entry.type === 'hourly' || entry.type === 'daily') {
-            // Aggregated data
-            if (entry.flow) {
-                flowValue = `${entry.flow.avg.toFixed(1)} (${entry.flow.min.toFixed(1)}-${entry.flow.max.toFixed(1)})`;
-            }
-            if (entry.ppm) {
-                ppmValue = `${entry.ppm.avg.toFixed(0)} (${entry.ppm.min}-${entry.ppm.max})`;
-            }
-            phValue = 'Aggregated';
-            orpValue = 'Aggregated';
-        } else {
-            // Raw data
-            flowValue = entry.flow?.actual?.toFixed(1) ?? '--';
-            ppmValue = entry.ppm ?? '--';
-            phValue = entry.pH?.actual?.toFixed(1) ?? '--';
-            orpValue = entry.orp?.actual?.toFixed(0) ?? '--';
-        }
-        
-        row.innerHTML = `
-            <td>${formatDateTime(entry.timestamp || entry.hour || entry.date)}</td>
-            <td>${flowValue}</td>
-            <td>${ppmValue}</td>
-            <td>${phValue}</td>
-            <td>${orpValue}</td>
-            <td>${escapeHtml(entry.errorCode || 'OK')}</td>
-        `;
-        
-        // Add visual indicator for aggregated data
-        if (entry.type === 'hourly' || entry.type === 'daily') {
-            row.classList.add('table-info');
-        }
-        
-        fragment.appendChild(row);
-    });
-    
-    tbody.appendChild(fragment);
-    
-    // Update pagination
-    document.getElementById('historyRowCounter').textContent = 
-        `Showing ${startIndex + 1} to ${endIndex} of ${totalEntries} entries`;
-    
-    const prevBtn = document.getElementById('historyPrevPage').parentElement;
-    const nextBtn = document.getElementById('historyNextPage').parentElement;
-    
-    prevBtn.classList.toggle('disabled', historyCurrentPage === 0);
-    nextBtn.classList.toggle('disabled', historyCurrentPage >= maxPage);
-}
-
-function showPreviousHistoryPage(e) {
-    e.preventDefault();
-    if (historyCurrentPage > 0) {
-        historyCurrentPage--;
-        updateHistoryTable();
-    }
-}
-
-function showNextHistoryPage(e) {
-    e.preventDefault();
-    const maxPage = Math.ceil(historyAllData.length / historyPageSize) - 1;
-    if (historyCurrentPage < maxPage) {
-        historyCurrentPage++;
-        updateHistoryTable();
-    }
-}
-
-function changeHistoryPageSize() {
-    historyPageSize = parseInt(document.getElementById('historyPageSizeSelect').value, 10);
-    historyCurrentPage = 0;
-    updateHistoryTable();
-}
-
-function exportHistoryToCSV() {
-    const deviceId = document.getElementById('historyDeviceSelect').value;
-    if (!deviceId || !historyAllData || historyAllData.length === 0) {
-        showToastError("No data to export");
-        return;
-    }
-    
-    // Build CSV with appropriate headers based on data type
-    let headers = ['Timestamp', 'Flow (GPM)', 'PPM', 'pH', 'ORP', 'Status'];
-    const hasAggregatedData = historyAllData.some(e => e.type === 'hourly' || e.type === 'daily');
-    
-    if (hasAggregatedData) {
-        headers.push('Data Type', 'Sample Count');
-    }
-    
-    const rows = historyAllData.map(entry => {
-        const baseRow = [
-            entry.timestamp || entry.hour || entry.date || '',
-            entry.flow?.actual ?? entry.flow?.avg ?? '',
-            entry.ppm ?? entry.ppm?.avg ?? '',
-            entry.pH?.actual ?? '',
-            entry.orp?.actual ?? '',
-            entry.errorCode || 'OK'
-        ];
-        
-        if (hasAggregatedData) {
-            baseRow.push(
-                entry.type || 'raw',
-                entry.count || '1'
-            );
-        }
-        
-        return baseRow;
-    });
-    
-    let csvContent = headers.join(',') + '\r\n';
-    rows.forEach(row => {
-        csvContent += row.map(cell => {
-            if (cell === null || cell === undefined) return '';
-            return typeof cell === 'string' ? `"${cell.replace(/"/g, '""')}"` : cell;
-        }).join(',') + '\r\n';
-    });
-    
-    // Download
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const filename = `EDIE_History_${deviceId}_${formatDateForFilename(new Date())}.csv`;
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", filename);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    
-    showToastSuccess(`Exported ${filename}`);
-}
-
-// --- Device Selection Modal ---
-function openDeviceSelectionModal() {
-    populateDeviceSelectionList();
-    deviceSelectModal.show();
-    document.getElementById('filterDeviceSelectInput').value = '';
-}
-
-function populateDeviceSelectionList() {
+function populateDeviceSelectModal() {
     const container = document.getElementById('deviceSelectList');
     container.innerHTML = '';
-    
-    const sortedDevices = [...allDevices].sort((a, b) => a.deviceId.localeCompare(b.deviceId));
-    
-    if (sortedDevices.length === 0) {
-        container.innerHTML = '<p class="text-muted text-center p-3">No devices available.</p>';
-        document.getElementById('selectAllDevicesCheckbox').disabled = true;
-        return;
-    }
-    
-    document.getElementById('selectAllDevicesCheckbox').disabled = false;
-    const fragment = document.createDocumentFragment();
-    
-    sortedDevices.forEach(device => {
-        const isSelected = selectedDeviceIDs === null || selectedDeviceIDs.includes(device.deviceId);
-        const div = document.createElement('div');
-        div.className = 'form-check device-select-item';
-        div.innerHTML = `
-            <input class="form-check-input device-select-checkbox" type="checkbox" value="${device.deviceId}" id="select-${device.deviceId}" ${isSelected ? 'checked' : ''}>
-            <label class="form-check-label d-flex justify-content-between align-items-center" for="select-${device.deviceId}">
-                ${escapeHtml(device.deviceId)}
-                <span class="badge rounded-pill ${getStatusBadgeClass(device._status)}">${device._status}</span>
-            </label>
-        `;
-        div.querySelector('.device-select-checkbox').addEventListener('change', checkSelectAllState);
-        fragment.appendChild(div);
+    allDevices.sort((a,b) => a.deviceId.localeCompare(b.deviceId)).forEach(device => {
+        const isChecked = !selectedDeviceIDs || selectedDeviceIDs.includes(device.deviceId);
+        container.innerHTML += `<label class="list-group-item"><input class="form-check-input me-2 device-select-checkbox" type="checkbox" value="${device.deviceId}" ${isChecked}>${device.deviceId}</label>`;
     });
-    
-    container.appendChild(fragment);
-    checkSelectAllState();
-}
-
-function filterDeviceSelectionList() {
-    const filterText = document.getElementById('filterDeviceSelectInput').value.toLowerCase();
-    const items = document.getElementById('deviceSelectList').querySelectorAll('.device-select-item');
-    
-    let visibleCount = 0;
-    
-    items.forEach(item => {
-        const label = item.querySelector('label').textContent.toLowerCase();
-        const isVisible = label.includes(filterText);
-        item.style.display = isVisible ? 'block' : 'none';
-        if (isVisible) visibleCount++;
-    });
-    
-    checkSelectAllState();
-}
-
-function handleSelectAllToggle(event) {
-    const isChecked = event.target.checked;
-    document.getElementById('deviceSelectList').querySelectorAll('.device-select-checkbox').forEach(checkbox => {
-        if (checkbox.closest('.device-select-item').style.display !== 'none') {
-            checkbox.checked = isChecked;
-        }
-    });
-}
-
-function checkSelectAllState() {
-    const allCheckboxes = document.getElementById('deviceSelectList').querySelectorAll('.device-select-checkbox');
-    const visibleCheckboxes = Array.from(allCheckboxes).filter(cb => 
-        cb.closest('.device-select-item').style.display !== 'none'
-    );
-    
-    const selectAllCheckbox = document.getElementById('selectAllDevicesCheckbox');
-    
-    if (visibleCheckboxes.length === 0) {
-        selectAllCheckbox.checked = false;
-        selectAllCheckbox.indeterminate = false;
-        return;
-    }
-    
-    const checkedVisibleCount = visibleCheckboxes.filter(cb => cb.checked).length;
-    
-    if (checkedVisibleCount === 0) {
-        selectAllCheckbox.checked = false;
-        selectAllCheckbox.indeterminate = false;
-    } else if (checkedVisibleCount === visibleCheckboxes.length) {
-        selectAllCheckbox.checked = true;
-        selectAllCheckbox.indeterminate = false;
-    } else {
-        selectAllCheckbox.checked = false;
-        selectAllCheckbox.indeterminate = true;
-    }
-}
-
-function selectOnlineDevicesOnly() {
-    const onlineDeviceIDs = allDevices
-        .filter(dev => dev._status === 'online')
-        .map(dev => dev.deviceId);
-    
-    document.getElementById('deviceSelectList').querySelectorAll('.device-select-checkbox').forEach(checkbox => {
-        checkbox.checked = onlineDeviceIDs.includes(checkbox.value);
-    });
-    
-    checkSelectAllState();
-    showToastSuccess('Selected online devices only');
 }
 
 function saveDeviceSelection() {
-    const checkedCheckboxes = document.getElementById('deviceSelectList').querySelectorAll('.device-select-checkbox:checked');
-    const newlySelectedIDs = Array.from(checkedCheckboxes).map(cb => cb.value);
-
-    if (newlySelectedIDs.length === allDevices.length && allDevices.length > 0) {
+    const selected = Array.from(document.querySelectorAll('.device-select-checkbox:checked')).map(cb => cb.value);
+    if (selected.length === allDevices.length) {
         selectedDeviceIDs = null;
         localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY);
     } else {
-        selectedDeviceIDs = newlySelectedIDs;
-        localStorage.setItem(SELECTED_DEVICES_STORAGE_KEY, JSON.stringify(selectedDeviceIDs));
+        selectedDeviceIDs = selected;
+        localStorage.setItem(SELECTED_DEVICES_STORAGE_KEY, JSON.stringify(selected));
     }
-
     deviceSelectModal.hide();
     applyFiltersAndSort();
     renderDevices();
-    updateDashboardCounters();
-    showToastSuccess('Device selection updated');
 }
 
-// --- Auto Refresh ---
-function startAutoRefresh() {
-    stopAutoRefresh();
-    if (!AUTO_REFRESH_INTERVAL || AUTO_REFRESH_INTERVAL < 10000) return;
-    
-    console.log(`Starting auto-refresh (${AUTO_REFRESH_INTERVAL / 1000}s)`);
-    autoRefreshTimer = setInterval(() => {
-        if (isTabVisible && apiKey && !document.getElementById('overviewSection').classList.contains('d-none')) {
-            console.log("Auto-refreshing...");
-            refreshDeviceList();
+// --- DEVICE DETAIL MODAL ---
+async function showDeviceDetails(deviceId) {
+    document.getElementById('deviceDetailTitle').textContent = `Details for ${deviceId}`;
+    document.getElementById('detailMetricsContainer').innerHTML = '<div class="text-center p-3 text-muted">Loading metrics...</div>';
+    document.getElementById('detailAllDataTableBody').innerHTML = '<tr><td colspan="2" class="text-center text-muted">Loading...</td></tr>';
+    deviceDetailModal.show();
+
+    try {
+        const response = await fetchWithAuth(`${API_ENDPOINT}/device/${deviceId}/latest`);
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message);
+        renderDetailMetrics(result.data);
+        renderDetailAllDataTable(result.data);
+    } catch (error) {
+        document.getElementById('detailMetricsContainer').innerHTML = `<p class="text-center text-danger p-3">${error.message}</p>`;
+    }
+}
+
+function renderDetailMetrics(data) {
+    const container = document.getElementById('detailMetricsContainer');
+    container.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+    for (const key in data) {
+        const value = data[key];
+        if (typeof value === 'object' && value !== null && 'actual' in value) {
+            if (value.actual === 0 && value.totalizer === 0 && value.average === 0) continue;
+            const card = document.createElement('div');
+            card.className = 'metric-card';
+            card.innerHTML = `<div class="metric-label">${key.replace(/([A-Z])/g, ' $1').toUpperCase()}</div><div class="metric-value">${value.actual.toFixed(2)}</div><div class="metric-sub-value">Total: ${value.totalizer.toFixed(2)}</div>`;
+            fragment.appendChild(card);
         }
-    }, AUTO_REFRESH_INTERVAL);
-}
-
-function stopAutoRefresh() {
-    if (autoRefreshTimer) {
-        clearInterval(autoRefreshTimer);
-        autoRefreshTimer = null;
     }
+    container.appendChild(fragment);
+    if(container.innerHTML === '') container.innerHTML = '<p class="text-center text-muted col-12">No active probes detected in the latest log.</p>';
 }
 
-function handleVisibilityChange() {
-    isTabVisible = document.visibilityState === 'visible';
-    if (isTabVisible && apiKey) {
-        startAutoRefresh();
-    }
+function renderDetailAllDataTable(data) {
+    const tbody = document.getElementById('detailAllDataTableBody');
+    tbody.innerHTML = '';
+    const flattenObject = (obj, prefix = '') => Object.keys(obj).reduce((acc, k) => {
+        const pre = prefix.length ? prefix + '.' : '';
+        if (typeof obj[k] === 'object' && obj[k] !== null && !Array.isArray(obj[k])) Object.assign(acc, flattenObject(obj[k], pre + k));
+        else acc[pre + k] = obj[k];
+        return acc;
+    }, {});
+    const flatData = flattenObject(data);
+    for (const key in flatData) tbody.innerHTML += `<tr><td>${key}</td><td>${flatData[key]}</td></tr>`;
 }
 
-// --- Chart Utilities ---
-function destroyChart(chartInstance) {
-    if (chartInstance) {
-        chartInstance.destroy();
-    }
-}
+// --- HISTORY / ANALYTICS ---
+async function fetchHistoricalData() {
+    const deviceId = document.getElementById('historyDeviceSelect').value;
+    if (!deviceId) return showToast('error', 'Please select a device.');
 
-function clearAllCharts() {
-    destroyChart(detailFlowChart);
-    detailFlowChart = null;
-    destroyChart(detailPpmChart);
-    detailPpmChart = null;
-    destroyChart(historyChart);
-    historyChart = null;
-}
+    showLoading("Fetching Analytics Data...");
+    ['historyChartContainer', 'historyTableContainer'].forEach(id => document.getElementById(id).style.display = 'none');
+    const msgArea = document.getElementById('historyMessageArea');
+    msgArea.style.display = 'block';
+    document.getElementById('historyMessageText').textContent = 'Loading...';
 
-// --- Date/Time Utilities ---
-function formatDateTime(dateString) {
-    if (!dateString) return 'N/A';
     try {
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) return 'Invalid Date';
-        return date.toLocaleString(undefined, { 
-            dateStyle: 'medium', 
-            timeStyle: 'short' 
+        const isRunDayMode = document.getElementById('dateModeRunDay').checked;
+        let url = `${API_ENDPOINT}/analytics?deviceId=${deviceId}&resolution=${document.getElementById('historyResolutionSelect').value}`;
+        if (isRunDayMode) url += `&lastRunDay=true&previousDays=${document.getElementById('runDayCountInput').value}`;
+        else url += `&startDate=${document.getElementById('historyStartDateInput').value}&endDate=${document.getElementById('historyEndDateInput').value}`;
+        
+        const response = await fetchWithAuth(url);
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message || 'Failed to fetch data');
+
+        historyAllData = result.data;
+        if (historyAllData.length === 0) {
+            document.getElementById('historyMessageText').textContent = 'No data found for the selected criteria.';
+        } else {
+            msgArea.style.display = 'none';
+            ['historyChartContainer', 'historyTableContainer'].forEach(id => document.getElementById(id).style.display = 'block');
+            historyCurrentPage = 0;
+            renderHistoryChart(result.resolution);
+            updateHistoryTable();
+        }
+    } catch (error) {
+        document.getElementById('historyMessageText').textContent = `Error: ${error.message}`;
+        showToast('error', error.message);
+    } finally { hideLoading(); }
+}
+
+function renderHistoryChart(resolution) {
+    if (historyChart) historyChart.destroy();
+    
+    const alarmPoints = historyAllData.filter(d => d.type === 'alarm');
+    const dataPoints = historyAllData.filter(d => d.type !== 'alarm');
+    
+    const datasets = [];
+    const flowData = dataPoints.map(d => ({ x: new Date(d.timestamp).getTime(), y: d.flow?.avg ?? d.flow?.actual }));
+    if(flowData.some(d => d.y != null)) datasets.push({ label: 'Flow (GPM)', data: flowData, borderColor: '#cb2026', yAxisID: 'y' });
+    const ppmData = dataPoints.map(d => ({ x: new Date(d.timestamp).getTime(), y: d.ppm?.avg ?? d.ppm }));
+    if(ppmData.some(d => d.y != null)) datasets.push({ label: 'PPM', data: ppmData, borderColor: '#0d6efd', yAxisID: 'y1' });
+
+    historyChart = new Chart('historyChart', {
+        type: 'line', data: { datasets },
+        options: {
+            scales: { x: { type: 'time', time: { unit: 'hour' } }, y: { display: flowData.some(d=>d.y!=null), position: 'left', title: { display: true, text: 'GPM' } }, y1: { display: ppmData.some(d=>d.y!=null), position: 'right', title: { display: true, text: 'PPM' }, grid: { drawOnChartArea: false } } },
+            plugins: { title: { display: true, text: `Device History (Resolution: ${resolution})` }, annotation: { annotations: alarmPoints.map(p => ({ type: 'line', xMin: new Date(p.timestamp).getTime(), xMax: new Date(p.timestamp).getTime(), borderColor: 'rgba(255, 99, 132, 0.8)', borderWidth: 2, label: { content: p.type, display: true, position: 'start', backgroundColor: 'rgba(255, 99, 132, 0.8)', color: 'white', font: { size: 10 } } })) } }
+        }
+    });
+}
+
+function updateHistoryTable() {
+    const tbody = document.getElementById('historyTableBody');
+    const startIndex = historyCurrentPage * historyPageSize;
+    const pageData = historyAllData.slice(startIndex, startIndex + historyPageSize);
+    tbody.innerHTML = pageData.map(d => {
+        let usage = '--';
+        if (d.flow?.totalizer_start != null && d.flow?.totalizer_end != null) {
+            usage = `${(d.flow.totalizer_end - d.flow.totalizer_start).toFixed(2)} gal`;
+        }
+        return `<tr class="${d.type === 'alarm' ? 'table-alarm' : ''}">
+            <td>${formatDateTime(d.timestamp)}</td><td>${d.errorCode || d.type || 'OK'}</td>
+            <td>${(d.flow?.avg ?? d.flow?.actual)?.toFixed(2) ?? '--'}</td><td>${(d.ppm?.avg ?? d.ppm)?.toFixed(0) ?? '--'}</td><td>${usage}</td>
+        </tr>`;
+    }).join('');
+    document.getElementById('historyRowCounter').textContent = `Showing ${startIndex + 1}-${Math.min(startIndex + historyPageSize, historyAllData.length)} of ${historyAllData.length}`;
+    document.getElementById('historyPrevPage').parentElement.classList.toggle('disabled', historyCurrentPage === 0);
+    document.getElementById('historyNextPage').parentElement.classList.toggle('disabled', (startIndex + historyPageSize) >= historyAllData.length);
+}
+
+// --- ADMIN MODAL & BACKFILL ---
+function showAdminModal() {
+    document.getElementById('adminAuthView').classList.remove('d-none');
+    document.getElementById('adminBackfillView').classList.add('d-none');
+    document.getElementById('adminPasswordInput').value = '';
+    document.getElementById('adminAuthError').classList.add('d-none');
+    adminModal.show();
+}
+
+function unlockAdmin() {
+    adminPassword = document.getElementById('adminPasswordInput').value;
+    if (!adminPassword) {
+        document.getElementById('adminAuthError').textContent = "Password cannot be empty.";
+        document.getElementById('adminAuthError').classList.remove('d-none');
+        return;
+    }
+    document.getElementById('adminAuthView').classList.add('d-none');
+    document.getElementById('adminBackfillView').classList.remove('d-none');
+}
+
+async function startBackfill() {
+    const deviceId = document.getElementById('backfillDeviceSelect').value, year = document.getElementById('backfillYearSelect').value, month = document.getElementById('backfillMonthSelect').value;
+    if (!deviceId) return showToast('error', 'Please select a device.');
+    
+    const logOutput = document.getElementById('backfillLogOutput');
+    const btn = document.getElementById('startBackfillBtn');
+    logOutput.textContent = `Starting backfill for ${deviceId} for ${year}-${month}...\n`;
+    btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Working...';
+
+    try {
+        const response = await fetch(`${API_ENDPOINT}/admin/backfill`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'X-API-KEY': apiKey, 'X-Admin-Pass': adminPassword },
+            body: JSON.stringify({ deviceId, year: parseInt(year), month: parseInt(month) })
         });
-    } catch (e) {
-        return 'Date Error';
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.log ? result.log.join('\n') : (result.message || 'Unknown error'));
+        if (result.log) logOutput.textContent += result.log.join('\n');
+        showToast('success', `Backfill completed for ${deviceId}.`);
+    } catch (error) {
+        logOutput.textContent += `\nERROR: ${error.message}`;
+        showToast('error', 'Backfill failed. Check log for details.');
+    } finally {
+        btn.disabled = false; btn.innerHTML = '<i class="bi bi-hdd-rack-fill me-1"></i> Start Backfill';
     }
 }
 
-function formatDateForFilename(date) {
-    if (!(date instanceof Date) || isNaN(date.getTime())) {
-        date = new Date();
-    }
-    return date.toISOString().split('T')[0];
+// --- UTILITY & HELPER FUNCTIONS ---
+function fetchWithAuth(url) { return fetch(url, { headers: { 'X-API-KEY': apiKey } }); }
+function showLoading(message) { document.getElementById('loadingMessage').textContent = message; document.getElementById('loadingIndicator').style.display = 'flex'; }
+function hideLoading() { document.getElementById('loadingIndicator').style.display = 'none'; }
+function showToast(type, message, title = 'Notification') {
+    const toastIcon = document.getElementById('toastIcon');
+    document.getElementById('toastTitle').textContent = title;
+    document.getElementById('toastBody').textContent = message;
+    toastIcon.className = `bi me-2 bi-${type === 'success' ? 'check-circle-fill text-success' : 'exclamation-triangle-fill text-danger'}`;
+    appToast.show();
 }
-
-function getTimeDifference(timestamp) {
-    if (!timestamp) return Infinity;
-    try {
-        const date = new Date(timestamp);
-        if (isNaN(date.getTime())) return Infinity;
-        return (Date.now() - date.getTime()) / (1000 * 60);
-    } catch (e) {
-        return Infinity;
-    }
-}
-
+function getStatusColor(status) { return { online: 'success', warning: 'warning', offline: 'secondary', error: 'danger' }[status] || 'light'; }
+function formatDateTime(dateString) { try { return new Date(dateString).toLocaleString(); } catch (e) { return '--'; } }
 function getRelativeTimeString(dateString) {
     if (!dateString) return 'never';
-    try {
-        const diffMin = getTimeDifference(dateString);
-        if (diffMin === Infinity) return 'invalid date';
-        
-        if (diffMin < 1) return 'just now';
-        if (diffMin < 60) return `${Math.floor(diffMin)} min ago`;
-        const diffHour = Math.floor(diffMin / 60);
-        if (diffHour < 24) return `${diffHour} hour${diffHour > 1 ? 's' : ''} ago`;
-        const diffDay = Math.floor(diffHour / 24);
-        if (diffDay < 7) return `${diffDay} day${diffDay > 1 ? 's' : ''} ago`;
-        return formatDateTime(dateString);
-    } catch (e) {
-        return 'time error';
-    }
+    const diffMin = (Date.now() - new Date(dateString).getTime()) / 60000;
+    if (diffMin < 1) return 'just now';
+    if (diffMin < 60) return `${Math.floor(diffMin)} min ago`;
+    if (diffMin < 1440) return `${Math.floor(diffMin / 60)} hr ago`;
+    return formatDateTime(dateString);
 }
-
-// --- UI Utilities ---
-function showLoading(message = "Loading...", subMessage = "") {
-    document.getElementById('loadingMessage').textContent = message;
-    document.getElementById('loadingProgress').textContent = subMessage;
-    document.getElementById('loadingIndicator').style.display = 'flex';
+function toggleInputVisibility(inputId, iconSelector) {
+    const input = document.getElementById(inputId), icon = document.querySelector(iconSelector);
+    if (input.type === 'password') { input.type = 'text'; icon.classList.replace('bi-eye-slash', 'bi-eye'); }
+    else { input.type = 'password'; icon.classList.replace('bi-eye', 'bi-eye-slash'); }
 }
-
-function hideLoading() {
-    document.getElementById('loadingIndicator').style.display = 'none';
-    document.getElementById('loadingProgress').textContent = '';
+function startAutoRefresh() {
+    stopAutoRefresh();
+    autoRefreshTimer = setInterval(() => { if (isTabVisible && document.getElementById('overviewSection').style.display !== 'none') refreshDeviceList(); }, AUTO_REFRESH_INTERVAL);
+    document.addEventListener('visibilitychange', () => { isTabVisible = document.visibilityState === 'visible'; });
 }
-
-function showToastError(message) {
-    console.error("Error:", message);
-    document.getElementById('toastErrorMessage').textContent = message;
-    if (errorToast) errorToast.show();
-}
-
-function showToastSuccess(message) {
-    console.log("Success:", message);
-    document.getElementById('toastSuccessMessage').textContent = message;
-    if (successToast) successToast.show();
-}
-
-function escapeHtml(unsafe) {
-    if (typeof unsafe !== 'string') return unsafe;
-    return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-}
-    </script>
+function stopAutoRefresh() { if (autoRefreshTimer) clearInterval(autoRefreshTimer); }
+</script>
 </body>
 </html>
