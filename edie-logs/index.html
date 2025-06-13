@@ -507,8 +507,16 @@
                                 <label for="historyEndDateInput" class="form-label">End Date</label>
                                 <input type="date" id="historyEndDateInput" class="form-control form-control-sm">
                             </div>
-                            <div class="col-md-2 col-lg-2">
-                                <label for="historyLimitSelect" class="form-label">Max Records</label>
+                             <div class="col-md-3 col-lg-2">
+                                <label for="historyGranularitySelect" class="form-label">Granularity</label>
+                                <select id="historyGranularitySelect" class="form-select form-select-sm">
+                                    <option value="raw" selected>Raw Data</option>
+                                    <option value="hourly">Hourly Averages</option>
+                                    <option value="daily">Daily Averages</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 col-lg-1">
+                                <label for="historyLimitSelect" class="form-label">Limit</label>
                                 <select id="historyLimitSelect" class="form-select form-select-sm">
                                     <option value="100">100</option>
                                     <option value="250">250</option>
@@ -516,9 +524,9 @@
                                     <option value="1000">1000</option>
                                 </select>
                             </div>
-                            <div class="col-md-12 col-lg-3">
+                            <div class="col-md-12 col-lg-2">
                                 <button id="searchHistoryBtn" class="btn btn-primary btn-sm w-100">
-                                    <i class="bi bi-search me-1"></i>Search History
+                                    <i class="bi bi-search me-1"></i>Search
                                 </button>
                             </div>
                         </div>
@@ -545,11 +553,11 @@
                             <table class="table table-striped table-hover table-sm" id="historyTable">
                                 <thead>
                                     <tr>
-                                        <th>Timestamp</th>
-                                        <th>Flow (GPM)</th>
-                                        <th>PPM</th>
-                                        <th>pH</th>
-                                        <th>ORP</th>
+                                        <th id="historyTimestampHeader">Timestamp</th>
+                                        <th id="historyFlowHeader">Flow (GPM)</th>
+                                        <th id="historyPpmHeader">PPM</th>
+                                        <th id="historyPhHeader">pH</th>
+                                        <th id="historyOrpHeader">ORP</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
@@ -772,7 +780,7 @@
 const API_ENDPOINT = 'https://jolly-queen-8e6f.larry-schrimpfff6544.workers.dev'; // Worker URL
 const API_KEY_STORAGE_KEY = 'edieApiKey';
 const SELECTED_DEVICES_STORAGE_KEY = 'edieSelectedDevices';
-const DEFAULT_API_KEY = "k32BWMByEJrCihED0YEmhs0AaUJCeontFUC_qbeB"; // Set your default API key here if desired
+const DEFAULT_API_KEY = ""; // Set your default API key here if desired
 const AUTO_REFRESH_INTERVAL = 60000; // 60 seconds
 const OFFLINE_THRESHOLD_MINUTES = 15;
 const VIEW_MODE_STORAGE_KEY = 'edieViewMode';
@@ -1450,7 +1458,7 @@ function hideOverviewMessage() {
     document.getElementById('overviewMessageArea').style.display = 'none';
 }
 
-// --- Device Details ---
+// --- Device Details (REWRITTEN) ---
 async function showDeviceDetails(deviceId) {
     if (!apiKey) return;
     
@@ -1462,23 +1470,12 @@ async function showDeviceDetails(deviceId) {
     showLoading(`Loading details for ${deviceId}...`);
     
     try {
-        // First, get the latest data from the device summary
-        const device = allDevices.find(d => d.deviceId === deviceId);
-        if (device && device.latestData) {
-            // Show latest data immediately
-            updateDetailMetrics(device.latestData);
-        }
-        
-        // Fetch historical data using the new endpoint
+        // Fetch the 100 most recent data records using the history endpoint.
+        // This is the correct way to get the latest data.
         const url = `${API_ENDPOINT}/device/${deviceId}/history?limit=100`;
         const response = await fetchWithAuth(url);
         
         if (!response.ok) {
-            // Fallback to old endpoint if new one not available
-            if (response.status === 404) {
-                console.log("New history endpoint not found, falling back to old endpoint");
-                return await showDeviceDetailsLegacy(deviceId);
-            }
             throw new Error(`Failed to fetch history: ${response.statusText}`);
         }
         
@@ -1487,17 +1484,20 @@ async function showDeviceDetails(deviceId) {
             throw new Error("Invalid data structure received");
         }
         
-        // Process data
-        detailAllData = result.data.sort((a, b) => 
-            new Date(b.timestamp) - new Date(a.timestamp)
-        );
+        // Data from worker is already newest first.
+        detailAllData = result.data;
         
-        console.log(`Loaded ${detailAllData.length} records for ${deviceId}`);
+        console.log(`Loaded ${detailAllData.length} recent records for ${deviceId}`);
         
         if (detailAllData.length > 0) {
             detailCurrentPage = 0;
             populateDetailModal();
         } else {
+            // Check the device summary as a fallback for the latest metrics
+            const deviceSummary = allDevices.find(d => d.deviceId === deviceId);
+            if (deviceSummary && deviceSummary.latestData) {
+                updateDetailMetrics(deviceSummary.latestData);
+            }
             showDetailMessage("No historical data available for this device.");
         }
         
@@ -1507,58 +1507,6 @@ async function showDeviceDetails(deviceId) {
         showDetailMessage(`Error loading data: ${error.message}`, true);
     } finally {
         hideLoading();
-    }
-}
-
-// Legacy method for existing worker format
-async function showDeviceDetailsLegacy(deviceId) {
-    try {
-        // Use the existing endpoint format
-        const url = `${API_ENDPOINT}/devices?deviceId=${deviceId}&limit=50`;
-        const response = await fetchWithAuth(url);
-        
-        if (!response.ok) {
-            throw new Error(`Failed to fetch details: ${response.statusText}`);
-        }
-        
-        const result = await response.json();
-        if (!result.success || !Array.isArray(result.data)) {
-            throw new Error("Invalid data structure received");
-        }
-        
-        // Flatten all log entries from the file results
-        let allLogEntries = [];
-        result.data.forEach(fileResult => {
-            if (fileResult && Array.isArray(fileResult.logData)) {
-                // Add file metadata to each entry
-                fileResult.logData.forEach(entry => {
-                    entry.uploaded = fileResult.uploaded;
-                    entry.deviceId = entry.deviceId || deviceId;
-                });
-                allLogEntries = allLogEntries.concat(fileResult.logData);
-            } else if (fileResult && fileResult.error) {
-                console.warn(`Skipping file due to error: ${fileResult.fileName} - ${fileResult.error}`);
-            }
-        });
-        
-        // Sort all entries by timestamp (newest first)
-        detailAllData = allLogEntries.sort((a, b) => 
-            new Date(b.timestamp) - new Date(a.timestamp)
-        );
-        
-        console.log(`Loaded ${detailAllData.length} records from ${result.data.length} files`);
-        
-        if (detailAllData.length > 0) {
-            detailCurrentPage = 0;
-            populateDetailModal();
-        } else {
-            showDetailMessage("No historical data available for this device.");
-        }
-        
-    } catch (error) {
-        console.error(`Error in legacy fetch for ${deviceId}:`, error);
-        showToastError(`Could not load details: ${error.message}`);
-        showDetailMessage(`Error loading data: ${error.message}`, true);
     }
 }
 
@@ -1644,8 +1592,8 @@ function populateDetailModal() {
 function createDetailCharts() {
     if (!detailAllData || detailAllData.length < 2) return;
     
-    // Prepare data for charts (chronological order, limit to recent data)
-    const chartData = [...detailAllData].reverse().slice(-100);
+    // Prepare data for charts (chronological order)
+    const chartData = [...detailAllData].reverse();
     
     createDetailFlowChart(chartData);
     createDetailPpmChart(chartData);
@@ -1706,7 +1654,7 @@ function createDetailFlowChart(entries) {
             plugins: {
                 title: {
                     display: true,
-                    text: 'Flow Rate Trend'
+                    text: 'Recent Flow Rate'
                 },
                 legend: { display: false }
             }
@@ -1769,7 +1717,7 @@ function createDetailPpmChart(entries) {
             plugins: {
                 title: {
                     display: true,
-                    text: 'PPM Trend'
+                    text: 'Recent PPM Trend'
                 },
                 legend: { display: false }
             }
@@ -1887,6 +1835,7 @@ async function fetchHistoricalData() {
     const startDate = document.getElementById('historyStartDateInput').value;
     const endDate = document.getElementById('historyEndDateInput').value;
     const limit = parseInt(document.getElementById('historyLimitSelect').value, 10);
+    const granularity = document.getElementById('historyGranularitySelect').value;
 
     if (!deviceId) {
         showToastError("Please select a device.");
@@ -1895,10 +1844,11 @@ async function fetchHistoricalData() {
 
     resetHistoryView();
     showLoading("Fetching historical data...");
+    updateHistoryTableHeaders(granularity);
 
     try {
         // Build query parameters
-        let url = `${API_ENDPOINT}/device/${deviceId}/history?limit=${limit}`;
+        let url = `${API_ENDPOINT}/device/${deviceId}/history?limit=${limit}&granularity=${granularity}`;
         if (startDate) url += `&startDate=${startDate}`;
         if (endDate) url += `&endDate=${endDate}`;
         
@@ -1913,12 +1863,10 @@ async function fetchHistoricalData() {
             throw new Error("Invalid data structure received");
         }
 
-        // Sort chronologically (oldest first for table/chart)
-        historyAllData = result.data.sort((a, b) => 
-            new Date(a.timestamp) - new Date(b.timestamp)
-        );
+        // Data is already sorted chronologically (oldest first) by the worker
+        historyAllData = result.data;
         
-        console.log(`Fetched ${historyAllData.length} historical records`);
+        console.log(`Fetched ${historyAllData.length} historical records (granularity: ${granularity})`);
         
         if (historyAllData.length > 0) {
             historyCurrentPage = 0;
@@ -1945,6 +1893,16 @@ async function fetchHistoricalData() {
     }
 }
 
+function updateHistoryTableHeaders(granularity) {
+    const isAggregated = granularity !== 'raw';
+    const suffix = isAggregated ? ' (Avg)' : '';
+    document.getElementById('historyTimestampHeader').textContent = isAggregated ? 'Period' : 'Timestamp';
+    document.getElementById('historyFlowHeader').textContent = `Flow (GPM)${suffix}`;
+    document.getElementById('historyPpmHeader').textContent = `PPM${suffix}`;
+    document.getElementById('historyPhHeader').textContent = `pH${suffix}`;
+    document.getElementById('historyOrpHeader').textContent = `ORP${suffix}`;
+}
+
 function renderHistoricalData() {
     if (!historyAllData || historyAllData.length === 0) return;
     
@@ -1961,27 +1919,32 @@ function createHistoryChart() {
     destroyChart(historyChart);
     
     const canvas = document.getElementById('historyChart');
-    if (!canvas || !historyAllData || historyAllData.length < 2) return;
+    if (!canvas || !historyAllData || historyAllData.length < 1) return;
     
-    // Limit data points for performance
-    const maxPoints = 500;
-    let chartData = historyAllData;
-    if (historyAllData.length > maxPoints) {
-        const step = Math.ceil(historyAllData.length / maxPoints);
-        chartData = historyAllData.filter((_, index) => index % step === 0);
-    }
+    // Data is pre-aggregated by worker if needed.
+    const chartData = historyAllData;
+    const granularity = document.getElementById('historyGranularitySelect').value;
     
     const datasets = [];
-    
+    const isAggregated = granularity !== 'raw';
+
+    const getXValue = (timestamp) => {
+        // Daily granularity might just be 'YYYY-MM-DD'
+        if (granularity === 'daily' && !timestamp.includes('T')) {
+            return new Date(timestamp + 'T00:00:00Z'); // Assume UTC start of day
+        }
+        return new Date(timestamp);
+    };
+
     // Flow data
     const flowData = chartData.map(e => ({
-        x: new Date(e.timestamp),
+        x: getXValue(e.timestamp),
         y: e.flow?.actual ?? null
     })).filter(d => d.y !== null);
     
     if (flowData.length > 0) {
         datasets.push({
-            label: 'Flow Rate (GPM)',
+            label: `Flow Rate (GPM)${isAggregated ? ' Avg' : ''}`,
             data: flowData,
             yAxisID: 'y',
             borderColor: 'rgba(203, 32, 38, 0.8)',
@@ -1989,20 +1952,20 @@ function createHistoryChart() {
             borderWidth: 1.5,
             tension: 0.2,
             fill: false,
-            pointRadius: 0,
+            pointRadius: isAggregated ? 2 : 0,
             pointHoverRadius: 3
         });
     }
     
     // PPM data
     const ppmData = chartData.map(e => ({
-        x: new Date(e.timestamp),
+        x: getXValue(e.timestamp),
         y: e.ppm ?? null
     })).filter(d => d.y !== null);
     
     if (ppmData.length > 0) {
         datasets.push({
-            label: 'PPM',
+            label: `PPM${isAggregated ? ' Avg' : ''}`,
             data: ppmData,
             yAxisID: 'y1',
             borderColor: 'rgba(66, 135, 245, 0.8)',
@@ -2010,7 +1973,7 @@ function createHistoryChart() {
             borderWidth: 1.5,
             tension: 0.2,
             fill: false,
-            pointRadius: 0,
+            pointRadius: isAggregated ? 2 : 0,
             pointHoverRadius: 3
         });
     }
@@ -2031,9 +1994,10 @@ function createHistoryChart() {
                 x: {
                     type: 'time',
                     time: {
-                        unit: 'hour',
+                        unit: granularity === 'daily' ? 'day' : 'hour',
                         displayFormats: {
-                            hour: 'MMM d, HH:mm'
+                            hour: 'MMM d, HH:mm',
+                            day: 'MMM d, yyyy'
                         }
                     },
                     title: { display: true, text: 'Time' }
@@ -2042,13 +2006,13 @@ function createHistoryChart() {
                     type: 'linear',
                     display: flowData.length > 0,
                     position: 'left',
-                    title: { display: true, text: 'Flow (GPM)' }
+                    title: { display: true, text: `Flow (GPM)${isAggregated ? ' Avg' : ''}` }
                 },
                 y1: {
                     type: 'linear',
                     display: ppmData.length > 0,
                     position: 'right',
-                    title: { display: true, text: 'PPM' },
+                    title: { display: true, text: `PPM${isAggregated ? ' Avg' : ''}` },
                     grid: {
                         drawOnChartArea: flowData.length === 0,
                     }
@@ -2074,17 +2038,18 @@ function updateHistoryTable() {
     const startIndex = historyCurrentPage * historyPageSize;
     const endIndex = Math.min(startIndex + historyPageSize, totalEntries);
     
-    const currentPageEntries = historyAllData.slice(startIndex, endIndex);
+    // Reverse for display (newest first in table)
+    const currentPageEntries = [...historyAllData].reverse().slice(startIndex, endIndex);
     const fragment = document.createDocumentFragment();
     
     currentPageEntries.forEach(entry => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${formatDateTime(entry.timestamp)}</td>
-            <td>${entry.flow?.actual?.toFixed(1) ?? 'N/A'}</td>
-            <td>${entry.ppm ?? 'N/A'}</td>
-            <td>${entry.pH?.actual?.toFixed(1) ?? 'N/A'}</td>
-            <td>${entry.orp?.actual?.toFixed(0) ?? 'N/A'}</td>
+            <td>${formatDateTime(entry.timestamp, true)}</td>
+            <td>${entry.flow?.actual != null ? entry.flow.actual.toFixed(1) : 'N/A'}</td>
+            <td>${entry.ppm != null ? (typeof entry.ppm === 'number' ? entry.ppm.toFixed(1) : entry.ppm) : 'N/A'}</td>
+            <td>${entry.pH?.actual != null ? entry.pH.actual.toFixed(1) : 'N/A'}</td>
+            <td>${entry.orp?.actual != null ? entry.orp.actual.toFixed(0) : 'N/A'}</td>
             <td>${escapeHtml(entry.errorCode || 'OK')}</td>
         `;
         fragment.appendChild(row);
@@ -2148,7 +2113,8 @@ function exportHistoryToCSV() {
     rows.forEach(row => {
         csvContent += row.map(cell => {
             if (cell === null || cell === undefined) return '';
-            return typeof cell === 'string' ? `"${cell.replace(/"/g, '""')}"` : cell;
+            let val = (typeof cell === 'number' && !Number.isInteger(cell)) ? cell.toFixed(4) : cell;
+            return typeof val === 'string' ? `"${val.replace(/"/g, '""')}"` : val;
         }).join(',') + '\r\n';
     });
     
@@ -2339,11 +2305,31 @@ function clearAllCharts() {
 }
 
 // --- Date/Time Utilities ---
-function formatDateTime(dateString) {
+function formatDateTime(dateString, isAggregatedTimestamp = false) {
     if (!dateString) return 'N/A';
     try {
+        // Handle YYYY-MM-DD format from daily aggregation
+        if (isAggregatedTimestamp && /^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+            const date = new Date(dateString + 'T00:00:00Z');
+             return date.toLocaleDateString(undefined, { 
+                dateStyle: 'medium',
+                timeZone: 'UTC'
+            });
+        }
+
         const date = new Date(dateString);
         if (isNaN(date.getTime())) return 'Invalid Date';
+        
+        // Handle hourly aggregation format YYYY-MM-DDTHH:00:00.000Z
+        if (isAggregatedTimestamp && date.getUTCMinutes() === 0 && date.getUTCSeconds() === 0) {
+             return date.toLocaleString(undefined, { 
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                hour12: true
+            });
+        }
+        
         return date.toLocaleString(undefined, { 
             dateStyle: 'medium', 
             timeStyle: 'short' 
