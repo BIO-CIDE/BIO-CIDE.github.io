@@ -92,7 +92,6 @@
         }
         .metric-value { font-size: 1.1rem; font-weight: 600; }
         .metric-label { color: #6c757d; font-size: 0.8rem; text-transform: uppercase; }
-        .metric-sublabel { color: #999; font-size: 0.7rem; font-style: italic; }
         .last-update-time { font-size: 0.85rem; color: #6c757d; }
 
         #loadingIndicator {
@@ -238,7 +237,7 @@
         .performance-badge.legacy {
             background: rgba(255, 193, 7, 0.9);
             color: #000;
-            cursor: pointer;
+            cursor: pointer; /* Make it clickable */
         }
 
         .performance-badge.legacy:hover {
@@ -718,7 +717,7 @@
                                     <tr>
                                         <th>Timestamp</th>
                                         <th>Flow (GPM)</th>
-                                        <th>ClO₂ (PPM)</th>
+                                        <th>PPM</th>
                                         <th>pH</th>
                                         <th>ORP</th>
                                         <th>Totalizer Usage</th>
@@ -820,7 +819,7 @@
                                                 <div class="card-body">
                                                     <i class="bi bi-beaker fs-4 text-info mb-2"></i>
                                                     <h4 class="fw-bold" id="avgChemistry">0</h4>
-                                                    <p class="text-muted mb-0">Avg ClO₂</p>
+                                                    <p class="text-muted mb-0">Avg PPM</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -867,7 +866,7 @@
                                                     <th>Device ID</th>
                                                     <th>Total Water (Gal)</th>
                                                     <th>Avg Flow (GPM)</th>
-                                                    <th>Avg ClO₂</th>
+                                                    <th>Avg PPM</th>
                                                     <th>Avg pH</th>
                                                     <th>Avg ORP</th>
                                                     <th>Alerts</th>
@@ -948,19 +947,16 @@
                                     <div class="metric-value" id="detailFlowMetric">--</div>
                                 </div>
                                 <div class="metric-card">
-                                    <div class="metric-label">ClO₂ Reading</div>
-                                    <div class="metric-value" id="detailClo2Metric">--</div>
-                                    <div class="metric-sublabel">Setpoint: <span id="detailPpmSetpoint">--</span></div>
+                                    <div class="metric-label">PPM Reading</div>
+                                    <div class="metric-value" id="detailPpmMetric">--</div>
                                 </div>
                                 <div class="metric-card">
                                     <div class="metric-label">pH Reading</div>
                                     <div class="metric-value" id="detailPHMetric">--</div>
-                                    <div class="metric-sublabel">Setpoint: <span id="detailPHSetpoint">--</span></div>
                                 </div>
                                 <div class="metric-card">
                                     <div class="metric-label">ORP Reading</div>
                                     <div class="metric-value" id="detailORPMetric">--</div>
-                                    <div class="metric-sublabel">Setpoint: <span id="detailORPSetpoint">--</span></div>
                                 </div>
                             </div>
                             
@@ -984,7 +980,7 @@
                                         <tr>
                                             <th>Timestamp</th>
                                             <th>Flow</th>
-                                            <th>ClO₂</th>
+                                            <th>PPM</th>
                                             <th>pH</th>
                                             <th>ORP</th>
                                             <th>Status</th>
@@ -1483,7 +1479,7 @@ function showPerformanceBadge(mode, version = null) {
         badge.className = 'performance-badge legacy';
         text.innerHTML = `<button class="migration-btn" title="Click to migrate to fast batch mode">Legacy Mode - Click to Upgrade</button>`;
         
-        // Add click handler for migration with better error handling
+        // Add click handler for migration
         badge.onclick = () => {
             if (confirm('Migrate to fast batch mode?\n\nThis will convert your legacy device data to the new optimized format for 10x faster loading.')) {
                 migrateToBatchMode();
@@ -1495,34 +1491,25 @@ function showPerformanceBadge(mode, version = null) {
     performanceMode = mode;
 }
 
-// Fixed migration function
+// Migrate legacy data to batch mode
 async function migrateToBatchMode() {
     showLoading("Migrating to batch mode...");
     
     try {
         const response = await fetchWithAuth(`${API_ENDPOINT}/admin/migrate-to-batch`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            method: 'POST'
         });
         
-        const contentType = response.headers.get("content-type");
-        let result;
-        
-        if (contentType && contentType.includes("application/json")) {
-            result = await response.json();
-        } else {
-            // Handle non-JSON response
-            const text = await response.text();
-            console.error("Non-JSON response:", text);
-            throw new Error("Server returned non-JSON response");
+        if (!response.ok) {
+            throw new Error(`Migration failed: ${response.statusText}`);
         }
         
-        if (response.ok && result.success) {
+        const result = await response.json();
+        
+        if (result.success) {
             showToastSuccess(`🚀 Migration complete! ${result.migrated} devices upgraded to batch mode`);
             
-            // Force refresh to show new batch mode
+            // Refresh to show new batch mode
             setTimeout(() => {
                 refreshDeviceList(true);
             }, 1000);
@@ -1689,7 +1676,7 @@ function animateCounter(element, targetValue) {
     }, stepTime);
 }
 
-// --- Filtering and Sorting ---
+// --- Filtering and Sorting (unchanged) ---
 function handleSearchInput(event) {
     currentSearchTerm = event.target.value.toLowerCase().trim();
     applyFiltersAndSort();
@@ -1736,7 +1723,15 @@ function applyFiltersAndSort() {
     displayedDevices = filtered;
 }
 
-// --- Enhanced Rendering with CLO2 ---
+// --- Enhanced Rendering ---
+function renderDevices() {
+    if (currentViewMode === 'grid') {
+        renderDeviceCards();
+    } else {
+        renderDeviceList();
+    }
+}
+
 function renderDeviceCards() {
     const container = document.getElementById('devicesGrid');
     container.innerHTML = '';
@@ -1755,11 +1750,10 @@ function renderDeviceCards() {
         let latestValue = '--';
         
         if (data) {
-            // Display clo2 instead of ppm
-            if (data.clo2 !== undefined && data.clo2 !== null) {
-                latestValue = `${data.clo2} ClO₂`;
-            } else if (data.flow?.actual !== undefined) {
+            if (data.flow?.actual !== undefined) {
                 latestValue = `${data.flow.actual.toFixed(1)} GPM`;
+            } else if (data.ppm !== undefined) {
+                latestValue = `${data.ppm} PPM`;
             }
         }
         
@@ -1824,11 +1818,10 @@ function renderDeviceList() {
         let latestValue = 'N/A';
         
         if (data) {
-            // Display clo2 instead of ppm
-            if (data.clo2 !== undefined && data.clo2 !== null) {
-                latestValue = `${data.clo2} ClO₂`;
-            } else if (data.flow?.actual !== undefined) {
+            if (data.flow?.actual !== undefined) {
                 latestValue = `${data.flow.actual.toFixed(1)} GPM`;
+            } else if (data.ppm !== undefined) {
+                latestValue = `${data.ppm} PPM`;
             }
         }
         
@@ -1968,7 +1961,7 @@ function jumpToHistoryFromChart() {
     }, 100);
 }
 
-// --- Enhanced Device Details with CLO2 and Setpoints ---
+// --- Enhanced Device Details ---
 async function showDeviceDetails(deviceId) {
     if (!apiKey) return;
     
@@ -2179,8 +2172,7 @@ function createDetailFlowChart(entries) {
                         displayFormats: {
                             hour: 'MMM d, HH:mm',
                             day: 'MMM d'
-                        },
-                        tooltipFormat: 'MMM d, yyyy HH:mm'
+                        }
                     },
                     title: { display: true, text: 'Time' }
                 },
@@ -2200,13 +2192,6 @@ function createDetailFlowChart(entries) {
                         label: function(context) {
                             const value = context.parsed.y;
                             return `Flow: ${value?.toFixed(1) || 0} GPM`;
-                        },
-                        title: function(context) {
-                            // Better date formatting for tooltip
-                            if (context[0].parsed.x) {
-                                return formatDateTime(new Date(context[0].parsed.x));
-                            }
-                            return '';
                         }
                     }
                 }
@@ -2225,6 +2210,8 @@ function fillChartGaps(entries, timeRangeHours) {
     
     const intervalMinutes = timeRangeHours <= 6 ? 1 : timeRangeHours <= 24 ? 5 : 15;
     const intervalMs = intervalMinutes * 60 * 1000;
+    
+    if (entries.length === 0) return [];
     
     // Convert entries to chart format
     const chartData = entries.map(e => ({
@@ -2264,39 +2251,24 @@ function fillChartGaps(entries, timeRangeHours) {
     return filled;
 }
 
-// Updated to show clo2 and setpoints
 function updateDetailMetrics(data) {
     if (!data) return;
     
-    // Flow
     document.getElementById('detailFlowMetric').textContent = 
         data.flow?.actual !== undefined ? `${data.flow.actual.toFixed(1)} GPM` : '--';
     
-    // ClO2 reading (actual value)
-    document.getElementById('detailClo2Metric').textContent = 
-        data.clo2 !== undefined && data.clo2 !== null ? `${data.clo2}` : '--';
+    document.getElementById('detailPpmMetric').textContent = 
+        data.ppm !== undefined ? `${data.ppm}` : '--';
     
-    // PPM setpoint
-    document.getElementById('detailPpmSetpoint').textContent = 
-        data.ppm !== undefined && data.ppm !== null ? `${data.ppm} PPM` : '--';
-    
-    // pH reading and setpoint
     document.getElementById('detailPHMetric').textContent = 
         data.pH?.actual !== undefined ? `${data.pH.actual.toFixed(1)}` : '--';
-    document.getElementById('detailPHSetpoint').textContent = 
-        data.pH?.setpoint !== undefined ? `${data.pH.setpoint.toFixed(1)}` : '--';
     
-    // ORP reading and setpoint
     document.getElementById('detailORPMetric').textContent = 
         data.orp?.actual !== undefined ? `${data.orp.actual.toFixed(0)} mV` : '--';
-    document.getElementById('detailORPSetpoint').textContent = 
-        data.orp?.setpoint !== undefined ? `${data.orp.setpoint.toFixed(0)} mV` : '--';
     
-    // Status
     document.getElementById('detailStatusMetric').textContent = 
         data.errorCode ? escapeHtml(data.errorCode) : 'OK';
     
-    // Last update
     document.getElementById('detailLastUpdateMetric').textContent = 
         data.timestamp ? formatDateTime(data.timestamp) : '--';
 }
@@ -2372,7 +2344,7 @@ function populateDetailDataTable() {
         row.innerHTML = `
             <td>${formatDateTime(entry.timestamp)}</td>
             <td>${entry.flow?.actual?.toFixed(1) ?? 'N/A'}</td>
-            <td>${entry.clo2 ?? 'N/A'}</td>
+            <td>${entry.ppm ?? 'N/A'}</td>
             <td>${entry.pH?.actual?.toFixed(1) ?? 'N/A'}</td>
             <td>${entry.orp?.actual?.toFixed(0) ?? 'N/A'}</td>
             <td>${escapeHtml(entry.errorCode || 'OK')}</td>
@@ -2416,15 +2388,9 @@ function refreshCurrentDeviceDetails() {
 }
 
 function resetDetailModal() {
-    ['detailFlowMetric', 'detailClo2Metric', 'detailPHMetric', 'detailORPMetric', 
+    ['detailFlowMetric', 'detailPpmMetric', 'detailPHMetric', 'detailORPMetric', 
      'detailStatusMetric', 'detailLastUpdateMetric'].forEach(id => {
-        const elem = document.getElementById(id);
-        if (elem) elem.textContent = '--';
-    });
-    
-    ['detailPpmSetpoint', 'detailPHSetpoint', 'detailORPSetpoint'].forEach(id => {
-        const elem = document.getElementById(id);
-        if (elem) elem.textContent = '--';
+        document.getElementById(id).textContent = '--';
     });
     
     document.querySelector('#detailDataTable tbody').innerHTML = 
@@ -2449,7 +2415,7 @@ function showDetailMessage(message, isError = false) {
         `<tr><td colspan="6" class="text-center p-3 ${messageClass}">${escapeHtml(message)}</td></tr>`;
 }
 
-// --- Enhanced History Section with CLO2 ---
+// --- Enhanced History Section ---
 function populateHistoryDeviceDropdown() {
     const select = document.getElementById('historyDeviceSelect');
     const currentVal = select.value;
@@ -2625,21 +2591,21 @@ function createHistoryChart() {
         });
     }
     
-    // Show ClO2 instead of PPM
-    const clo2Data = chartData.map(e => ({
+    // Only show PPM if it varies significantly
+    const ppmData = chartData.map(e => ({
         x: new Date(e.timestamp),
-        y: e.clo2 ?? null
+        y: e.ppm ?? null
     })).filter(d => d.y !== null);
     
-    const clo2Values = clo2Data.map(d => d.y);
-    const clo2Min = Math.min(...clo2Values);
-    const clo2Max = Math.max(...clo2Values);
-    const clo2Variation = clo2Max - clo2Min;
+    const ppmValues = ppmData.map(d => d.y);
+    const ppmMin = Math.min(...ppmValues);
+    const ppmMax = Math.max(...ppmValues);
+    const ppmVariation = ppmMax - ppmMin;
     
-    if (clo2Data.length > 0 && clo2Variation > 0.1) { // Show if any variation
+    if (ppmData.length > 0 && ppmVariation > 5) { // Only show if significant variation
         datasets.push({
-            label: 'ClO₂',
-            data: clo2Data,
+            label: 'PPM',
+            data: ppmData,
             yAxisID: 'y1',
             borderColor: 'rgba(66, 135, 245, 0.8)',
             backgroundColor: 'rgba(66, 135, 245, 0.1)',
@@ -2683,9 +2649,9 @@ function createHistoryChart() {
                 },
                 y1: {
                     type: 'linear',
-                    display: clo2Variation > 0.1,
+                    display: ppmVariation > 5,
                     position: 'right',
-                    title: { display: true, text: 'ClO₂' },
+                    title: { display: true, text: 'PPM' },
                     grid: {
                         drawOnChartArea: flowData.length === 0,
                     }
@@ -2728,7 +2694,7 @@ function updateHistoryTable() {
         row.innerHTML = `
             <td>${formatDateTime(entry.timestamp)}</td>
             <td>${entry.flow?.actual?.toFixed(1) ?? 'N/A'}</td>
-            <td>${entry.clo2 ?? 'N/A'}</td>
+            <td>${entry.ppm ?? 'N/A'}</td>
             <td>${entry.pH?.actual?.toFixed(1) ?? 'N/A'}</td>
             <td>${entry.orp?.actual?.toFixed(0) ?? 'N/A'}</td>
             <td>${totalizerUsage}</td>
@@ -2779,7 +2745,7 @@ function exportHistoryToCSV() {
         return;
     }
     
-    const headers = ['Timestamp', 'Flow (GPM)', 'ClO2', 'pH', 'ORP', 'Totalizer Usage (Gal)', 'Status', 'Resolution'];
+    const headers = ['Timestamp', 'Flow (GPM)', 'PPM', 'pH', 'ORP', 'Totalizer Usage (Gal)', 'Status', 'Resolution'];
     const rows = historyAllData.map(entry => {
         let totalizerUsage = '';
         if (entry.totalizer_start !== null && entry.totalizer_end !== null) {
@@ -2789,7 +2755,7 @@ function exportHistoryToCSV() {
         return [
             entry.timestamp,
             entry.flow?.actual ?? '',
-            entry.clo2 ?? '',
+            entry.ppm ?? '',
             entry.pH?.actual ?? '',
             entry.orp?.actual ?? '',
             totalizerUsage,
@@ -2821,7 +2787,7 @@ function exportHistoryToCSV() {
     showToastSuccess(`Exported ${filename}`);
 }
 
-// --- Enhanced Analytics Section with CLO2 ---
+// --- Enhanced Analytics Section ---
 function refreshAnalyticsDevices() {
     const container = document.getElementById('analyticsDeviceSelection');
     
@@ -2903,24 +2869,20 @@ function renderAnalyticsResults(analyticsData, startDate, endDate) {
     document.getElementById('analyticsMessage').style.display = 'none';
     document.getElementById('analyticsResults').style.display = 'block';
     
-    // Calculate summary metrics with ClO2
+    // Calculate summary metrics
     let totalWater = 0;
     let totalFlowReadings = 0;
     let totalFlowSum = 0;
-    let totalClo2Readings = 0;
-    let totalClo2Sum = 0;
+    let totalPpmReadings = 0;
+    let totalPpmSum = 0;
     let totalAlerts = 0;
     
     const deviceSummaries = analyticsData.map(({ deviceId, data }) => {
         let deviceWater = 0;
         let deviceFlowSum = 0;
         let deviceFlowCount = 0;
-        let deviceClo2Sum = 0;
-        let deviceClo2Count = 0;
-        let devicepHSum = 0;
-        let devicepHCount = 0;
-        let deviceORPSum = 0;
-        let deviceORPCount = 0;
+        let devicePpmSum = 0;
+        let devicePpmCount = 0;
         let deviceAlerts = 0;
         let deviceUptime = 0;
         let totalPeriods = data.length;
@@ -2938,22 +2900,10 @@ function renderAnalyticsResults(analyticsData, startDate, endDate) {
                 deviceUptime++;
             }
             
-            // ClO2 averages
-            if (entry.clo2 > 0) {
-                deviceClo2Sum += entry.clo2;
-                deviceClo2Count++;
-            }
-            
-            // pH averages
-            if (entry.pH?.actual > 0) {
-                devicepHSum += entry.pH.actual;
-                devicepHCount++;
-            }
-            
-            // ORP averages
-            if (entry.orp?.actual > 0) {
-                deviceORPSum += entry.orp.actual;
-                deviceORPCount++;
+            // PPM averages
+            if (entry.ppm > 0) {
+                devicePpmSum += entry.ppm;
+                devicePpmCount++;
             }
             
             // Alert counting
@@ -2965,17 +2915,15 @@ function renderAnalyticsResults(analyticsData, startDate, endDate) {
         totalWater += deviceWater;
         totalFlowSum += deviceFlowSum;
         totalFlowReadings += deviceFlowCount;
-        totalClo2Sum += deviceClo2Sum;
-        totalClo2Readings += deviceClo2Count;
+        totalPpmSum += devicePpmSum;
+        totalPpmReadings += devicePpmCount;
         totalAlerts += deviceAlerts;
         
         return {
             deviceId,
             totalWater: deviceWater,
             avgFlow: deviceFlowCount > 0 ? deviceFlowSum / deviceFlowCount : 0,
-            avgClo2: deviceClo2Count > 0 ? deviceClo2Sum / deviceClo2Count : 0,
-            avgpH: devicepHCount > 0 ? devicepHSum / devicepHCount : 0,
-            avgORP: deviceORPCount > 0 ? deviceORPSum / deviceORPCount : 0,
+            avgPpm: devicePpmCount > 0 ? devicePpmSum / devicePpmCount : 0,
             alerts: deviceAlerts,
             uptime: totalPeriods > 0 ? (deviceUptime / totalPeriods) * 100 : 0,
             data
@@ -2985,7 +2933,7 @@ function renderAnalyticsResults(analyticsData, startDate, endDate) {
     // Update summary cards
     document.getElementById('totalWaterGallons').textContent = totalWater.toFixed(0);
     document.getElementById('avgFlowRate').textContent = totalFlowReadings > 0 ? (totalFlowSum / totalFlowReadings).toFixed(1) : '0';
-    document.getElementById('avgChemistry').textContent = totalClo2Readings > 0 ? (totalClo2Sum / totalClo2Readings).toFixed(2) : '0';
+    document.getElementById('avgChemistry').textContent = totalPpmReadings > 0 ? (totalPpmSum / totalPpmReadings).toFixed(0) : '0';
     document.getElementById('totalAlerts').textContent = totalAlerts;
     
     // Create charts
@@ -3001,9 +2949,9 @@ function renderAnalyticsResults(analyticsData, startDate, endDate) {
             <td>${escapeHtml(summary.deviceId)}</td>
             <td>${summary.totalWater.toFixed(1)}</td>
             <td>${summary.avgFlow.toFixed(1)}</td>
-            <td>${summary.avgClo2.toFixed(2)}</td>
-            <td>${summary.avgpH.toFixed(1)}</td>
-            <td>${summary.avgORP.toFixed(0)}</td>
+            <td>${summary.avgPpm.toFixed(0)}</td>
+            <td>--</td>
+            <td>--</td>
             <td>${summary.alerts}</td>
             <td>${summary.uptime.toFixed(1)}%</td>
         `;
@@ -3050,7 +2998,7 @@ function createAnalyticsCharts(deviceSummaries) {
         }
     });
     
-    // Quality Chart (showing ClO2)
+    // Quality Chart
     destroyChart(analyticsQualityChart);
     const qualityCanvas = document.getElementById('analyticsQualityChart');
     
@@ -3059,8 +3007,8 @@ function createAnalyticsCharts(deviceSummaries) {
         data: {
             labels: deviceSummaries.map(d => d.deviceId),
             datasets: [{
-                label: 'Average ClO₂',
-                data: deviceSummaries.map(d => d.avgClo2),
+                label: 'Average PPM',
+                data: deviceSummaries.map(d => d.avgPpm),
                 backgroundColor: 'rgba(66, 135, 245, 0.6)',
                 borderColor: 'rgba(66, 135, 245, 0.8)',
                 borderWidth: 1
@@ -3079,7 +3027,7 @@ function createAnalyticsCharts(deviceSummaries) {
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: 'ClO₂'
+                        text: 'PPM'
                     }
                 }
             }
