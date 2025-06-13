@@ -177,6 +177,23 @@
             padding-left: 35px;
         }
         
+        /* Data resolution indicator */
+        .resolution-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: rgba(var(--bs-info-rgb), 0.1);
+            color: var(--bs-info);
+            font-weight: 500;
+        }
+        
+        /* Loading progress */
+        .progress-info {
+            font-size: 0.875rem;
+            color: var(--bs-secondary);
+            margin-top: 0.5rem;
+        }
+        
         /* Animations */
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -201,6 +218,19 @@
         
         .animate-slide-up {
             animation: slideInUp 0.5s ease forwards;
+        }
+        
+        /* Data quality indicators */
+        .data-quality-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            color: var(--bs-secondary);
+        }
+        
+        .data-quality-indicator i {
+            font-size: 0.875rem;
         }
         
         /* Responsive improvements */
@@ -268,6 +298,7 @@
             <span class="visually-hidden">Loading...</span>
         </div>
         <div id="loadingMessage" class="mt-2 fs-5">Loading...</div>
+        <div id="loadingProgress" class="progress-info"></div>
     </div>
 
     <!-- Toast Container for Notifications -->
@@ -483,6 +514,9 @@
                     <div class="card-header d-flex justify-content-between align-items-center bg-light">
                         <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Historical Data</h5>
                         <div>
+                            <span id="dataResolutionBadge" class="resolution-badge me-2" style="display: none;">
+                                <i class="bi bi-speedometer2"></i> <span id="dataResolutionText">Raw</span>
+                            </span>
                             <button id="exportCsvBtn" class="btn btn-sm btn-outline-primary me-2" disabled>
                                 <i class="bi bi-download me-1"></i>Export CSV
                             </button>
@@ -507,26 +541,18 @@
                                 <label for="historyEndDateInput" class="form-label">End Date</label>
                                 <input type="date" id="historyEndDateInput" class="form-control form-control-sm">
                             </div>
-                             <div class="col-md-3 col-lg-2">
-                                <label for="historyGranularitySelect" class="form-label">Granularity</label>
-                                <select id="historyGranularitySelect" class="form-select form-select-sm">
-                                    <option value="raw" selected>Raw Data</option>
-                                    <option value="hourly">Hourly Averages</option>
-                                    <option value="daily">Daily Averages</option>
+                            <div class="col-md-2 col-lg-2">
+                                <label for="historyResolutionSelect" class="form-label">Resolution</label>
+                                <select id="historyResolutionSelect" class="form-select form-select-sm">
+                                    <option value="auto" selected>Auto</option>
+                                    <option value="raw">Raw (1 min)</option>
+                                    <option value="hourly">Hourly</option>
+                                    <option value="daily">Daily</option>
                                 </select>
                             </div>
-                            <div class="col-md-2 col-lg-1">
-                                <label for="historyLimitSelect" class="form-label">Limit</label>
-                                <select id="historyLimitSelect" class="form-select form-select-sm">
-                                    <option value="100">100</option>
-                                    <option value="250">250</option>
-                                    <option value="500" selected>500</option>
-                                    <option value="1000">1000</option>
-                                </select>
-                            </div>
-                            <div class="col-md-12 col-lg-2">
+                            <div class="col-md-12 col-lg-3">
                                 <button id="searchHistoryBtn" class="btn btn-primary btn-sm w-100">
-                                    <i class="bi bi-search me-1"></i>Search
+                                    <i class="bi bi-search me-1"></i>Search History
                                 </button>
                             </div>
                         </div>
@@ -538,6 +564,10 @@
                         <div class="d-flex justify-content-between align-items-center mb-3 no-print" id="historyTableControls" style="display: none !important;">
                             <div>
                                 <span id="historyRecordsInfo" class="text-muted">0 records loaded</span>
+                                <span class="data-quality-indicator ms-3" id="dataQualityIndicator" style="display: none;">
+                                    <i class="bi bi-info-circle"></i>
+                                    <span id="dataQualityText"></span>
+                                </span>
                             </div>
                             <div>
                                 <select id="historyPageSizeSelect" class="form-select form-select-sm" style="width: auto; display: inline-block;">
@@ -553,11 +583,12 @@
                             <table class="table table-striped table-hover table-sm" id="historyTable">
                                 <thead>
                                     <tr>
-                                        <th id="historyTimestampHeader">Timestamp</th>
-                                        <th id="historyFlowHeader">Flow (GPM)</th>
-                                        <th id="historyPpmHeader">PPM</th>
-                                        <th id="historyPhHeader">pH</th>
-                                        <th id="historyOrpHeader">ORP</th>
+                                        <th>Timestamp</th>
+                                        <th>Flow (GPM)</th>
+                                        ```html
+                                        <th>PPM</th>
+                                        <th>pH</th>
+                                        <th>ORP</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
@@ -780,10 +811,12 @@
 const API_ENDPOINT = 'https://jolly-queen-8e6f.larry-schrimpfff6544.workers.dev'; // Worker URL
 const API_KEY_STORAGE_KEY = 'edieApiKey';
 const SELECTED_DEVICES_STORAGE_KEY = 'edieSelectedDevices';
-const DEFAULT_API_KEY = "k32BWMByEJrCihED0YEmhs0AaUJCeontFUC_qbeB"; // Set your default API key here if desired
+const DEFAULT_API_KEY = ""; // Set your default API key here if desired
 const AUTO_REFRESH_INTERVAL = 60000; // 60 seconds
 const OFFLINE_THRESHOLD_MINUTES = 15;
 const VIEW_MODE_STORAGE_KEY = 'edieViewMode';
+const DATA_CACHE_KEY = 'edieDataCache';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 // --- State Variables ---
 let apiKey = '';
@@ -795,6 +828,7 @@ let currentSearchTerm = '';
 let currentViewMode = 'grid';
 let autoRefreshTimer = null;
 let isTabVisible = true;
+let dataCache = new Map();
 
 // Detail modal state
 let detailCurrentPage = 0;
@@ -806,6 +840,7 @@ let detailDeviceId = null;
 let historyAllData = [];
 let historyCurrentPage = 0;
 let historyPageSize = 25;
+let historyDataResolution = 'auto';
 
 // Chart instances
 let detailFlowChart = null;
@@ -918,6 +953,7 @@ function setupEventListeners() {
     document.getElementById('historyPrevPage').addEventListener('click', showPreviousHistoryPage);
     document.getElementById('historyNextPage').addEventListener('click', showNextHistoryPage);
     document.getElementById('historyPageSizeSelect').addEventListener('change', changeHistoryPageSize);
+    document.getElementById('historyResolutionSelect').addEventListener('change', handleResolutionChange);
     
     // Device selection modal
     document.getElementById('saveDeviceSelectionBtn').addEventListener('click', saveDeviceSelection);
@@ -967,6 +1003,38 @@ function loadStateFromStorage() {
     if (savedViewMode === 'list') {
         currentViewMode = 'list';
         document.getElementById('viewListBtn').checked = true;
+    }
+    
+    // Load cached data
+    loadCachedData();
+}
+
+function loadCachedData() {
+    try {
+        const cached = localStorage.getItem(DATA_CACHE_KEY);
+        if (cached) {
+            const { data, timestamp } = JSON.parse(cached);
+            if (Date.now() - timestamp < CACHE_DURATION) {
+                console.log('Loading devices from cache');
+                allDevices = data;
+                applyFiltersAndSort();
+                renderDevices();
+                updateDashboardCounters();
+            }
+        }
+    } catch (e) {
+        console.error('Error loading cached data:', e);
+    }
+}
+
+function saveCachedData(data) {
+    try {
+        localStorage.setItem(DATA_CACHE_KEY, JSON.stringify({
+            data: data,
+            timestamp: Date.now()
+        }));
+    } catch (e) {
+        console.error('Error saving cache:', e);
     }
 }
 
@@ -1032,6 +1100,7 @@ function handleLogout() {
     selectedDeviceIDs = null;
     localStorage.removeItem(API_KEY_STORAGE_KEY);
     localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY);
+    localStorage.removeItem(DATA_CACHE_KEY);
     document.getElementById('apiKeyInput').value = DEFAULT_API_KEY;
     document.getElementById('rememberKeyCheckbox').checked = false;
     stopAutoRefresh();
@@ -1171,6 +1240,9 @@ async function refreshDeviceList(force = false) {
                 dev._lastUpdateTimestamp = dev.lastUpdated;
             });
             
+            // Save to cache
+            saveCachedData(allDevices);
+            
             applyFiltersAndSort();
             renderDevices();
             populateHistoryDeviceDropdown();
@@ -1253,6 +1325,10 @@ function handleSortChange(event) {
     currentSortCriteria = event.target.dataset.sort;
     applyFiltersAndSort();
     renderDevices();
+}
+
+function handleResolutionChange() {
+    historyDataResolution = document.getElementById('historyResolutionSelect').value;
 }
 
 function applyFiltersAndSort() {
@@ -1458,7 +1534,7 @@ function hideOverviewMessage() {
     document.getElementById('overviewMessageArea').style.display = 'none';
 }
 
-// --- Device Details (REWRITTEN) ---
+// --- Device Details with Optimized History ---
 async function showDeviceDetails(deviceId) {
     if (!apiKey) return;
     
@@ -1470,8 +1546,58 @@ async function showDeviceDetails(deviceId) {
     showLoading(`Loading details for ${deviceId}...`);
     
     try {
-        // Fetch the 100 most recent data records using the history endpoint.
-        // This is the correct way to get the latest data.
+        // First, get the latest data from the device summary
+        const device = allDevices.find(d => d.deviceId === deviceId);
+        if (device && device.latestData) {
+            // Show latest data immediately
+            updateDetailMetrics(device.latestData);
+        }
+        
+        // Fetch historical data using the optimized endpoint
+        const url = `${API_ENDPOINT}/device/${deviceId}/history-optimized?limit=100&resolution=raw`;
+        const response = await fetchWithAuth(url);
+        
+        if (!response.ok) {
+            // Fallback to regular history endpoint
+            if (response.status === 404) {
+                console.log("Optimized history endpoint not found, falling back to regular history");
+                return await showDeviceDetailsLegacy(deviceId);
+            }
+            throw new Error(`Failed to fetch history: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        if (!result.success || !Array.isArray(result.data)) {
+            throw new Error("Invalid data structure received");
+        }
+        
+        // Process data
+        detailAllData = result.data.sort((a, b) => 
+            new Date(b.timestamp) - new Date(a.timestamp)
+        );
+        
+        console.log(`Loaded ${detailAllData.length} records for ${deviceId} (resolution: ${result.resolution})`);
+        
+        if (detailAllData.length > 0) {
+            detailCurrentPage = 0;
+            populateDetailModal();
+        } else {
+            showDetailMessage("No historical data available for this device.");
+        }
+        
+    } catch (error) {
+        console.error(`Error fetching details for ${deviceId}:`, error);
+        showToastError(`Could not load details: ${error.message}`);
+        showDetailMessage(`Error loading data: ${error.message}`, true);
+    } finally {
+        hideLoading();
+    }
+}
+
+// Legacy method for existing worker format
+async function showDeviceDetailsLegacy(deviceId) {
+    try {
+        // Use the existing endpoint format
         const url = `${API_ENDPOINT}/device/${deviceId}/history?limit=100`;
         const response = await fetchWithAuth(url);
         
@@ -1484,29 +1610,24 @@ async function showDeviceDetails(deviceId) {
             throw new Error("Invalid data structure received");
         }
         
-        // Data from worker is already newest first.
-        detailAllData = result.data;
+        // Process data
+        detailAllData = result.data.sort((a, b) => 
+            new Date(b.timestamp) - new Date(a.timestamp)
+        );
         
-        console.log(`Loaded ${detailAllData.length} recent records for ${deviceId}`);
+        console.log(`Loaded ${detailAllData.length} records for ${deviceId}`);
         
         if (detailAllData.length > 0) {
             detailCurrentPage = 0;
             populateDetailModal();
         } else {
-            // Check the device summary as a fallback for the latest metrics
-            const deviceSummary = allDevices.find(d => d.deviceId === deviceId);
-            if (deviceSummary && deviceSummary.latestData) {
-                updateDetailMetrics(deviceSummary.latestData);
-            }
             showDetailMessage("No historical data available for this device.");
         }
         
     } catch (error) {
-        console.error(`Error fetching details for ${deviceId}:`, error);
+        console.error(`Error in legacy fetch for ${deviceId}:`, error);
         showToastError(`Could not load details: ${error.message}`);
         showDetailMessage(`Error loading data: ${error.message}`, true);
-    } finally {
-        hideLoading();
     }
 }
 
@@ -1592,8 +1713,8 @@ function populateDetailModal() {
 function createDetailCharts() {
     if (!detailAllData || detailAllData.length < 2) return;
     
-    // Prepare data for charts (chronological order)
-    const chartData = [...detailAllData].reverse();
+    // Prepare data for charts (chronological order, limit to recent data)
+    const chartData = [...detailAllData].reverse().slice(-100);
     
     createDetailFlowChart(chartData);
     createDetailPpmChart(chartData);
@@ -1654,7 +1775,7 @@ function createDetailFlowChart(entries) {
             plugins: {
                 title: {
                     display: true,
-                    text: 'Recent Flow Rate'
+                    text: 'Flow Rate Trend'
                 },
                 legend: { display: false }
             }
@@ -1717,7 +1838,7 @@ function createDetailPpmChart(entries) {
             plugins: {
                 title: {
                     display: true,
-                    text: 'Recent PPM Trend'
+                    text: 'PPM Trend'
                 },
                 legend: { display: false }
             }
@@ -1745,12 +1866,31 @@ function populateDetailDataTable() {
     
     currentPageEntries.forEach(entry => {
         const row = document.createElement('tr');
+        
+        // Handle different data formats (raw vs aggregated)
+        let flowValue = '--';
+        let ppmValue = '--';
+        
+        if (entry.type === 'hourly' || entry.type === 'daily') {
+            // Aggregated data
+            if (entry.flow) {
+                flowValue = `${entry.flow.avg.toFixed(1)} (${entry.flow.min.toFixed(1)}-${entry.flow.max.toFixed(1)})`;
+            }
+            if (entry.ppm) {
+                ppmValue = `${entry.ppm.avg.toFixed(0)} (${entry.ppm.min}-${entry.ppm.max})`;
+            }
+        } else {
+            // Raw data
+            flowValue = entry.flow?.actual?.toFixed(1) ?? '--';
+            ppmValue = entry.ppm ?? '--';
+        }
+        
         row.innerHTML = `
             <td>${formatDateTime(entry.timestamp)}</td>
-            <td>${entry.flow?.actual?.toFixed(1) ?? 'N/A'}</td>
-            <td>${entry.ppm ?? 'N/A'}</td>
-            <td>${entry.pH?.actual?.toFixed(1) ?? 'N/A'}</td>
-            <td>${entry.orp?.actual?.toFixed(0) ?? 'N/A'}</td>
+            <td>${flowValue}</td>
+            <td>${ppmValue}</td>
+            <td>${entry.pH?.actual?.toFixed(1) ?? '--'}</td>
+            <td>${entry.orp?.actual?.toFixed(0) ?? '--'}</td>
             <td>${escapeHtml(entry.errorCode || 'OK')}</td>
         `;
         fragment.appendChild(row);
@@ -1795,7 +1935,7 @@ function showNextDetailPage(e) {
     }
 }
 
-// --- History Section ---
+// --- History Section with Optimizations ---
 function populateHistoryDeviceDropdown() {
     const select = document.getElementById('historyDeviceSelect');
     const currentVal = select.value;
@@ -1820,6 +1960,8 @@ function resetHistoryView() {
     document.getElementById('historyMessageArea').style.display = 'block';
     document.getElementById('historyChartContainer').style.display = 'none';
     document.getElementById('historyTableContainer').style.display = 'none';
+    document.getElementById('dataResolutionBadge').style.display = 'none';
+    document.getElementById('dataQualityIndicator').style.display = 'none';
     document.querySelector('#historyTable tbody').innerHTML = '';
     document.getElementById('exportCsvBtn').disabled = true;
     document.getElementById('printHistoryBtn').disabled = true;
@@ -1834,8 +1976,7 @@ async function fetchHistoricalData() {
     const deviceId = document.getElementById('historyDeviceSelect').value;
     const startDate = document.getElementById('historyStartDateInput').value;
     const endDate = document.getElementById('historyEndDateInput').value;
-    const limit = parseInt(document.getElementById('historyLimitSelect').value, 10);
-    const granularity = document.getElementById('historyGranularitySelect').value;
+    const resolution = document.getElementById('historyResolutionSelect').value;
 
     if (!deviceId) {
         showToastError("Please select a device.");
@@ -1843,12 +1984,87 @@ async function fetchHistoricalData() {
     }
 
     resetHistoryView();
-    showLoading("Fetching historical data...");
-    updateHistoryTableHeaders(granularity);
+    showLoading("Fetching historical data...", "Please wait, this may take longer for large date ranges...");
 
     try {
-        // Build query parameters
-        let url = `${API_ENDPOINT}/device/${deviceId}/history?limit=${limit}&granularity=${granularity}`;
+        // Use optimized endpoint
+        let url = `${API_ENDPOINT}/device/${deviceId}/history-optimized?resolution=${resolution}`;
+        if (startDate) url += `&startDate=${startDate}`;
+        if (endDate) url += `&endDate=${endDate}`;
+        
+        const response = await fetchWithAuth(url);
+        
+        if (!response.ok) {
+            // Fallback to regular history endpoint
+            if (response.status === 404) {
+                console.log("Optimized endpoint not found, falling back to regular history");
+                return await fetchHistoricalDataLegacy();
+            }
+            throw new Error(`Failed to fetch history: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        if (!result.success || !Array.isArray(result.data)) {
+            throw new Error("Invalid data structure received");
+        }
+
+        // Sort chronologically (oldest first for table/chart)
+        historyAllData = result.data.sort((a, b) => 
+            new Date(a.timestamp) - new Date(b.timestamp)
+        );
+        
+        console.log(`Fetched ${historyAllData.length} records (resolution: ${result.resolution})`);
+        
+        if (historyAllData.length > 0) {
+            historyCurrentPage = 0;
+            renderHistoricalData();
+            document.getElementById('historyMessageArea').style.display = 'none';
+            document.getElementById('exportCsvBtn').disabled = false;
+            document.getElementById('printHistoryBtn').disabled = false;
+            document.getElementById('historyRecordsInfo').textContent = 
+                `${historyAllData.length} records loaded`;
+            
+            // Show resolution badge
+            const resolutionBadge = document.getElementById('dataResolutionBadge');
+            const resolutionText = document.getElementById('dataResolutionText');
+            resolutionBadge.style.display = 'inline-block';
+            resolutionText.textContent = result.resolution ? 
+                result.resolution.charAt(0).toUpperCase() + result.resolution.slice(1) : 'Raw';
+            
+            // Show data quality indicator for aggregated data
+            if (result.resolution === 'hourly' || result.resolution === 'daily') {
+                const qualityIndicator = document.getElementById('dataQualityIndicator');
+                const qualityText = document.getElementById('dataQualityText');
+                qualityIndicator.style.display = 'inline-flex';
+                qualityText.textContent = `Aggregated from ${result.filesProcessed || 'multiple'} files`;
+            }
+            
+            showToastSuccess(`Found ${historyAllData.length} records (${result.resolution} resolution)`);
+        } else {
+            document.getElementById('historyMessageText').textContent = 
+                "No data found for the selected criteria.";
+            showToastError("No data found");
+        }
+
+    } catch (error) {
+        console.error("Error fetching historical data:", error);
+        showToastError(`Could not load history: ${error.message}`);
+        document.getElementById('historyMessageText').textContent = 
+            `Error loading history: ${error.message}`;
+    } finally {
+        hideLoading();
+    }
+}
+
+// Legacy fallback
+async function fetchHistoricalDataLegacy() {
+    const deviceId = document.getElementById('historyDeviceSelect').value;
+    const startDate = document.getElementById('historyStartDateInput').value;
+    const endDate = document.getElementById('historyEndDateInput').value;
+    const limit = 1000; // Get more data since we can't control resolution
+
+    try {
+        let url = `${API_ENDPOINT}/device/${deviceId}/history?limit=${limit}`;
         if (startDate) url += `&startDate=${startDate}`;
         if (endDate) url += `&endDate=${endDate}`;
         
@@ -1863,10 +2079,12 @@ async function fetchHistoricalData() {
             throw new Error("Invalid data structure received");
         }
 
-        // Data is already sorted chronologically (oldest first) by the worker
-        historyAllData = result.data;
+        // Sort chronologically
+        historyAllData = result.data.sort((a, b) => 
+            new Date(a.timestamp) - new Date(b.timestamp)
+        );
         
-        console.log(`Fetched ${historyAllData.length} historical records (granularity: ${granularity})`);
+        console.log(`Fetched ${historyAllData.length} historical records`);
         
         if (historyAllData.length > 0) {
             historyCurrentPage = 0;
@@ -1888,19 +2106,7 @@ async function fetchHistoricalData() {
         showToastError(`Could not load history: ${error.message}`);
         document.getElementById('historyMessageText').textContent = 
             `Error loading history: ${error.message}`;
-    } finally {
-        hideLoading();
     }
-}
-
-function updateHistoryTableHeaders(granularity) {
-    const isAggregated = granularity !== 'raw';
-    const suffix = isAggregated ? ' (Avg)' : '';
-    document.getElementById('historyTimestampHeader').textContent = isAggregated ? 'Period' : 'Timestamp';
-    document.getElementById('historyFlowHeader').textContent = `Flow (GPM)${suffix}`;
-    document.getElementById('historyPpmHeader').textContent = `PPM${suffix}`;
-    document.getElementById('historyPhHeader').textContent = `pH${suffix}`;
-    document.getElementById('historyOrpHeader').textContent = `ORP${suffix}`;
 }
 
 function renderHistoricalData() {
@@ -1919,32 +2125,29 @@ function createHistoryChart() {
     destroyChart(historyChart);
     
     const canvas = document.getElementById('historyChart');
-    if (!canvas || !historyAllData || historyAllData.length < 1) return;
+    if (!canvas || !historyAllData || historyAllData.length < 2) return;
     
-    // Data is pre-aggregated by worker if needed.
-    const chartData = historyAllData;
-    const granularity = document.getElementById('historyGranularitySelect').value;
+    // Limit data points for performance
+    const maxPoints = 500;
+    let chartData = historyAllData;
+    if (historyAllData.length > maxPoints) {
+        const step = Math.ceil(historyAllData.length / maxPoints);
+        chartData = historyAllData.filter((_, index) => index % step === 0);
+    }
     
     const datasets = [];
-    const isAggregated = granularity !== 'raw';
-
-    const getXValue = (timestamp) => {
-        // Daily granularity might just be 'YYYY-MM-DD'
-        if (granularity === 'daily' && !timestamp.includes('T')) {
-            return new Date(timestamp + 'T00:00:00Z'); // Assume UTC start of day
-        }
-        return new Date(timestamp);
-    };
-
+    
     // Flow data
-    const flowData = chartData.map(e => ({
-        x: getXValue(e.timestamp),
-        y: e.flow?.actual ?? null
-    })).filter(d => d.y !== null);
+    const flowData = chartData.map(e => {
+        if (e.type === 'hourly' || e.type === 'daily') {
+            return { x: new Date(e.timestamp || e.hour || e.date), y: e.flow?.avg ?? null };
+        }
+        return { x: new Date(e.timestamp), y: e.flow?.actual ?? null };
+    }).filter(d => d.y !== null);
     
     if (flowData.length > 0) {
         datasets.push({
-            label: `Flow Rate (GPM)${isAggregated ? ' Avg' : ''}`,
+            label: 'Flow Rate (GPM)',
             data: flowData,
             yAxisID: 'y',
             borderColor: 'rgba(203, 32, 38, 0.8)',
@@ -1952,20 +2155,22 @@ function createHistoryChart() {
             borderWidth: 1.5,
             tension: 0.2,
             fill: false,
-            pointRadius: isAggregated ? 2 : 0,
+            pointRadius: historyAllData.length > 100 ? 0 : 2,
             pointHoverRadius: 3
         });
     }
     
     // PPM data
-    const ppmData = chartData.map(e => ({
-        x: getXValue(e.timestamp),
-        y: e.ppm ?? null
-    })).filter(d => d.y !== null);
+    const ppmData = chartData.map(e => {
+        if (e.type === 'hourly' || e.type === 'daily') {
+            return { x: new Date(e.timestamp || e.hour || e.date), y: e.ppm?.avg ?? null };
+        }
+        return { x: new Date(e.timestamp), y: e.ppm ?? null };
+    }).filter(d => d.y !== null);
     
     if (ppmData.length > 0) {
         datasets.push({
-            label: `PPM${isAggregated ? ' Avg' : ''}`,
+            label: 'PPM',
             data: ppmData,
             yAxisID: 'y1',
             borderColor: 'rgba(66, 135, 245, 0.8)',
@@ -1973,7 +2178,7 @@ function createHistoryChart() {
             borderWidth: 1.5,
             tension: 0.2,
             fill: false,
-            pointRadius: isAggregated ? 2 : 0,
+            pointRadius: historyAllData.length > 100 ? 0 : 2,
             pointHoverRadius: 3
         });
     }
@@ -1994,10 +2199,12 @@ function createHistoryChart() {
                 x: {
                     type: 'time',
                     time: {
-                        unit: granularity === 'daily' ? 'day' : 'hour',
+                        unit: determineTimeUnit(chartData),
                         displayFormats: {
                             hour: 'MMM d, HH:mm',
-                            day: 'MMM d, yyyy'
+                            day: 'MMM d',
+                            week: 'MMM d',
+                            month: 'MMM yyyy'
                         }
                     },
                     title: { display: true, text: 'Time' }
@@ -2006,13 +2213,13 @@ function createHistoryChart() {
                     type: 'linear',
                     display: flowData.length > 0,
                     position: 'left',
-                    title: { display: true, text: `Flow (GPM)${isAggregated ? ' Avg' : ''}` }
+                    title: { display: true, text: 'Flow (GPM)' }
                 },
                 y1: {
                     type: 'linear',
                     display: ppmData.length > 0,
                     position: 'right',
-                    title: { display: true, text: `PPM${isAggregated ? ' Avg' : ''}` },
+                    title: { display: true, text: 'PPM' },
                     grid: {
                         drawOnChartArea: flowData.length === 0,
                     }
@@ -2022,10 +2229,34 @@ function createHistoryChart() {
                 title: {
                     display: true,
                     text: 'Historical Data'
+                },
+                tooltip: {
+                    callbacks: {
+                        afterLabel: function(context) {
+                            const dataPoint = historyAllData[context.dataIndex];
+                            if (dataPoint && (dataPoint.type === 'hourly' || dataPoint.type === 'daily')) {
+                                return `${dataPoint.count} samples`;
+                            }
+                            return '';
+                        }
+                    }
                 }
             }
         }
     });
+}
+
+function determineTimeUnit(data) {
+    if (data.length < 2) return 'hour';
+    
+    const firstTime = new Date(data[0].timestamp || data[0].hour || data[0].date);
+    const lastTime = new Date(data[data.length - 1].timestamp || data[data.length - 1].hour || data[data.length - 1].date);
+    const diffHours = (lastTime - firstTime) / (1000 * 60 * 60);
+    
+    if (diffHours < 24) return 'hour';
+    if (diffHours < 24 * 7) return 'day';
+    if (diffHours < 24 * 30) return 'week';
+    return 'month';
 }
 
 function updateHistoryTable() {
@@ -2038,20 +2269,50 @@ function updateHistoryTable() {
     const startIndex = historyCurrentPage * historyPageSize;
     const endIndex = Math.min(startIndex + historyPageSize, totalEntries);
     
-    // Reverse for display (newest first in table)
-    const currentPageEntries = [...historyAllData].reverse().slice(startIndex, endIndex);
+    const currentPageEntries = historyAllData.slice(startIndex, endIndex);
     const fragment = document.createDocumentFragment();
     
     currentPageEntries.forEach(entry => {
         const row = document.createElement('tr');
+        
+        // Handle different data formats
+        let flowValue = '--';
+        let ppmValue = '--';
+        let phValue = '--';
+        let orpValue = '--';
+        
+        if (entry.type === 'hourly' || entry.type === 'daily') {
+            // Aggregated data
+            if (entry.flow) {
+                flowValue = `${entry.flow.avg.toFixed(1)} (${entry.flow.min.toFixed(1)}-${entry.flow.max.toFixed(1)})`;
+            }
+            if (entry.ppm) {
+                ppmValue = `${entry.ppm.avg.toFixed(0)} (${entry.ppm.min}-${entry.ppm.max})`;
+            }
+            phValue = 'Aggregated';
+            orpValue = 'Aggregated';
+        } else {
+            // Raw data
+            flowValue = entry.flow?.actual?.toFixed(1) ?? '--';
+            ppmValue = entry.ppm ?? '--';
+            phValue = entry.pH?.actual?.toFixed(1) ?? '--';
+            orpValue = entry.orp?.actual?.toFixed(0) ?? '--';
+        }
+        
         row.innerHTML = `
-            <td>${formatDateTime(entry.timestamp, true)}</td>
-            <td>${entry.flow?.actual != null ? entry.flow.actual.toFixed(1) : 'N/A'}</td>
-            <td>${entry.ppm != null ? (typeof entry.ppm === 'number' ? entry.ppm.toFixed(1) : entry.ppm) : 'N/A'}</td>
-            <td>${entry.pH?.actual != null ? entry.pH.actual.toFixed(1) : 'N/A'}</td>
-            <td>${entry.orp?.actual != null ? entry.orp.actual.toFixed(0) : 'N/A'}</td>
+            <td>${formatDateTime(entry.timestamp || entry.hour || entry.date)}</td>
+            <td>${flowValue}</td>
+            <td>${ppmValue}</td>
+            <td>${phValue}</td>
+            <td>${orpValue}</td>
             <td>${escapeHtml(entry.errorCode || 'OK')}</td>
         `;
+        
+        // Add visual indicator for aggregated data
+        if (entry.type === 'hourly' || entry.type === 'daily') {
+            row.classList.add('table-info');
+        }
+        
         fragment.appendChild(row);
     });
     
@@ -2098,23 +2359,39 @@ function exportHistoryToCSV() {
         return;
     }
     
-    // Build CSV
-    const headers = ['Timestamp', 'Flow (GPM)', 'PPM', 'pH', 'ORP', 'Status'];
-    const rows = historyAllData.map(entry => [
-        entry.timestamp,
-        entry.flow?.actual ?? '',
-        entry.ppm ?? '',
-        entry.pH?.actual ?? '',
-        entry.orp?.actual ?? '',
-        entry.errorCode || 'OK'
-    ]);
+    // Build CSV with appropriate headers based on data type
+    let headers = ['Timestamp', 'Flow (GPM)', 'PPM', 'pH', 'ORP', 'Status'];
+    const hasAggregatedData = historyAllData.some(e => e.type === 'hourly' || e.type === 'daily');
+    
+    if (hasAggregatedData) {
+        headers.push('Data Type', 'Sample Count');
+    }
+    
+    const rows = historyAllData.map(entry => {
+        const baseRow = [
+            entry.timestamp || entry.hour || entry.date || '',
+            entry.flow?.actual ?? entry.flow?.avg ?? '',
+            entry.ppm ?? entry.ppm?.avg ?? '',
+            entry.pH?.actual ?? '',
+            entry.orp?.actual ?? '',
+            entry.errorCode || 'OK'
+        ];
+        
+        if (hasAggregatedData) {
+            baseRow.push(
+                entry.type || 'raw',
+                entry.count || '1'
+            );
+        }
+        
+        return baseRow;
+    });
     
     let csvContent = headers.join(',') + '\r\n';
     rows.forEach(row => {
         csvContent += row.map(cell => {
             if (cell === null || cell === undefined) return '';
-            let val = (typeof cell === 'number' && !Number.isInteger(cell)) ? cell.toFixed(4) : cell;
-            return typeof val === 'string' ? `"${val.replace(/"/g, '""')}"` : val;
+            return typeof cell === 'string' ? `"${cell.replace(/"/g, '""')}"` : cell;
         }).join(',') + '\r\n';
     });
     
@@ -2305,31 +2582,11 @@ function clearAllCharts() {
 }
 
 // --- Date/Time Utilities ---
-function formatDateTime(dateString, isAggregatedTimestamp = false) {
+function formatDateTime(dateString) {
     if (!dateString) return 'N/A';
     try {
-        // Handle YYYY-MM-DD format from daily aggregation
-        if (isAggregatedTimestamp && /^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-            const date = new Date(dateString + 'T00:00:00Z');
-             return date.toLocaleDateString(undefined, { 
-                dateStyle: 'medium',
-                timeZone: 'UTC'
-            });
-        }
-
         const date = new Date(dateString);
         if (isNaN(date.getTime())) return 'Invalid Date';
-        
-        // Handle hourly aggregation format YYYY-MM-DDTHH:00:00.000Z
-        if (isAggregatedTimestamp && date.getUTCMinutes() === 0 && date.getUTCSeconds() === 0) {
-             return date.toLocaleString(undefined, { 
-                month: 'short',
-                day: 'numeric',
-                hour: 'numeric',
-                hour12: true
-            });
-        }
-        
         return date.toLocaleString(undefined, { 
             dateStyle: 'medium', 
             timeStyle: 'short' 
@@ -2376,13 +2633,15 @@ function getRelativeTimeString(dateString) {
 }
 
 // --- UI Utilities ---
-function showLoading(message = "Loading...") {
+function showLoading(message = "Loading...", subMessage = "") {
     document.getElementById('loadingMessage').textContent = message;
+    document.getElementById('loadingProgress').textContent = subMessage;
     document.getElementById('loadingIndicator').style.display = 'flex';
 }
 
 function hideLoading() {
     document.getElementById('loadingIndicator').style.display = 'none';
+    document.getElementById('loadingProgress').textContent = '';
 }
 
 function showToastError(message) {
