@@ -718,9 +718,9 @@
                                         <th>Timestamp</th>
                                         <th>Flow (GPM)</th>
                                         <th>PPM</th>
-                                        <th>pH</th>
-                                        <th>ORP</th>
-                                        <th>Totalizer Usage</th>
+                                        <th>Water Totalizer</th>
+                                        <th>Chem Totalizer</th>
+                                        <th>Acid Totalizer</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
@@ -867,10 +867,8 @@
                                                     <th>Total Water (Gal)</th>
                                                     <th>Avg Flow (GPM)</th>
                                                     <th>Avg PPM</th>
-                                                    <th>Avg pH</th>
-                                                    <th>Avg ORP</th>
                                                     <th>Alerts</th>
-                                                    <th>Uptime %</th>
+                                                    <th>Running %</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -1252,6 +1250,10 @@ function setupEventListeners() {
     document.getElementById('dateModeRange').addEventListener('change', handleDateModeChange);
     document.getElementById('dateModeLastRun').addEventListener('change', handleDateModeChange);
     
+    // Filter toggles
+    document.getElementById('filterAlarmsOnly').addEventListener('change', handleFilterChange);
+    document.getElementById('filterWarningsOnly').addEventListener('change', handleFilterChange);
+    
     // Device selection modal
     document.getElementById('saveDeviceSelectionBtn').addEventListener('click', saveDeviceSelection);
     document.getElementById('selectAllDevicesCheckbox').addEventListener('change', handleSelectAllToggle);
@@ -1278,6 +1280,20 @@ function setupEventListeners() {
         detailAllData = [];
         detailDeviceId = null;
     });
+}
+
+function handleFilterChange() {
+    // When one filter is checked, uncheck the other
+    const alarmsOnly = document.getElementById('filterAlarmsOnly');
+    const warningsOnly = document.getElementById('filterWarningsOnly');
+    
+    if (alarmsOnly.checked && warningsOnly.checked) {
+        if (this.id === 'filterAlarmsOnly') {
+            warningsOnly.checked = false;
+        } else {
+            alarmsOnly.checked = false;
+        }
+    }
 }
 
 function loadStateFromStorage() {
@@ -1676,7 +1692,7 @@ function animateCounter(element, targetValue) {
     }, stepTime);
 }
 
-// --- Filtering and Sorting (unchanged) ---
+// --- Filtering and Sorting ---
 function handleSearchInput(event) {
     currentSearchTerm = event.target.value.toLowerCase().trim();
     applyFiltersAndSort();
@@ -1757,6 +1773,9 @@ function renderDeviceCards() {
             }
         }
         
+        // Get meaningful last update time
+        const lastUpdateTime = getMeaningfulLastUpdate(device);
+        
         const card = document.createElement('div');
         card.className = `col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-3 animate-fade-in`;
         card.style.animationDelay = `${index * 30}ms`;
@@ -1773,9 +1792,9 @@ function renderDeviceCards() {
                         <div class="metric-value">${latestValue}</div>
                     </div>
                     <div class="mt-auto text-center">
-                        <div class="metric-label">Last Seen</div>
-                        <div class="last-update-time" title="${formatDateTime(device.lastUpdated)}">
-                            ${getRelativeTimeString(device.lastUpdated)}
+                        <div class="metric-label">Last Activity</div>
+                        <div class="last-update-time" title="${formatDateTime(lastUpdateTime)}">
+                            ${getRelativeTimeString(lastUpdateTime)}
                         </div>
                     </div>
                 </div>
@@ -1825,6 +1844,8 @@ function renderDeviceList() {
             }
         }
         
+        const lastUpdateTime = getMeaningfulLastUpdate(device);
+        
         const row = document.createElement('tr');
         row.className = 'animate-fade-in';
         row.style.animationDelay = `${index * 20}ms`;
@@ -1837,7 +1858,7 @@ function renderDeviceList() {
                 </div>
             </td>
             <td><span class="badge ${getStatusBadgeClass(device._status)}">${device._status}</span></td>
-            <td title="${formatDateTime(device.lastUpdated)}">${getRelativeTimeString(device.lastUpdated)}</td>
+            <td title="${formatDateTime(lastUpdateTime)}">${getRelativeTimeString(lastUpdateTime)}</td>
             <td>${latestValue}</td>
             <td>
                 <button class="btn btn-sm btn-outline-secondary view-details-btn" data-device-id="${escapeHtml(device.deviceId)}">
@@ -1858,6 +1879,17 @@ function renderDeviceList() {
             showDeviceDetails(deviceId);
         });
     });
+}
+
+// Get meaningful last update time (prioritize activity over heartbeat)
+function getMeaningfulLastUpdate(device) {
+    // If device has recent flow activity, use that
+    if (device.latestData?.flow?.actual > 0 && device.latestData?.timestamp) {
+        return device.latestData.timestamp;
+    }
+    
+    // Otherwise use the last update time
+    return device.lastUpdated || device.latestData?.timestamp;
 }
 
 function getStatusBadgeClass(status) {
@@ -2341,12 +2373,16 @@ function populateDetailDataTable() {
             row.classList.add('table-alarm');
         }
         
+        // Show pH and ORP even if 0
+        const phValue = entry.pH?.actual !== undefined ? entry.pH.actual.toFixed(1) : '0.0';
+        const orpValue = entry.orp?.actual !== undefined ? entry.orp.actual.toFixed(0) : '0';
+        
         row.innerHTML = `
             <td>${formatDateTime(entry.timestamp)}</td>
             <td>${entry.flow?.actual?.toFixed(1) ?? 'N/A'}</td>
             <td>${entry.ppm ?? 'N/A'}</td>
-            <td>${entry.pH?.actual?.toFixed(1) ?? 'N/A'}</td>
-            <td>${entry.orp?.actual?.toFixed(0) ?? 'N/A'}</td>
+            <td>${phValue}</td>
+            <td>${orpValue}</td>
             <td>${escapeHtml(entry.errorCode || 'OK')}</td>
         `;
         fragment.appendChild(row);
@@ -2682,9 +2718,23 @@ function updateHistoryTable() {
     currentPageEntries.forEach(entry => {
         const row = document.createElement('tr');
         
-        let totalizerUsage = 'N/A';
-        if (entry.totalizer_start !== null && entry.totalizer_end !== null) {
-            totalizerUsage = (entry.totalizer_end - entry.totalizer_start).toFixed(2) + ' Gal';
+        // Format totalizers - never show NaN
+        let waterTotalizer = '--';
+        if (entry.totalizer_end !== undefined && entry.totalizer_end !== null) {
+            waterTotalizer = entry.totalizer_end.toFixed(2) + ' Gal';
+        } else if (entry.totalizer_start !== undefined && entry.totalizer_start !== null) {
+            waterTotalizer = entry.totalizer_start.toFixed(2) + ' Gal';
+        }
+        
+        // Format chem and acid totalizers
+        let chemTotalizer = '--';
+        if (entry.chem_totalizer !== undefined && entry.chem_totalizer !== null) {
+            chemTotalizer = entry.chem_totalizer.toFixed(2) + ' Gal';
+        }
+        
+        let acidTotalizer = '--';
+        if (entry.acid_totalizer !== undefined && entry.acid_totalizer !== null) {
+            acidTotalizer = entry.acid_totalizer.toFixed(2) + ' Gal';
         }
         
         if (entry.isAlarm) {
@@ -2695,9 +2745,9 @@ function updateHistoryTable() {
             <td>${formatDateTime(entry.timestamp)}</td>
             <td>${entry.flow?.actual?.toFixed(1) ?? 'N/A'}</td>
             <td>${entry.ppm ?? 'N/A'}</td>
-            <td>${entry.pH?.actual?.toFixed(1) ?? 'N/A'}</td>
-            <td>${entry.orp?.actual?.toFixed(0) ?? 'N/A'}</td>
-            <td>${totalizerUsage}</td>
+            <td>${waterTotalizer}</td>
+            <td>${chemTotalizer}</td>
+            <td>${acidTotalizer}</td>
             <td>${escapeHtml(entry.errorCode || 'OK')}</td>
         `;
         fragment.appendChild(row);
@@ -2745,20 +2795,32 @@ function exportHistoryToCSV() {
         return;
     }
     
-    const headers = ['Timestamp', 'Flow (GPM)', 'PPM', 'pH', 'ORP', 'Totalizer Usage (Gal)', 'Status', 'Resolution'];
+    const headers = ['Timestamp', 'Flow (GPM)', 'PPM', 'Water Totalizer (Gal)', 'Chem Totalizer (Gal)', 'Acid Totalizer (Gal)', 'Status', 'Resolution'];
     const rows = historyAllData.map(entry => {
-        let totalizerUsage = '';
-        if (entry.totalizer_start !== null && entry.totalizer_end !== null) {
-            totalizerUsage = (entry.totalizer_end - entry.totalizer_start).toFixed(2);
+        let waterTotalizer = '';
+        if (entry.totalizer_end !== undefined && entry.totalizer_end !== null) {
+            waterTotalizer = entry.totalizer_end.toFixed(2);
+        } else if (entry.totalizer_start !== undefined && entry.totalizer_start !== null) {
+            waterTotalizer = entry.totalizer_start.toFixed(2);
+        }
+        
+        let chemTotalizer = '';
+        if (entry.chem_totalizer !== undefined && entry.chem_totalizer !== null) {
+            chemTotalizer = entry.chem_totalizer.toFixed(2);
+        }
+        
+        let acidTotalizer = '';
+        if (entry.acid_totalizer !== undefined && entry.acid_totalizer !== null) {
+            acidTotalizer = entry.acid_totalizer.toFixed(2);
         }
         
         return [
             entry.timestamp,
             entry.flow?.actual ?? '',
             entry.ppm ?? '',
-            entry.pH?.actual ?? '',
-            entry.orp?.actual ?? '',
-            totalizerUsage,
+            waterTotalizer,
+            chemTotalizer,
+            acidTotalizer,
             entry.errorCode || 'OK',
             entry.resolution || historyResolution || 'raw'
         ];
@@ -2884,7 +2946,7 @@ function renderAnalyticsResults(analyticsData, startDate, endDate) {
         let devicePpmSum = 0;
         let devicePpmCount = 0;
         let deviceAlerts = 0;
-        let deviceUptime = 0;
+        let deviceRunningTime = 0;
         let totalPeriods = data.length;
         
         data.forEach(entry => {
@@ -2893,11 +2955,11 @@ function renderAnalyticsResults(analyticsData, startDate, endDate) {
                 deviceWater += (entry.totalizer_end - entry.totalizer_start);
             }
             
-            // Flow averages
+            // Flow averages - only count when actually flowing
             if (entry.flow?.actual > 0) {
                 deviceFlowSum += entry.flow.actual;
                 deviceFlowCount++;
-                deviceUptime++;
+                deviceRunningTime++; // Count periods with flow
             }
             
             // PPM averages
@@ -2925,7 +2987,7 @@ function renderAnalyticsResults(analyticsData, startDate, endDate) {
             avgFlow: deviceFlowCount > 0 ? deviceFlowSum / deviceFlowCount : 0,
             avgPpm: devicePpmCount > 0 ? devicePpmSum / devicePpmCount : 0,
             alerts: deviceAlerts,
-            uptime: totalPeriods > 0 ? (deviceUptime / totalPeriods) * 100 : 0,
+            runningPercent: totalPeriods > 0 ? (deviceRunningTime / totalPeriods) * 100 : 0,
             data
         };
     });
@@ -2950,10 +3012,8 @@ function renderAnalyticsResults(analyticsData, startDate, endDate) {
             <td>${summary.totalWater.toFixed(1)}</td>
             <td>${summary.avgFlow.toFixed(1)}</td>
             <td>${summary.avgPpm.toFixed(0)}</td>
-            <td>--</td>
-            <td>--</td>
             <td>${summary.alerts}</td>
-            <td>${summary.uptime.toFixed(1)}%</td>
+            <td>${summary.runningPercent.toFixed(1)}%</td>
         `;
         tbody.appendChild(row);
     });
