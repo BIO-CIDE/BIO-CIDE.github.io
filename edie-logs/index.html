@@ -1789,6 +1789,7 @@ runAnalytics = async function() {
 	refreshDeviceList = async function(force = false) {
 	    if (!apiKey) return;
 	    showLoading("Fetching devices...");
+    	const resolution = document.getElementById('resolutionSelect')?.value || 'raw';
 	    try {
 	        // AUTO-MIGRATE CHECK (only on first load)
 	        if (!window.migrationChecked) {
