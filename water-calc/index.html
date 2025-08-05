@@ -25,25 +25,20 @@
 
 <div id="root"></div>
 
-<!-- ALL SCRIPT TAGS MOVED HERE, TO THE END OF THE BODY -->
-<!-- Placed in dependency order: React -> ReactDOM -> Recharts -> Your App -->
+<!-- Scripts are at the end of the body with the 'defer' attribute -->
+<!-- This ensures they load in the background and execute in order after the page is parsed -->
 
-<!-- 1. React and ReactDOM -->
-<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/react@18/umd/react.development.js" defer></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" defer></script>
+<script src="https://unpkg.com/recharts@2.1.14/umd/Recharts.min.js" defer></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js" defer></script>
 
-<!-- 2. Recharts Library -->
-<script src="https://unpkg.com/recharts@2.1.14/umd/Recharts.min.js"></script>
-
-<!-- 3. Babel for JSX support -->
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-<!-- 4. Your Application Code (runs last) -->
-<script type="text/babel">
+<!-- Your application script also gets 'defer' so it waits for the others -->
+<script type="text/babel" defer>
     const { useState, useEffect, useMemo } = React;
     
-    // This line will now work correctly because the Recharts script above
-    // has already loaded and created the window.Recharts object.
+    // This will now work because the 'defer' attribute guarantees
+    // that the Recharts script above has executed first.
     const {
         LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar
     } = window.Recharts;
@@ -81,18 +76,10 @@
         const [extendGrowth, setExtendGrowth] = useState(false);
         const [totalWater, setTotalWater] = useState(0);
         const [houseName, setHouseName] = useState(speciesDefinitions.poultry.houseName);
-        const [cycleWeeks, setCycleWeeks] = useState(speciesDefinitions.poultry.subspecies[0].cycleWeeks);
         const [processingAge, setProcessingAge] = useState(speciesDefinitions.poultry.subspecies[0].cycleWeeks);
         const [width, setWidth] = useState(window.innerWidth);
 
-        const calculateLabelInterval = () => {
-            const maxDays = growthStage * 7;
-            if (width > 1024) return Math.ceil(maxDays / 48);
-            if (width > 768) return Math.ceil(maxDays / 24);
-            return Math.ceil(maxDays / 12);
-        };
-
-        const adjustedGrowthStage = (animalType) => {
+        const adjustedGrowthStage = useMemo(() => {
             const subspecies = speciesDefinitions[animalType].subspecies.find(sub => sub.name === selectedSubspecies);
             if (!subspecies) return { min: 1, max: 1, default: 1 };
             return {
@@ -100,38 +87,36 @@
                 max: Math.ceil(subspecies.cycleWeeks * 1.5),
                 default: subspecies.cycleWeeks
             };
-        };
+        }, [animalType, selectedSubspecies]);
 
         const calculateTemperatureMultiplier = (temp) => {
             if (temp <= 32) return 0.8;
             if (temp >= 100) return 1.6;
             if (temp <= 50) {
-                const slope = (1.0 - 0.8) / (50 - 32);
-                return slope * (temp - 32) + 0.8;
+                return 0.8 + (temp - 32) * (0.2 / 18);
             }
-            const slope = (1.6 - 1.0) / (100 - 50);
-            return slope * (temp - 50) + 1.0;
+            return 1.0 + (temp - 50) * (0.6 / 50);
         };
 
         const steepness = 1.8;
 
 	    useEffect(() => {
-			const subspecies = speciesDefinitions[animalType].subspecies.find(sub => sub.name === selectedSubspecies);
-            const currentSubspecies = subspecies || speciesDefinitions[animalType].subspecies[0];
+            const subspecies = speciesDefinitions[animalType].subspecies.find(sub => sub.name === selectedSubspecies) || speciesDefinitions[animalType].subspecies[0];
 
-            if (!subspecies) {
-                setSelectedSubspecies(currentSubspecies.name);
+            if (selectedSubspecies !== subspecies.name) {
+                setSelectedSubspecies(subspecies.name);
             }
             
-            setProcessingAge(currentSubspecies.cycleWeeks);
+            setProcessingAge(subspecies.cycleWeeks);
             setHouseName(speciesDefinitions[animalType].houseName);
-            setCycleWeeks(currentSubspecies.cycleWeeks);
             
-            const growthStageDefaults = adjustedGrowthStage(animalType);
-			if (!extendGrowth && (growthStage < growthStageDefaults.min || growthStage > growthStageDefaults.max)) {
-				setGrowthStage(growthStageDefaults.default);
+			if (!extendGrowth && (growthStage > adjustedGrowthStage.max || growthStage < adjustedGrowthStage.min)) {
+				setGrowthStage(adjustedGrowthStage.default);
 			}
 
+		}, [animalType, selectedSubspecies, growthStage, extendGrowth, adjustedGrowthStage]);
+  
+        useEffect(() => {
             const tempMultiplier = calculateTemperatureMultiplier(temperature);
             let cumulativeTotal = 0;
             const cycleLengthDays = processingAge * 7;
@@ -139,8 +124,8 @@
                 cumulativeTotal += calculateExponentialConsumption(day, cycleLengthDays, steepness, tempMultiplier);
             }
             setTotalWater(cumulativeTotal);
+        }, [numberOfAnimals, houseCount, temperature, processingAge, selectedSubspecies, animalType, steepness]);
 
-		}, [animalType, selectedSubspecies, numberOfAnimals, houseCount, temperature, processingAge, extendGrowth]);
 
         useEffect(() => {
             const handleResize = () => setWidth(window.innerWidth);
@@ -149,10 +134,10 @@
         }, []);
 
         const handleSubspeciesChange = (e) => {
-            const subspecies = speciesDefinitions[animalType].subspecies.find(sub => sub.name === e.target.value);
+            const sub = speciesDefinitions[animalType].subspecies.find(s => s.name === e.target.value);
             setSelectedSubspecies(e.target.value);
-            setProcessingAge(subspecies.cycleWeeks); 
-            setGrowthStage(subspecies.cycleWeeks);
+            setProcessingAge(sub.cycleWeeks); 
+            setGrowthStage(sub.cycleWeeks);
         };
 
         const calculateExponentialConsumption = (day, cycleLength, steepness, tempMultiplier) => {
@@ -176,7 +161,7 @@
                     day: i,
                     week: Math.ceil(i / 7),
                     biweek: Math.ceil(i / 14),
-                    month: Math.ceil(i / 30),
+                    month: Math.ceil(i / 30.44),
                     consumption: dailyConsumption,
                     cumulative: cumulativeConsumption
                 });
@@ -184,30 +169,27 @@
             return data;
         }, [growthStage, processingAge, selectedSubspecies, animalType, numberOfAnimals, houseCount, temperature, steepness]);
 
-        let timeKey = "day";
-        if (growthStage >= 56) timeKey = "month";
-        else if (growthStage >= 28) timeKey = "biweek";
-        else if (growthStage >= 14) timeKey = "week";
+        const timeKey = growthStage >= 56 ? "month" : growthStage >= 28 ? "biweek" : growthStage >= 14 ? "week" : "day";
+        const themeColor = speciesDefinitions[animalType].subspecies.find(sub => sub.name === selectedSubspecies)?.color || '#FFFFFF';
 
-        const CustomTooltip = ({ active, payload, label }) => {
+        const CustomTooltip = ({ active, payload }) => {
             if (active && payload && payload.length) {
-                const { consumption, cumulative } = payload[0].payload;
-                let timeLabel = `Day ${label}`;
-                if (timeKey === "week") timeLabel = `Week ${Math.ceil(payload[0].payload.week)}`;
-                else if (timeKey === "biweek") timeLabel = `Biweekly ${Math.ceil(payload[0].payload.biweek)}`;
-                else if (timeKey === "month") timeLabel = `Month ${Math.ceil(payload[0].payload.month)}`;
+                const data = payload[0].payload;
+                let timeLabel = `Day ${data.day}`;
+                if (timeKey === "week") timeLabel = `Week ${data.week}`;
+                else if (timeKey === "biweek") timeLabel = `Bi-Week ${data.biweek}`;
+                else if (timeKey === "month") timeLabel = `Month ${Math.ceil(data.month)}`;
+
                 return (
                     <div className="custom-tooltip">
-                        <p className="label">{timeLabel}</p>
-                        <p>{`Cumulative: ${cumulative.toLocaleString()} Gallons`}</p>
-                        <p>{`Daily: ${consumption.toLocaleString()} Gallons`}</p>
+                        <p className="label font-semibold">{timeLabel}</p>
+                        <p>{`Cumulative: ${data.cumulative.toLocaleString()} Gallons`}</p>
+                        <p>{`Daily: ${data.consumption.toLocaleString()} Gallons`}</p>
                     </div>
                 );
             }
             return null;
         };
-
-        const themeColor = speciesDefinitions[animalType].subspecies.find(sub => sub.name === selectedSubspecies)?.color || '#FFFFFF';
 
         return (
             <div className="p-4 sm:p-6 md:p-8 bg-white shadow-lg rounded-lg">
@@ -226,9 +208,9 @@
                     <div className="input-field">
 						<label className="block text-lg font-semibold mb-2">Subspecies</label>
 						<select className="p-2 border border-gray-300 rounded-md w-full" value={selectedSubspecies} onChange={handleSubspeciesChange} style={{ backgroundColor: themeColor, color: "#FFFFFF" }}>
-							{speciesDefinitions[animalType].subspecies.map((subspecies) => (
-								<option key={subspecies.name} value={subspecies.name} style={{backgroundColor: '#FFFFFF', color: '#000000'}}>
-									{subspecies.name}
+							{speciesDefinitions[animalType].subspecies.map((sub) => (
+								<option key={sub.name} value={sub.name} style={{backgroundColor: '#FFFFFF', color: '#000000'}}>
+									{sub.name}
 								</option>
 							))}
 						</select>
@@ -257,8 +239,8 @@
 
                 <div className="grid grid-cols-1 gap-6 mt-4">
                     <div className="input-field">
-                        <label className="block text-lg font-semibold mb-2">Duration (Weeks): {growthStage}</label>
-                        <input type="range" min={adjustedGrowthStage(animalType).min} max={extendGrowth ? 208 : adjustedGrowthStage(animalType).max} value={growthStage} onChange={(e) => setGrowthStage(Number(e.target.value))} className="w-full" />
+                        <label className="block text-lg font-semibold mb-2">Chart Duration (Weeks): {growthStage}</label>
+                        <input type="range" min={adjustedGrowthStage.min} max={extendGrowth ? 208 : adjustedGrowthStage.max} value={growthStage} onChange={(e) => setGrowthStage(Number(e.target.value))} className="w-full" />
                         <div className="checkbox-container mt-2">
                             <input type="checkbox" checked={extendGrowth} onChange={(e) => setExtendGrowth(e.target.checked)} className="mr-2" />
                             <label>Expand to four years</label>
@@ -286,8 +268,8 @@
                     </BarChart>
                 </ResponsiveContainer>
 
-                <div className="mt-6 text-right font-bold">
-                    Total Water Consumption for Cycle: {Math.round(totalWater).toLocaleString()} Gallons
+                <div className="mt-6 text-right font-bold text-lg">
+                    Total Water for Cycle: {Math.round(totalWater).toLocaleString()} Gallons
                 </div>
             </div>
         );
