@@ -4,19 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Water Consumption Calculator</title>
-    <!-- Tailwind CSS for styling -->
+    <!-- CSS and other head elements stay here -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    
-    <!-- React and ReactDOM -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    
-    <!-- Recharts for graphs (loaded before your script) -->
-    <script src="https://unpkg.com/recharts@2.1.14/umd/Recharts.min.js"></script>
-
-    <!-- Babel for JSX support -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -36,12 +25,25 @@
 
 <div id="root"></div>
 
+<!-- ALL SCRIPT TAGS MOVED HERE, TO THE END OF THE BODY -->
+<!-- Placed in dependency order: React -> ReactDOM -> Recharts -> Your App -->
+
+<!-- 1. React and ReactDOM -->
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+<!-- 2. Recharts Library -->
+<script src="https://unpkg.com/recharts@2.1.14/umd/Recharts.min.js"></script>
+
+<!-- 3. Babel for JSX support -->
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<!-- 4. Your Application Code (runs last) -->
 <script type="text/babel">
     const { useState, useEffect, useMemo } = React;
     
-    // --- FIX IS HERE ---
-    // Destructure components directly from the global window.Recharts object
-    // This ensures you are accessing it after it has been loaded.
+    // This line will now work correctly because the Recharts script above
+    // has already loaded and created the window.Recharts object.
     const {
         LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar
     } = window.Recharts;
@@ -69,12 +71,7 @@
 		}
     };
     
-    // The rest of your component code remains here...
-    // I am omitting it for brevity, but you would paste your
-    // WaterConsumptionCalculator and ReactDOM.render call here.
-    
     const WaterConsumptionCalculator = () => {
-        // ... all your existing calculator logic ...
         const [animalType, setAnimalType] = useState("poultry");
         const [selectedSubspecies, setSelectedSubspecies] = useState(speciesDefinitions.poultry.subspecies[0].name);
         const [growthStage, setGrowthStage] = useState(8);
@@ -116,7 +113,7 @@
             return slope * (temp - 50) + 1.0;
         };
 
-        const steepness = 1.8; // Define steepness here to be accessible in useEffect
+        const steepness = 1.8;
 
 	    useEffect(() => {
 			const subspecies = speciesDefinitions[animalType].subspecies.find(sub => sub.name === selectedSubspecies);
@@ -137,12 +134,13 @@
 
             const tempMultiplier = calculateTemperatureMultiplier(temperature);
             let cumulativeTotal = 0;
-            for (let day = 1; day <= processingAge * 7; day++) {
-                cumulativeTotal += calculateExponentialConsumption(day, processingAge * 7, steepness, tempMultiplier);
+            const cycleLengthDays = processingAge * 7;
+            for (let day = 1; day <= cycleLengthDays; day++) {
+                cumulativeTotal += calculateExponentialConsumption(day, cycleLengthDays, steepness, tempMultiplier);
             }
             setTotalWater(cumulativeTotal);
 
-		}, [animalType, selectedSubspecies, growthStage, numberOfAnimals, houseCount, temperature, extendGrowth]);
+		}, [animalType, selectedSubspecies, numberOfAnimals, houseCount, temperature, processingAge, extendGrowth]);
 
         useEffect(() => {
             const handleResize = () => setWidth(window.innerWidth);
@@ -170,8 +168,9 @@
             const data = [];
             let cumulativeConsumption = 0;
             const tempMultiplier = calculateTemperatureMultiplier(temperature);
+            const cycleLengthDays = processingAge * 7;
             for (let i = 1; i <= growthStage * 7; i++) {
-                const dailyConsumption = calculateExponentialConsumption(i, processingAge * 7, steepness, tempMultiplier);
+                const dailyConsumption = calculateExponentialConsumption(i, cycleLengthDays, steepness, tempMultiplier);
                 cumulativeConsumption += dailyConsumption;
                 data.push({
                     day: i,
@@ -194,9 +193,9 @@
             if (active && payload && payload.length) {
                 const { consumption, cumulative } = payload[0].payload;
                 let timeLabel = `Day ${label}`;
-                if (timeKey === "week") timeLabel = `Week ${Math.ceil(label)}`;
-                else if (timeKey === "biweek") timeLabel = `Biweekly ${Math.ceil(label)}`;
-                else if (timeKey === "month") timeLabel = `Month ${Math.ceil(label)}`;
+                if (timeKey === "week") timeLabel = `Week ${Math.ceil(payload[0].payload.week)}`;
+                else if (timeKey === "biweek") timeLabel = `Biweekly ${Math.ceil(payload[0].payload.biweek)}`;
+                else if (timeKey === "month") timeLabel = `Month ${Math.ceil(payload[0].payload.month)}`;
                 return (
                     <div className="custom-tooltip">
                         <p className="label">{timeLabel}</p>
@@ -215,16 +214,10 @@
                 <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-gray-800">
                     Water Consumption Calculator
                 </h1>
-                {/* JSX for your calculator UI */}
-                {/* This is the same as your original file */}
                 <div className="grid grid-cols-2 gap-6">
                     <div className="input-field">
                         <label className="block text-lg font-semibold mb-2">Species</label>
-                        <select
-                            className="p-2 border border-gray-300 rounded-md w-full"
-                            value={animalType}
-                            onChange={(e) => setAnimalType(e.target.value)}
-                        >
+                        <select className="p-2 border border-gray-300 rounded-md w-full" value={animalType} onChange={(e) => setAnimalType(e.target.value)}>
                             <option value="poultry">Poultry</option>
                             <option value="swine">Swine</option>
                         </select>
@@ -232,12 +225,7 @@
 
                     <div className="input-field">
 						<label className="block text-lg font-semibold mb-2">Subspecies</label>
-						<select
-							className="p-2 border border-gray-300 rounded-md w-full"
-							value={selectedSubspecies}
-							onChange={handleSubspeciesChange}
-							style={{ backgroundColor: themeColor, color: "#FFFFFF" }}
-						>
+						<select className="p-2 border border-gray-300 rounded-md w-full" value={selectedSubspecies} onChange={handleSubspeciesChange} style={{ backgroundColor: themeColor, color: "#FFFFFF" }}>
 							{speciesDefinitions[animalType].subspecies.map((subspecies) => (
 								<option key={subspecies.name} value={subspecies.name} style={{backgroundColor: '#FFFFFF', color: '#000000'}}>
 									{subspecies.name}
@@ -248,95 +236,65 @@
 
                     <div className="input-field">
                         <label className="block text-lg font-semibold mb-2">{speciesDefinitions[animalType].subspeciesName} per {houseName}</label>
-                        <input
-                            type="number"
-                            value={numberOfAnimals}
-                            onChange={(e) => setNumberOfAnimals(Number(e.target.value))}
-                            className="p-2 border border-gray-300 rounded-md w-full"
-                        />
+                        <input type="number" value={numberOfAnimals} onChange={(e) => setNumberOfAnimals(Number(e.target.value))} className="p-2 border border-gray-300 rounded-md w-full" />
                     </div>
 
                     <div className="input-field">
                         <label className="block text-lg font-semibold mb-2">{houseName}s</label>
-                        <input
-                            type="number"
-                            value={houseCount}
-                            onChange={(e) => setHouseCount(Number(e.target.value))}
-                            className="p-2 border border-gray-300 rounded-md w-full"
-                        />
+                        <input type="number" value={houseCount} onChange={(e) => setHouseCount(Number(e.target.value))} className="p-2 border border-gray-300 rounded-md w-full" />
                     </div>
 
                     <div className="input-field">
                         <label className="block text-lg font-semibold mb-2">Temperature (°F)</label>
-                        <input
-                            type="number"
-                            value={temperature}
-                            onChange={(e) => setTemperature(Number(e.target.value))}
-                            className="p-2 border border-gray-300 rounded-md w-full"
-                        />
+                        <input type="number" value={temperature} onChange={(e) => setTemperature(Number(e.target.value))} className="p-2 border border-gray-300 rounded-md w-full" />
                     </div>
 
                     <div className="input-field">
                         <label className="block text-lg font-semibold mb-2">Processing Age (Weeks)</label>
-                        <input
-                            type="number"
-                            value={processingAge}
-                            onChange={(e) => setProcessingAge(Number(e.target.value))}
-                            className="p-2 border border-gray-300 rounded-md w-full"
-                        />
+                        <input type="number" value={processingAge} onChange={(e) => setProcessingAge(Number(e.target.value))} className="p-2 border border-gray-300 rounded-md w-full" />
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 mt-4">
                     <div className="input-field">
                         <label className="block text-lg font-semibold mb-2">Duration (Weeks): {growthStage}</label>
-                        <input
-                            type="range"
-                            min={adjustedGrowthStage(animalType).min}
-                            max={extendGrowth ? 208 : adjustedGrowthStage(animalType).max}
-                            value={growthStage}
-                            onChange={(e) => setGrowthStage(Number(e.target.value))}
-                            className="w-full"
-                        />
+                        <input type="range" min={adjustedGrowthStage(animalType).min} max={extendGrowth ? 208 : adjustedGrowthStage(animalType).max} value={growthStage} onChange={(e) => setGrowthStage(Number(e.target.value))} className="w-full" />
                         <div className="checkbox-container mt-2">
-                            <input
-                                type="checkbox"
-                                checked={extendGrowth}
-                                onChange={(e) => setExtendGrowth(e.target.checked)}
-                                className="mr-2"
-                            />
+                            <input type="checkbox" checked={extendGrowth} onChange={(e) => setExtendGrowth(e.target.checked)} className="mr-2" />
                             <label>Expand to four years</label>
                         </div>
                     </div>
                 </div>
+
                 <ResponsiveContainer width="100%" height={400}>
                     <LineChart data={waterConsumptionData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey={timeKey} />
-                        <YAxis label={{ value: 'Cumulative Gallons', angle: -90, position: 'insideLeft' }} />
+                        <YAxis label={{ value: 'Cumulative Gallons', angle: -90, position: 'insideLeft' }} tickFormatter={(val) => val.toLocaleString()} />
                         <Tooltip content={<CustomTooltip />} />
-                        <Line type="monotone" dataKey="cumulative" stroke={themeColor} strokeWidth={3} />
+                        <Line type="monotone" dataKey="cumulative" stroke={themeColor} strokeWidth={3} dot={false} />
                     </LineChart>
                 </ResponsiveContainer>
+
                 <ResponsiveContainer width="100%" height={200}>
                     <BarChart data={waterConsumptionData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey={timeKey} />
-                        <YAxis label={{ value: 'Daily Gallons', angle: -90, position: 'insideLeft' }} />
+                        <YAxis label={{ value: 'Daily Gallons', angle: -90, position: 'insideLeft' }} tickFormatter={(val) => val.toLocaleString()} />
                         <Tooltip content={<CustomTooltip />} />
                         <Bar dataKey="consumption" fill={themeColor} />
                     </BarChart>
                 </ResponsiveContainer>
+
                 <div className="mt-6 text-right font-bold">
-                    Total Water Consumption: {Math.round(totalWater).toLocaleString()} Gallons
+                    Total Water Consumption for Cycle: {Math.round(totalWater).toLocaleString()} Gallons
                 </div>
             </div>
         );
     };
 
     ReactDOM.createRoot(document.getElementById('root')).render(<WaterConsumptionCalculator />);
-
 </script>
-<!-- Your collapsible references section can remain as is -->
+
 </body>
 </html>
