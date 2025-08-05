@@ -1869,7 +1869,6 @@ function initializeApp() {
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     initializeChartDefaults();
-    setupChartTimeSlider();
 }
 
 // --- Shared Utility Functions (work in both modes) ---
@@ -2280,53 +2279,6 @@ function showOverviewMessage(message) {
 
 function hideOverviewMessage() {
     document.getElementById('overviewMessageArea').style.display = 'none';
-}
-
-function setupChartTimeSlider() {
-    const slider = document.getElementById('chartTimeSlider');
-    const label = document.getElementById('chartTimeLabel');
-    const timeRanges = [
-        {v:1, l:'1 hour'},
-        {v:2, l:'2 hours'},
-        {v:6, l:'6 hours'},
-        {v:12, l:'12 hours'},
-        {v:24, l:'1 day'},
-        {v:48, l:'2 days'},
-        {v:72, l:'3 days'},
-        {v:168, l:'1 week'},
-        {v:336, l:'2 weeks'}
-    ];
-    
-    slider.min = 0;
-    slider.max = timeRanges.length - 1;
-    const defaultIndex = timeRanges.findIndex(r => r.v === currentChartTimeRange);
-    slider.value = defaultIndex !== -1 ? defaultIndex : 1;
-    
-    const update = () => {
-        const range = timeRanges[parseInt(slider.value)];
-        if (range) {
-            currentChartTimeRange = range.v;
-            // Label shows the window size, not time period
-            label.textContent = range.l;
-        }
-    };
-    
-    // Update label and chart on input
-    slider.addEventListener('input', () => {
-        update();
-        if (detailDeviceId && detailAllData.length > 0) {
-            updateDetailChart();
-        }
-    });
-    
-    update();
-}
-
-function handleChartTimeSliderChange(event) {
-    // This function should trigger chart updates
-    if (detailDeviceId && detailAllData.length > 0) {
-        updateDetailChart();
-    }
 }
 
 function jumpToHistoryFromChart() {
