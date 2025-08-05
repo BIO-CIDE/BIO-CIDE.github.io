@@ -1616,21 +1616,52 @@ runAnalytics = async function() {
         const selectedDevices = Array.from(document.querySelectorAll('.analytics-device-checkbox:checked')).map(cb => cb.value);
         if (selectedDevices.length === 0) return showToastError("Please select at least one device.");
 
+        const startDateStr = document.getElementById('analyticsStartDate').value;
+        const endDateStr = document.getElementById('analyticsEndDate').value;
+        if (!startDateStr || !endDateStr) return showToastError("Please select start and end dates.");
+        
+        const startDate = new Date(startDateStr + 'T00:00:00');
+        const endDate = new Date(endDateStr + 'T23:59:59');
+
         showLoading("Running fleet analytics from files...");
         try {
-            const dateString = new Date().toISOString().split('T')[0];
-            const promises = selectedDevices.map(deviceId => {
-                const url = `${API_ENDPOINT}/${deviceId}/${dateString}.json`;
-                return fetchWithAuth(url).then(res => res.ok ? res.json().then(data => ({ deviceId, data })) : null);
+            const promises = [];
+            selectedDevices.forEach(deviceId => {
+                const currentDate = new Date(startDate);
+                while(currentDate <= endDate) {
+                    const dateStr = currentDate.toISOString().split('T')[0];
+                    const url = `${API_ENDPOINT}/${deviceId}/${dateStr}.json`;
+                    // Add deviceId to the promise result for grouping
+                    promises.push(
+                        fetchWithAuth(url)
+                            .then(res => res.ok ? res.json() : [])
+                            .then(data => ({ deviceId, data }))
+                            .catch(() => ({ deviceId, data: [] }))
+                    );
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
             });
             
             const results = await Promise.all(promises);
-            const validResults = results.filter(r => r !== null);
+
+            // Group data by deviceId
+            const groupedData = results.reduce((acc, result) => {
+                if (result.data.length > 0) {
+                    acc[result.deviceId] = (acc[result.deviceId] || []).concat(result.data);
+                }
+                return acc;
+            }, {});
+
+            const analyticsData = Object.keys(groupedData).map(deviceId => ({
+                deviceId,
+                data: groupedData[deviceId]
+            }));
             
-            if (validResults.length > 0) {
-                renderAnalyticsResults(validResults, document.getElementById('analyticsStartDate').value, document.getElementById('analyticsEndDate').value);
+            if (analyticsData.length > 0) {
+                // The new renderAnalyticsResults can process this raw data
+                renderAnalyticsResults(analyticsData, startDateStr, endDateStr);
             } else {
-                showToastError("No data found for selected devices and date range.");
+                showToastError("No data found for selected devices in the specified date range.");
             }
         } catch (error) {
             console.error("Error running analytics:", error);
@@ -1965,8 +1996,9 @@ fetchDetailChartData = async function(deviceId) {
 
         showLoading("Running fleet analytics...");
         try {
+            // MODIFIED: Changed resolution from 'hourly' to 'raw' for consistency
             const promises = selectedDevices.map(deviceId => {
-                const url = `${API_ENDPOINT}/analytics?deviceId=${deviceId}&resolution=hourly&startDate=${startDate}&endDate=${endDate}`;
+                const url = `${API_ENDPOINT}/analytics?deviceId=${deviceId}&resolution=raw&startDate=${startDate}&endDate=${endDate}`;
                 return fetchWithAuth(url).then(res => res.ok ? res.json() : Promise.resolve(null));
             });
             
@@ -1974,6 +2006,7 @@ fetchDetailChartData = async function(deviceId) {
             const analyticsData = results.filter(r => r && r.success && r.data).map((r, i) => ({ deviceId: selectedDevices[i], data: r.data }));
             
             if (analyticsData.length > 0) {
+                // The new renderAnalyticsResults can process this raw data
                 renderAnalyticsResults(analyticsData, startDate, endDate);
             } else {
                 showToastError("No data found for selected devices and date range");
@@ -3320,53 +3353,50 @@ function renderAnalyticsResults(analyticsData, startDate, endDate) {
     let totalPHReadings = 0, totalPHSum = 0, totalORPReadings = 0, totalORPSum = 0;
     let totalRuntimeHours = 0, totalEfficiencySum = 0, totalEfficiencyReadings = 0;
     
+    // This logic now correctly processes an array of raw data points
     const deviceSummaries = analyticsData.map(({ deviceId, data }) => {
-        let deviceWater = 0, deviceFlowSum = 0, deviceFlowCount = 0;
+        data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+        let deviceWater = 0;
+        if (data.length > 1) {
+            const firstEntry = data.find(d => d.totalFlow != null);
+            const lastEntry = data.slice().reverse().find(d => d.totalFlow != null);
+            if (firstEntry && lastEntry && lastEntry.totalFlow >= firstEntry.totalFlow) {
+                deviceWater = lastEntry.totalFlow - firstEntry.totalFlow;
+            }
+        }
+
+        let deviceFlowSum = 0, deviceFlowCount = 0;
         let deviceClo2Sum = 0, deviceClo2Count = 0, deviceAlerts = 0;
         let devicePHSum = 0, devicePHCount = 0, deviceORPSum = 0, deviceORPCount = 0;
-        let deviceRunningTime = 0, deviceTotalTime = data.length;
+        let deviceRunningTimeMinutes = 0;
         
         data.forEach(entry => {
-            // Water calculation
-            if (entry.totalFlow_start !== null && entry.totalFlow_end !== null && entry.totalFlow_end >= entry.totalFlow_start) {
-                deviceWater += (entry.totalFlow_end - entry.totalFlow_start);
+            const flow = entry.flowRate;
+            if (typeof flow === 'number') {
+                if (flow > 0.1) { // Count as running if flow is minimal
+                    deviceFlowSum += flow;
+                    deviceFlowCount++;
+                    deviceRunningTimeMinutes++;
+                }
             }
             
-            // Flow calculation
-            const flow = entry.flowRate ?? entry.flow?.avg ?? entry.flow?.actual;
-            if (typeof flow === 'number' && flow > 0) { 
-                deviceFlowSum += flow; 
-                deviceFlowCount++; 
-                deviceRunningTime++; 
-            }
+            const clo2 = entry.measured_clo2;
+            if (typeof clo2 === 'number') { deviceClo2Sum += clo2; deviceClo2Count++; }
             
-            // Chemical measurements
-            const clo2 = entry.measured_clo2 ?? entry.clo2?.avg;
-            if (typeof clo2 === 'number' && clo2 > 0) { 
-                deviceClo2Sum += clo2; 
-                deviceClo2Count++; 
-            }
+            const ph = entry.measured_ph;
+            if (typeof ph === 'number') { devicePHSum += ph; devicePHCount++; }
             
-            const ph = entry.measured_ph ?? entry.pH?.avg;
-            if (typeof ph === 'number' && ph > 0) { 
-                devicePHSum += ph; 
-                devicePHCount++; 
-            }
+            const orp = entry.measured_orp;
+            if (typeof orp === 'number') { deviceORPSum += orp; deviceORPCount++; }
             
-            const orp = entry.measured_orp ?? entry.orp?.avg;
-            if (typeof orp === 'number' && orp > 0) { 
-                deviceORPSum += orp; 
-                deviceORPCount++; 
-            }
-            
-            // Alerts
             if (entry.errorCode && entry.errorCode !== 0) deviceAlerts++;
         });
         
-        const deviceEfficiency = deviceTotalTime > 0 ? (deviceRunningTime / deviceTotalTime) * 100 : 0;
-        const runtimeHours = deviceRunningTime * (historyResolution === 'hourly' ? 1 : historyResolution === '15min' ? 0.25 : historyResolution === 'daily' ? 24 : 1/60);
+        const deviceTotalMinutes = data.length;
+        const deviceEfficiency = deviceTotalMinutes > 0 ? (deviceRunningTimeMinutes / deviceTotalMinutes) * 100 : 0;
+        const runtimeHours = deviceRunningTimeMinutes / 60.0;
         
-        // Add to totals
         totalWater += deviceWater; 
         totalFlowSum += deviceFlowSum; 
         totalFlowReadings += deviceFlowCount; 
@@ -3395,7 +3425,7 @@ function renderAnalyticsResults(analyticsData, startDate, endDate) {
     });
     
     // Update summary cards
-    document.getElementById('totalWaterGallons').textContent = totalWater.toFixed(0);
+    document.getElementById('totalWaterGallons').textContent = totalWater.toLocaleString(undefined, {maximumFractionDigits: 0});
     document.getElementById('avgFlowRate').textContent = totalFlowReadings > 0 ? (totalFlowSum / totalFlowReadings).toFixed(1) : '0';
     document.getElementById('avgChemistry').textContent = totalClo2Readings > 0 ? (totalClo2Sum / totalClo2Readings).toFixed(2) : '0';
     document.getElementById('totalAlerts').textContent = totalAlerts;
@@ -3409,6 +3439,7 @@ function renderAnalyticsResults(analyticsData, startDate, endDate) {
     
     showToastSuccess(`Analytics complete for ${analyticsData.length} devices`);
 }
+
 
 // Enhanced analytics charts creation
 let analyticsTimelineChart = null;
