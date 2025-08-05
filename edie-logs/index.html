@@ -1299,7 +1299,70 @@ const DEFAULT_API_KEY = "k32BWMByEJrCihED0YEmhs0AaUJCeontFUC_qbeB"; // Only used
 const AUTO_REFRESH_INTERVAL = 30000;
 const OFFLINE_THRESHOLD_MINUTES = 15;
 const VIEW_MODE_STORAGE_KEY = 'edieViewMode';
+// ADD THIS RIGHT AFTER YOUR CONFIGURATION CONSTANTS (around line 50):
 
+// RESPONSE CACHING SYSTEM
+const responseCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function getCacheKey(url, options = {}) {
+    return `${url}_${JSON.stringify(options)}`;
+}
+
+function getCachedResponse(key) {
+    const cached = responseCache.get(key);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+        return cached.data;
+    }
+    responseCache.delete(key);
+    return null;
+}
+
+function setCachedResponse(key, data) {
+    responseCache.set(key, {
+        data: data,
+        timestamp: Date.now()
+    });
+    
+    // Cleanup old cache entries
+    if (responseCache.size > 50) {
+        const oldestKey = responseCache.keys().next().value;
+        responseCache.delete(oldestKey);
+    }
+}
+
+// ENHANCED fetchWithAuth with caching
+const originalFetchWithAuth = fetchWithAuth;
+fetchWithAuth = async function(url, options = {}, keyOverride = null) {
+    // Only cache GET requests and device-related endpoints
+    if ((!options.method || options.method === 'GET') && 
+        (url.includes('/devices') || url.includes('/device/') || url.includes('/analytics'))) {
+        
+        const cacheKey = getCacheKey(url, options);
+        const cached = getCachedResponse(cacheKey);
+        
+        if (cached) {
+            console.log(`Cache hit for: ${url}`);
+            return {
+                ok: true,
+                json: () => Promise.resolve(cached)
+            };
+        }
+        
+        const response = await originalFetchWithAuth(url, options, keyOverride);
+        if (response.ok) {
+            const data = await response.json();
+            setCachedResponse(cacheKey, data);
+            return {
+                ok: true,
+                json: () => Promise.resolve(data)
+            };
+        }
+        return response;
+    }
+    
+    return originalFetchWithAuth(url, options, keyOverride);
+};
 // ERROR CODE MAPPING
 const ERROR_MESSAGES = [
     "SYSTEM OK", "NO FLOW!", "LOW FLOW!", "PUMP ALARM", "PUMP WARNING", "SYSTEM PAUSED", "MISWEIGHTED"
@@ -1423,74 +1486,70 @@ if (USE_LOCAL_FILES) {
     };
 
     fetchDetailChartData = async function(deviceId) {
-		try {
-			// First, find the most recent file that actually exists
-			let latestDate = null;
-			const today = new Date();
-			
-			// Check backwards from today until we find a file that exists
-			for (let daysBack = 0; daysBack <= 30; daysBack++) {
-				const checkDate = new Date(today);
-				checkDate.setDate(today.getDate() - daysBack);
-				const dateStr = checkDate.toISOString().split('T')[0];
-				const testUrl = `${API_ENDPOINT}/${deviceId}/${dateStr}.json`;
-				
-				try {
-					const testResponse = await fetchWithAuth(testUrl);
-					if (testResponse.ok) {
-						latestDate = checkDate;
-						console.log(`Found latest data file: ${dateStr}`);
-						break;
-					}
-				} catch (e) {
-					// Continue checking older dates
-					continue;
-				}
-			}
-			
-			if (!latestDate) {
-				throw new Error(`No data files found for device ${deviceId} in the last 30 days`);
-			}
-			
-			// Now fetch 14 days of data working backwards from the latest file
-			const promises = [];
-			for (let i = 0; i < 14; i++) {
-				const date = new Date(latestDate);
-				date.setDate(latestDate.getDate() - i);
-				const dateStr = date.toISOString().split('T')[0];
-				const url = `${API_ENDPOINT}/${deviceId}/${dateStr}.json`;
-				promises.push(
-					fetchWithAuth(url).then(res => 
-						res.ok ? res.json() : []
-					).catch(() => [])
-				);
-			}
-			
-			const results = await Promise.all(promises);
-			// Get ALL data from all available days and sort by timestamp (newest first)
-			detailAllData = results.flat().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-			
-			if (detailAllData.length === 0) {
-				showDetailMessage("No historical data files found for this device.");
-				const container = document.getElementById('detailFlowChart').parentElement;
-				const existingPlaceholder = container.querySelector('.chart-placeholder');
-				if (existingPlaceholder) existingPlaceholder.remove();
-				const placeholder = document.createElement('div');
-				placeholder.className = 'chart-placeholder';
-				placeholder.innerHTML = `<div>No data files found for this device.</div>`;
-				container.appendChild(placeholder);
-				return;
-			}
-
-			console.log(`Loaded ${detailAllData.length} data points from ${results.filter(r => r.length > 0).length} files`);
-			console.log(`Data range: ${detailAllData[detailAllData.length-1].timestamp} to ${detailAllData[0].timestamp}`);
-			
-			updateDetailChart(); 
-			populateDetailDataTable();
-
-		} catch (error) {
-			handleDetailError(error, deviceId);
-		}
+	    try {
+	        // OPTIMIZED: Only check last 3 days instead of 30
+	        let latestDate = null;
+	        const today = new Date();
+	        
+	        for (let daysBack = 0; daysBack <= 3; daysBack++) { // Changed from 30 to 3
+	            const checkDate = new Date(today);
+	            checkDate.setDate(today.getDate() - daysBack);
+	            const dateStr = checkDate.toISOString().split('T')[0];
+	            const testUrl = `${API_ENDPOINT}/${deviceId}/${dateStr}.json`;
+	            
+	            try {
+	                const testResponse = await fetchWithAuth(testUrl);
+	                if (testResponse.ok) {
+	                    latestDate = checkDate;
+	                    console.log(`Found latest data file: ${dateStr}`);
+	                    break;
+	                }
+	            } catch (e) {
+	                continue;
+	            }
+	        }
+	        
+	        if (!latestDate) {
+	            throw new Error(`No data files found for device ${deviceId} in the last 3 days`);
+	        }
+	        
+	        // OPTIMIZED: Only get 2 days instead of 14
+	        const promises = [];
+	        for (let i = 0; i < 2; i++) { // Changed from 14 to 2
+	            const date = new Date(latestDate);
+	            date.setDate(latestDate.getDate() - i);
+	            const dateStr = date.toISOString().split('T')[0];
+	            const url = `${API_ENDPOINT}/${deviceId}/${dateStr}.json`;
+	            promises.push(
+	                fetchWithAuth(url).then(res => 
+	                    res.ok ? res.json() : []
+	                ).catch(() => [])
+	            );
+	        }
+	        
+	        const results = await Promise.all(promises);
+	        detailAllData = results.flat().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+	        
+	        if (detailAllData.length === 0) {
+	            showDetailMessage("No historical data files found for this device.");
+	            const container = document.getElementById('detailFlowChart').parentElement;
+	            const existingPlaceholder = container.querySelector('.chart-placeholder');
+	            if (existingPlaceholder) existingPlaceholder.remove();
+	            const placeholder = document.createElement('div');
+	            placeholder.className = 'chart-placeholder';
+	            placeholder.innerHTML = `<div>No data files found for this device.</div>`;
+	            container.appendChild(placeholder);
+	            return;
+	        }
+	
+	        console.log(`Loaded ${detailAllData.length} data points from ${results.filter(r => r.length > 0).length} files`);
+	        
+	        updateDetailChart(); 
+	        populateDetailDataTable();
+	
+	    } catch (error) {
+	        handleDetailError(error, deviceId);
+	    }
 	};
 
 runAnalytics = async function() {
@@ -1664,44 +1723,54 @@ runAnalytics = async function() {
         }
     };
 
-    refreshDeviceList = async function(force = false) {
-        if (!apiKey) return;
-        showLoading("Fetching devices...");
-        try {
-            const response = await fetchWithAuth(`${API_ENDPOINT}/devices`);
-            if (!response.ok) {
-                if (response.status === 401) {
-                    showToastError("Authentication failed. Please log in again.");
-                    handleLogout();
-                    return;
-                }
-                throw new Error(`Failed to fetch devices: ${response.statusText}`);
-            }
-            const data = await response.json();
-            if (data.success && Array.isArray(data.devices)) {
-                if (data.source === 'batch') showPerformanceBadge('batch', data.batchVersion);
-                else showPerformanceBadge('legacy');
-                
-                allDevices = data.devices;
-                allDevices.forEach(dev => {
-                    dev._status = dev.status || getDeviceStatus(dev);
-                    dev._lastUpdateTimestamp = dev.lastUpdated;
-                });
-                applyFiltersAndSort();
-                renderDevices();
-                populateHistoryDeviceDropdown();
-                updateDashboardCounters();
-                if (force) showToastSuccess(`Refreshed ${data.devices.length} devices.`);
-            } else {
-                throw new Error("Invalid data structure received");
-            }
-        } catch (error) {
-            console.error("Error refreshing device list:", error);
-            showToastError(`Error fetching devices: ${error.message}`);
-        } finally {
-            hideLoading();
-        }
-    };
+	refreshDeviceList = async function(force = false) {
+	    if (!apiKey) return;
+	    showLoading("Fetching devices...");
+	    try {
+	        // AUTO-MIGRATE CHECK (only on first load)
+	        if (!window.migrationChecked) {
+	            window.migrationChecked = true;
+	            try {
+	                await fetchWithAuth(`${API_ENDPOINT}/auto-migrate`, { method: 'POST' });
+	            } catch (e) {
+	                console.log("Migration check failed, continuing...");
+	            }
+	        }
+	        
+	        const response = await fetchWithAuth(`${API_ENDPOINT}/devices`);
+	        if (!response.ok) {
+	            if (response.status === 401) {
+	                showToastError("Authentication failed. Please log in again.");
+	                handleLogout();
+	                return;
+	            }
+	            throw new Error(`Failed to fetch devices: ${response.statusText}`);
+	        }
+	        const data = await response.json();
+	        if (data.success && Array.isArray(data.devices)) {
+	            if (data.source === 'batch') showPerformanceBadge('batch', data.batchVersion);
+	            else showPerformanceBadge('legacy');
+	            
+	            allDevices = data.devices;
+	            allDevices.forEach(dev => {
+	                dev._status = dev.status || getDeviceStatus(dev);
+	                dev._lastUpdateTimestamp = dev.lastUpdated;
+	            });
+	            applyFiltersAndSort();
+	            renderDevices();
+	            populateHistoryDeviceDropdown();
+	            updateDashboardCounters();
+	            if (force) showToastSuccess(`Refreshed ${data.devices.length} devices.`);
+	        } else {
+	            throw new Error("Invalid data structure received");
+	        }
+	    } catch (error) {
+	        console.error("Error refreshing device list:", error);
+	        showToastError(`Error fetching devices: ${error.message}`);
+	    } finally {
+	        hideLoading();
+	    }
+	};
 
     showDeviceDetails = async function(deviceId) {
         if (!apiKey) return;
@@ -1733,32 +1802,31 @@ runAnalytics = async function() {
         }
     };
 
-    fetchDetailChartData = async function(deviceId) {
-        const endDate = new Date();
-        const searchStartDate = new Date(endDate.getTime() - (14 * 24 * 60 * 60 * 1000)); // Get 14 days of data
-        const url = `${API_ENDPOINT}/analytics?deviceId=${deviceId}&resolution=raw&startDate=${formatDateForInput(searchStartDate)}&endDate=${formatDateForInput(endDate)}`;
-        const response = await fetchWithAuth(url);
-        if (!response.ok) throw new Error(`Failed to fetch chart data: ${response.statusText}`);
-        
-        const result = await response.json();
-        if (!result.success || !Array.isArray(result.data)) throw new Error("Invalid chart data structure received");
-        
-        // Store ALL data sorted by timestamp (newest first) - the chart will filter based on slider
-        detailAllData = result.data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        
-        if (detailAllData.length === 0) {
-            showDetailMessage("No historical data available for this device.");
-            const container = document.getElementById('detailFlowChart').parentElement;
-            const placeholder = document.createElement('div');
-            placeholder.className = 'chart-placeholder';
-            placeholder.innerHTML = `<div>No historical data available for this device.</div>`;
-            container.appendChild(placeholder);
-            return;
-        }
+fetchDetailChartData = async function(deviceId) {
+    const endDate = new Date();
+    const searchStartDate = new Date(endDate.getTime() - (2 * 24 * 60 * 60 * 1000)); // Changed from 14 to 2 days
+    const url = `${API_ENDPOINT}/analytics?deviceId=${deviceId}&resolution=raw&startDate=${formatDateForInput(searchStartDate)}&endDate=${formatDateForInput(endDate)}`;
+    const response = await fetchWithAuth(url);
+    if (!response.ok) throw new Error(`Failed to fetch chart data: ${response.statusText}`);
+    
+    const result = await response.json();
+    if (!result.success || !Array.isArray(result.data)) throw new Error("Invalid chart data structure received");
+    
+    detailAllData = result.data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    if (detailAllData.length === 0) {
+        showDetailMessage("No historical data available for this device.");
+        const container = document.getElementById('detailFlowChart').parentElement;
+        const placeholder = document.createElement('div');
+        placeholder.className = 'chart-placeholder';
+        placeholder.innerHTML = `<div>No historical data available for this device.</div>`;
+        container.appendChild(placeholder);
+        return;
+    }
 
-        updateDetailChart();
-        populateDetailDataTable();
-    };
+    updateDetailChart();
+    populateDetailDataTable();
+};
     
     fetchHistoricalData = async function() {
         const deviceId = document.getElementById('historyDeviceSelect').value;
