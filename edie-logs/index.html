@@ -1492,6 +1492,7 @@ if (USE_LOCAL_FILES) {
 	refreshDeviceList = async function(force = false) {
 		if (!apiKey) return;
 		showLoading("Fetching local devices.json...");
+		const resolution = document.getElementById('resolutionSelect')?.value || 'raw';
 		try {
 			const response = await fetchWithAuth(`${API_ENDPOINT}/devices.json`);
 			if (!response.ok) throw new Error(`Failed to fetch devices.json`);
@@ -1718,6 +1719,7 @@ runAnalytics = async function() {
 		} catch (error) {
 			handleHistoryError(error);
 		} finally {
+			updateResolutionStatus(resolution, false);
 			hideLoading();
 		}
 	};
@@ -1834,36 +1836,40 @@ runAnalytics = async function() {
 	    }
 	};
 
-    showDeviceDetails = async function(deviceId) {
-        if (!apiKey) return;
-        detailDeviceId = deviceId;
-        document.getElementById('deviceDetailTitle').textContent = `Device Details: ${deviceId}`;
-        resetDetailModal();
-        deviceDetailModal.show();
-        showLoading(`Loading details for ${deviceId}...`);
-        try {
-            const latestResponse = await fetchWithAuth(`${API_ENDPOINT}/device/${deviceId}/latest`);
-            if (latestResponse.ok) {
-                const latestResult = await latestResponse.json();
-                if (latestResult.success && latestResult.data) {
-                    updateDetailMetrics(latestResult.data);
-                    populateAllDataTab(latestResult.data);
-                }
-            } else {
-                const device = allDevices.find(d => d.deviceId === deviceId);
-                if (device && device.latestData) {
-                    updateDetailMetrics(device.latestData);
-                    populateAllDataTab(device.latestData);
-                }
-            }
-            await fetchDetailChartData(deviceId);
-        } catch (error) {
-            handleDetailError(error, deviceId);
-        } finally {
-            updateResolutionStatus(resolution, false);
-			hideLoading();
-        }
-    };
+	showDeviceDetails = async function(deviceId) {
+	    if (!apiKey) return;
+	    detailDeviceId = deviceId;
+	    document.getElementById('deviceDetailTitle').textContent = `Device Details: ${deviceId}`;
+	    resetDetailModal();
+	    deviceDetailModal.show();
+	    showLoading(`Loading details for ${deviceId}...`);
+	    
+	    // FIXED: Define resolution variable for this function
+	    const resolution = 'raw'; // Default resolution for device details
+	    
+	    try {
+	        const latestResponse = await fetchWithAuth(`${API_ENDPOINT}/device/${deviceId}/latest`);
+	        if (latestResponse.ok) {
+	            const latestResult = await latestResponse.json();
+	            if (latestResult.success && latestResult.data) {
+	                updateDetailMetrics(latestResult.data);
+	                populateAllDataTab(latestResult.data);
+	            }
+	        } else {
+	            const device = allDevices.find(d => d.deviceId === deviceId);
+	            if (device && device.latestData) {
+	                updateDetailMetrics(device.latestData);
+	                populateAllDataTab(device.latestData);
+	            }
+	        }
+	        await fetchDetailChartData(deviceId);
+	    } catch (error) {
+	        handleDetailError(error, deviceId);
+	    } finally {
+	        updateResolutionStatus(resolution, false); // Now resolution is properly defined
+	        hideLoading();
+	    }
+	};
 
 fetchDetailChartData = async function(deviceId) {
     const endDate = new Date();
@@ -1943,7 +1949,8 @@ fetchDetailChartData = async function(deviceId) {
         } catch (error) {
             handleHistoryError(error);
         } finally {
-            hideLoading();
+            updateResolutionStatus(resolution, false);
+			hideLoading();
         }
     };
 
