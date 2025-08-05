@@ -2259,13 +2259,14 @@ function renderDeviceCards() {
         let statusText = device._status;
 
         // Show CURRENT flow rate (including 0), not last non-zero
-        if (errorCode && errorCode !== 0) {
-            latestValue = `<span class="text-danger">${ERROR_MESSAGES[errorCode] || `Error ${errorCode}`}</span>`;
-        } else {
-            // Always show current flow rate, even if 0
-            const currentFlow = data?.flowRate ?? data?.flow?.actual ?? 0;
-            latestValue = `${currentFlow.toFixed(1)} GPM`;
-        }
+        // Find the latestValue calculation and update it:
+	if (errorCode && errorCode !== 0) {
+	    latestValue = `<span class="text-danger">${ERROR_MESSAGES[errorCode] || `Error ${errorCode}`}</span>`;
+	} else {
+	    // FIXED: Always show current flow rate with proper fallback
+	    const currentFlow = data?.flowRate ?? data?.flow?.actual ?? data?.flow ?? 0;
+	    latestValue = `${currentFlow.toFixed(1)} GPM`;
+	}
         
         // Use the ACTUAL timestamp from the data, not "just now"
         const actualTimestamp = data?.timestamp || device.lastUpdated;
@@ -2399,11 +2400,19 @@ function handleHistoryError(error) {
 
 function updateDetailMetrics(data) {
     if (!data) return;
-    document.getElementById('detailFlowMetric').textContent = data.flowRate?.toFixed(1) ?? data.flow?.actual?.toFixed(1) ?? '--' + ' GPM';
-    document.getElementById('detailSetpointMetric').textContent = data.ppm_setpoint ?? '--' + ' PPM';
-    document.getElementById('detailCLO2Metric').textContent = data.measured_clo2?.toFixed(2) ?? '--' + ' PPM';
+    
+    // FIXED flow reading with fallback chain
+    const getFlowValue = (data) => {
+        return data.flowRate ?? data.flow?.actual ?? data.flow ?? 0;
+    };
+    
+    const flowValue = getFlowValue(data);
+    document.getElementById('detailFlowMetric').textContent = flowValue.toFixed(1) + ' GPM';
+    
+    document.getElementById('detailSetpointMetric').textContent = (data.ppm_setpoint ?? '--') + ' PPM';
+    document.getElementById('detailCLO2Metric').textContent = (data.measured_clo2?.toFixed(2) ?? '--') + ' PPM';
     document.getElementById('detailPHMetric').textContent = data.measured_ph?.toFixed(2) ?? '--';
-    document.getElementById('detailORPMetric').textContent = data.measured_orp?.toFixed(0) ?? '--' + ' mV';
+    document.getElementById('detailORPMetric').textContent = (data.measured_orp?.toFixed(0) ?? '--') + ' mV';
     const errorCode = data.errorCode || 0;
     document.getElementById('detailStatusMetric').textContent = ERROR_MESSAGES[errorCode] || `Error ${errorCode}`;
     document.getElementById('detailLastUpdateMetric').textContent = formatDateTime(data.timestamp) || '--';
@@ -2447,7 +2456,7 @@ function populateDetailDataTable() {
         if (errorCode !== 0) row.classList.add('table-alarm');
         row.innerHTML = `
             <td>${formatDateTime(entry.timestamp)}</td>
-            <td>${entry.flowRate?.toFixed(1) ?? entry.flow?.actual?.toFixed(1) ?? 'N/A'}</td>
+            <td>${(entry.flowRate ?? entry.flow?.actual ?? entry.flow ?? 0).toFixed(1)}</td>
             <td>${entry.ppm_setpoint ?? 'N/A'}</td>
             <td>${entry.measured_clo2?.toFixed(2) ?? 'N/A'}</td>
             <td>${entry.measured_ph?.toFixed(2) ?? 'N/A'}</td>
