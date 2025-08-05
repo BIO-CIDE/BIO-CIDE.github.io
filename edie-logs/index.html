@@ -814,13 +814,17 @@
                                     <div class="col-md-2">
                                         <label for="resolutionSelect" class="form-label">Resolution</label>
                                         <select id="resolutionSelect" class="form-select form-select-sm">
-                                            <option value="auto" selected>Auto</option>
-                                            <option value="raw">Raw (1 min)</option>
+                                            <option value="auto">Auto</option>
+                                            <option value="raw" selected>Raw (1 min)</option>
                                             <option value="15min">15 Minutes</option>
                                             <option value="hourly">Hourly</option>
                                             <option value="daily">Daily</option>
                                         </select>
                                     </div>
+				<div class="col-md-2">
+				    <label class="form-label">Status</label>
+				    <div id="resolutionStatus" class="badge bg-secondary">Ready</div>
+				</div>
                                 </div>
                             </div>
                             <div class="col-12">
@@ -1317,6 +1321,61 @@ function getCachedResponse(key) {
     responseCache.delete(key);
     return null;
 }
+function updateResolutionStatus(resolution, isProcessing = false) {
+    const statusDiv = document.getElementById('resolutionStatus');
+    if (!statusDiv) return;
+    
+    if (isProcessing) {
+        statusDiv.className = 'badge bg-warning';
+        statusDiv.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
+    } else if (resolution === 'raw') {
+        statusDiv.className = 'badge bg-success';
+        statusDiv.innerHTML = '<i class="bi bi-lightning-fill"></i> Raw Data';
+    } else {
+        statusDiv.className = 'badge bg-info';
+        statusDiv.innerHTML = `<i class="bi bi-graph-up"></i> ${resolution.toUpperCase()}`;
+    }
+}
+function hideEmptyHistoryColumns() {
+    const table = document.getElementById('historyTable');
+    const tbody = table.querySelector('tbody');
+    const thead = table.querySelector('thead tr');
+    const rows = tbody.querySelectorAll('tr');
+    
+    if (rows.length === 0) return;
+    
+    // Check each column (skip timestamp and status columns)
+    const columnsToCheck = [1, 2, 3, 4, 5]; // Flow, Setpoint, CLO2, pH, ORP
+    const columnsToHide = [];
+    
+    columnsToCheck.forEach(colIndex => {
+        let allEmpty = true;
+        rows.forEach(row => {
+            const cell = row.cells[colIndex];
+            if (cell && cell.textContent.trim() !== 'N/A' && cell.textContent.trim() !== '0' && cell.textContent.trim() !== '0.00') {
+                allEmpty = false;
+            }
+        });
+        
+        if (allEmpty) {
+            columnsToHide.push(colIndex);
+        }
+    });
+    
+    // Hide empty columns
+    columnsToHide.forEach(colIndex => {
+        // Hide header
+        thead.cells[colIndex].style.display = 'none';
+        // Hide all cells in this column
+        rows.forEach(row => {
+            if (row.cells[colIndex]) {
+                row.cells[colIndex].style.display = 'none';
+            }
+        });
+    });
+    
+    console.log(`Hidden ${columnsToHide.length} empty columns:`, columnsToHide);
+}
 
 function setCachedResponse(key, data) {
     responseCache.set(key, {
@@ -1580,6 +1639,8 @@ runAnalytics = async function() {
         }
     };
 	fetchHistoricalData = async function() {
+		const resolution = document.getElementById('resolutionSelect').value;
+		updateResolutionStatus(resolution, true); // Show processing
 		const deviceId = document.getElementById('historyDeviceSelect').value;
 		if (!deviceId) return showToastError("Please select a device.");
 		
@@ -1768,6 +1829,7 @@ runAnalytics = async function() {
 	        console.error("Error refreshing device list:", error);
 	        showToastError(`Error fetching devices: ${error.message}`);
 	    } finally {
+			updateResolutionStatus(resolution, false);
 	        hideLoading();
 	    }
 	};
@@ -1798,7 +1860,8 @@ runAnalytics = async function() {
         } catch (error) {
             handleDetailError(error, deviceId);
         } finally {
-            hideLoading();
+            updateResolutionStatus(resolution, false);
+			hideLoading();
         }
     };
 
@@ -1829,6 +1892,8 @@ fetchDetailChartData = async function(deviceId) {
 };
     
     fetchHistoricalData = async function() {
+		const resolution = document.getElementById('resolutionSelect').value;
+		updateResolutionStatus(resolution, true); // Show processing
         const deviceId = document.getElementById('historyDeviceSelect').value;
         if (!deviceId) return showToastError("Please select a device.");
         
@@ -2028,6 +2093,9 @@ function setupEventListeners() {
         detailAllData = [];
         detailDeviceId = null;
     });
+	document.getElementById('resolutionSelect').addEventListener('change', (e) => {
+	    updateResolutionStatus(e.target.value);
+	});
 }
 
 function loadStateFromStorage() {
@@ -3178,6 +3246,8 @@ function updateHistoryTable() {
     
     tbody.innerHTML = '';
     tbody.appendChild(fragment);
+
+	hideEmptyHistoryColumns();
     
     document.getElementById('historyRowCounter').textContent = `Showing ${startIndex + 1} to ${endIndex} of ${totalEntries} entries`;
     document.getElementById('historyPrevPage').parentElement.classList.toggle('disabled', historyCurrentPage === 0);
