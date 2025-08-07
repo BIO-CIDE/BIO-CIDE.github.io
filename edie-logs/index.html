@@ -1817,10 +1817,11 @@ runAnalytics = async function() {
         }
     };
 
-	refreshDeviceList = async function(force = false) {
+refreshDeviceList = async function(force = false) {
 	    if (!apiKey) return;
-	    showLoading("Fetching devices...");
+	    showLoading("Fetching all devices..."); // Updated message
     	const resolution = document.getElementById('resolutionSelect')?.value || 'raw';
+
 	    try {
 	        // AUTO-MIGRATE CHECK (only on first load)
 	        if (!window.migrationChecked) {
@@ -1832,7 +1833,9 @@ runAnalytics = async function() {
 	            }
 	        }
 	        
+            // *** THIS IS THE CORRECTED LINE ***
 	        const response = await fetchWithAuth(`${API_ENDPOINT}/devices?include=all`);
+	        
 	        if (!response.ok) {
 	            if (response.status === 401) {
 	                showToastError("Authentication failed. Please log in again.");
@@ -1867,7 +1870,6 @@ runAnalytics = async function() {
 	        hideLoading();
 	    }
 	};
-
 	showDeviceDetails = async function(deviceId) {
 	    if (!apiKey) return;
 	    detailDeviceId = deviceId;
