@@ -1832,7 +1832,7 @@ runAnalytics = async function() {
 	            }
 	        }
 	        
-	        const response = await fetchWithAuth(`${API_ENDPOINT}/devices`);
+	        const response = await fetchWithAuth(`${API_ENDPOINT}/devices?include=all`);
 	        if (!response.ok) {
 	            if (response.status === 401) {
 	                showToastError("Authentication failed. Please log in again.");
