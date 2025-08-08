@@ -1504,7 +1504,7 @@ const response = await fetchWithAuth(`${API_ENDPOINT}/devices.json`);
         try {
             const device = allDevices.find(d => d.deviceId === deviceId);
             if (device && device.latestData) {
-                updateDetailMetrics(device.latestData);
+                updateDetailMetrics(device.latestData, device.lastUpdated);
                 populateAllDataTab(device.latestData);
             }
             await fetchDetailChartData(deviceId);
@@ -1819,19 +1819,19 @@ refreshDeviceList = async function(force = false) {
 	    
             try {
                 const latestResponse = await fetchWithAuth(`${API_ENDPOINT}/device/${deviceId}/latest`);
-	        if (latestResponse.ok) {
-	            const latestResult = await latestResponse.json();
-	            if (latestResult.success && latestResult.data) {
-	                updateDetailMetrics(latestResult.data);
-	                populateAllDataTab(latestResult.data);
-	            }
-	        } else {
-	            const device = allDevices.find(d => d.deviceId === deviceId);
-	            if (device && device.latestData) {
-	                updateDetailMetrics(device.latestData);
-	                populateAllDataTab(device.latestData);
-	            }
-	        }
+                if (latestResponse.ok) {
+                    const latestResult = await latestResponse.json();
+                    if (latestResult.success && latestResult.data) {
+                        updateDetailMetrics(latestResult.data, latestResult.data.lastUpdated);
+                        populateAllDataTab(latestResult.data);
+                    }
+                } else {
+                    const device = allDevices.find(d => d.deviceId === deviceId);
+                    if (device && device.latestData) {
+                        updateDetailMetrics(device.latestData, device.lastUpdated);
+                        populateAllDataTab(device.latestData);
+                    }
+                }
 	        await fetchDetailChartData(deviceId);
 	    } catch (error) {
 	        handleDetailError(error, deviceId);
@@ -2312,8 +2312,8 @@ function renderDeviceCards() {
 	    latestValue = `${currentFlow.toFixed(1)} GPM`;
 	}
         
-        // Use the ACTUAL timestamp from the data, not "just now"
-        const actualTimestamp = data?.timestamp || device.lastUpdated;
+        // Use the ACTUAL timestamp from the data, accounting for uptime-based timestamps
+        const actualTimestamp = resolveTimestamp(data, device);
         
         const card = document.createElement('div');
         card.className = `col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-3 animate-fade-in`;
@@ -2363,8 +2363,8 @@ function renderDeviceList() {
             latestValue = `${currentFlow.toFixed(1)} GPM`;
         }
         
-        // Use the ACTUAL timestamp from the data, not "just now"
-        const actualTimestamp = data?.timestamp || device.lastUpdated || new Date().toISOString();
+        // Use the ACTUAL timestamp from the data, accounting for uptime-based timestamps
+        const actualTimestamp = resolveTimestamp(data, device) || new Date().toISOString();
         
         const row = document.createElement('tr');
         row.className = 'animate-fade-in';
@@ -2442,7 +2442,7 @@ function handleHistoryError(error) {
     document.getElementById('historyMessageText').textContent = `Error loading history: ${error.message}`;
 }
 
-function updateDetailMetrics(data) {
+function updateDetailMetrics(data, deviceLastUpdated) {
     if (!data) return;
     
     // FIXED flow reading with fallback chain
@@ -2459,7 +2459,8 @@ function updateDetailMetrics(data) {
     document.getElementById('detailORPMetric').textContent = (data.measured_orp?.toFixed(0) ?? '--') + ' mV';
     const errorCode = data.errorCode || 0;
     document.getElementById('detailStatusMetric').textContent = ERROR_MESSAGES[errorCode] || `Error ${errorCode}`;
-    document.getElementById('detailLastUpdateMetric').textContent = formatDateTime(data.timestamp) || '--';
+    const actualTimestamp = resolveTimestamp(data, { lastUpdated: deviceLastUpdated });
+    document.getElementById('detailLastUpdateMetric').textContent = formatDateTime(actualTimestamp) || '--';
 }
 
 function populateAllDataTab(data) {
@@ -3710,6 +3711,19 @@ function clearAllCharts() {
     analyticsQualityChart = null;
     destroyChart(analyticsTimelineChart);
     analyticsTimelineChart = null;
+}
+
+function resolveTimestamp(entry, device) {
+    const ts = entry?.timestamp;
+    const base = entry?.lastUpdated || device?.lastUpdated;
+    if (typeof ts === 'string' && ts.startsWith('UPTIME:')) {
+        const uptimeSec = parseInt(ts.split(':')[1], 10);
+        if (!isNaN(uptimeSec)) {
+            const baseTime = base ? new Date(base).getTime() : Date.now();
+            return new Date(baseTime - uptimeSec * 1000).toISOString();
+        }
+    }
+    return ts || base;
 }
 
 function formatDateTime(dateString) {
