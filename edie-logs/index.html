@@ -95,13 +95,13 @@
 			.metric-label { color: #6c757d; font-size: 0.8rem; text-transform: uppercase; }
 			.last-update-time { font-size: 0.85rem; color: #6c757d; }
 
-			#loadingIndicator {
-				position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-				background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center;
-				align-items: center; z-index: 1060; color: white; flex-direction: column; gap: 1rem;
-				backdrop-filter: blur(5px);
-			}
-			#loadingIndicator .spinner-border { width: 3rem; height: 3rem; }
+                        #loadingIndicator {
+                                position: fixed; top: 1rem; right: 1rem;
+                                background-color: rgba(0, 0, 0, 0.6); padding: 0.5rem 1rem;
+                                border-radius: var(--border-radius); display: none; align-items: center; gap: 0.5rem;
+                                z-index: 1060; color: white; pointer-events: none;
+                        }
+                        #loadingIndicator .spinner-border { width: 1.5rem; height: 1.5rem; }
 
 			.timezone-info {
 				font-size: 0.9rem; padding: 0.75rem 1rem; border-radius: var(--border-radius);
@@ -551,7 +551,7 @@
         <div class="spinner-border" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
-        <div id="loadingMessage" class="mt-2 fs-5">Loading...</div>
+        <div id="loadingMessage" class="ms-2">Loading...</div>
     </div>
 
     <!-- Performance Badge -->
@@ -757,7 +757,6 @@
                         </table>
                     </div>
                 </div>
-                
                 <div class="col-12 message-area" id="overviewMessageArea" style="display: none;">
                     <p id="overviewMessageText" class="info-message">Loading devices...</p>
                 </div>
@@ -811,20 +810,7 @@
                                         <label for="previousDaysInput" class="form-label">Previous Days</label>
                                         <input type="number" id="previousDaysInput" class="form-control form-control-sm" value="0" min="0" max="365">
                                     </div>
-                                    <div class="col-md-2">
-                                        <label for="resolutionSelect" class="form-label">Resolution</label>
-                                        <select id="resolutionSelect" class="form-select form-select-sm">
-                                            <option value="auto">Auto</option>
-                                            <option value="raw" selected>Raw (1 min)</option>
-                                            <option value="15min">15 Minutes</option>
-                                            <option value="hourly">Hourly</option>
-                                            <option value="daily">Daily</option>
-                                        </select>
-                                    </div>
-				<div class="col-md-2">
-				    <label class="form-label">Status</label>
-				    <div id="resolutionStatus" class="badge bg-secondary">Ready</div>
-				</div>
+                                <!-- Resolution selector removed; defaulting to raw (1 min) -->
                                 </div>
                             </div>
                             <div class="col-12">
@@ -1321,21 +1307,6 @@ function getCachedResponse(key) {
     responseCache.delete(key);
     return null;
 }
-function updateResolutionStatus(resolution, isProcessing = false) {
-    const statusDiv = document.getElementById('resolutionStatus');
-    if (!statusDiv) return;
-    
-    if (isProcessing) {
-        statusDiv.className = 'badge bg-warning';
-        statusDiv.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
-    } else if (resolution === 'raw') {
-        statusDiv.className = 'badge bg-success';
-        statusDiv.innerHTML = '<i class="bi bi-lightning-fill"></i> Raw Data';
-    } else {
-        statusDiv.className = 'badge bg-info';
-        statusDiv.innerHTML = `<i class="bi bi-graph-up"></i> ${resolution.toUpperCase()}`;
-    }
-}
 function hideEmptyHistoryColumns() {
     const table = document.getElementById('historyTable');
     const tbody = table.querySelector('tbody');
@@ -1393,9 +1364,9 @@ function setCachedResponse(key, data) {
 // ENHANCED fetchWithAuth with caching
 const originalFetchWithAuth = fetchWithAuth;
 fetchWithAuth = async function(url, options = {}, keyOverride = null) {
-    // Only cache GET requests and device-related endpoints
-    if ((!options.method || options.method === 'GET') && 
-        (url.includes('/devices') || url.includes('/device/') || url.includes('/analytics'))) {
+    // Only cache GET requests for heavy endpoints
+    if ((!options.method || options.method === 'GET') &&
+        (url.includes('/device/') || url.includes('/analytics'))) {
         
         const cacheKey = getCacheKey(url, options);
         const cached = getCachedResponse(cacheKey);
@@ -1449,7 +1420,7 @@ let currentChartTimeRange = 2;
 let historyAllData = [];
 let historyCurrentPage = 0;
 let historyPageSize = 25;
-let historyResolution = 'auto';
+let historyResolution = 'raw';
 let detailFlowChart = null;
 let historyChart = null;
 let analyticsFlowChart = null;
@@ -1489,12 +1460,11 @@ if (USE_LOCAL_FILES) {
         }
     };
 
-	refreshDeviceList = async function(force = false) {
-		if (!apiKey) return;
-		showLoading("Fetching local devices.json...");
-		const resolution = document.getElementById('resolutionSelect')?.value || 'raw';
-		try {
-			const response = await fetchWithAuth(`${API_ENDPOINT}/devices.json`);
+refreshDeviceList = async function(force = false) {
+if (!apiKey) return;
+showLoading("Fetching local devices.json...");
+try {
+const response = await fetchWithAuth(`${API_ENDPOINT}/devices.json`);
 			if (!response.ok) throw new Error(`Failed to fetch devices.json`);
 			
 			const data = await response.json();
@@ -1511,16 +1481,16 @@ if (USE_LOCAL_FILES) {
 				return dev;
 			});
 			
-			applyFiltersAndSort();
-			renderDevices();
-			populateHistoryDeviceDropdown();
-			updateDashboardCounters();
-			if (force) showToastSuccess(`Refreshed ${data.devices.length} devices from local file`);
-		} catch (error) {
-			console.error("Error refreshing from local file:", error);
-			showToastError(error.message);
-		} finally {
-			hideLoading();
+                        applyFiltersAndSort();
+                        renderDevices();
+                        populateHistoryDeviceDropdown();
+                        updateDashboardCounters();
+                        if (force) showToastSuccess(`Refreshed ${data.devices.length} devices from local file`);
+                } catch (error) {
+                        console.error("Error refreshing from local file:", error);
+                        showToastError(error.message);
+                } finally {
+                        hideLoading();
 		}
 	};
     
@@ -1670,19 +1640,16 @@ runAnalytics = async function() {
             hideLoading();
         }
     };
-	fetchHistoricalData = async function() {
-		const resolution = document.getElementById('resolutionSelect').value;
-		updateResolutionStatus(resolution, true); // Show processing
-		const deviceId = document.getElementById('historyDeviceSelect').value;
-		if (!deviceId) return showToastError("Please select a device.");
+        fetchHistoricalData = async function() {
+                const deviceId = document.getElementById('historyDeviceSelect').value;
+                if (!deviceId) return showToastError("Please select a device.");
 		
 		resetHistoryView();
 		showLoading("Loading historical data from files...");
 
 		try {
-			const resolution = document.getElementById('resolutionSelect').value;
-			const isLastRunMode = document.getElementById('dateModeLastRun').checked;
-			let startDate, endDate;
+                        const isLastRunMode = document.getElementById('dateModeLastRun').checked;
+                        let startDate, endDate;
 
 			if (isLastRunMode) {
 				const previousDays = parseInt(document.getElementById('previousDaysInput').value, 10) || 0;
@@ -1714,13 +1681,8 @@ runAnalytics = async function() {
 				currentDate.setDate(currentDate.getDate() + 1);
 			}
 			
-			const results = await Promise.all(promises);
-			let allData = results.flat();
-			
-			// Apply resolution filtering BEFORE other filters
-			if (resolution !== 'auto' && resolution !== 'raw') {
-				allData = applyResolutionFilter(allData, resolution);
-			}
+                        const results = await Promise.all(promises);
+                        let allData = results.flat();
 			
 			// Apply alarm/warning filters
 			const filterAlarmsOnly = document.getElementById('filterAlarmsOnly').checked;
@@ -1732,8 +1694,8 @@ runAnalytics = async function() {
 				allData = allData.filter(d => d.errorCode && d.errorCode !== 0 && !CRITICAL_ERROR_CODES.includes(d.errorCode));
 			}
 			
-			historyAllData = allData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-			historyResolution = resolution;
+                        historyAllData = allData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                        historyResolution = 'raw';
 			
 			if (historyAllData.length > 0) {
 				historyCurrentPage = 0;
@@ -1741,46 +1703,18 @@ runAnalytics = async function() {
 				document.getElementById('historyMessageArea').style.display = 'none';
 				document.getElementById('exportCsvBtn').disabled = false;
 				document.getElementById('printHistoryBtn').disabled = false;
-				document.getElementById('historyRecordsInfo').textContent = `${historyAllData.length} records loaded (${resolution} resolution)`;
-				showToastSuccess(`Loaded ${historyAllData.length} historical records at ${resolution} resolution`);
+                                document.getElementById('historyRecordsInfo').textContent = `${historyAllData.length} records loaded`;
+                                showToastSuccess(`Loaded ${historyAllData.length} historical records`);
 			} else {
 				document.getElementById('historyMessageText').textContent = "No data found for the selected criteria.";
 				showToastError("No data found");
 			}
-		} catch (error) {
-			handleHistoryError(error);
-		} finally {
-			updateResolutionStatus(resolution, false);
-			hideLoading();
-		}
-	};
-
-	// Add this new function after fetchHistoricalData
-	function applyResolutionFilter(data, resolution) {
-		if (!data || data.length === 0) return data;
-		
-		let intervalMinutes;
-		switch (resolution) {
-			case '15min': intervalMinutes = 15; break;
-			case 'hourly': intervalMinutes = 60; break;
-			case 'daily': intervalMinutes = 1440; break;
-			default: return data; // raw or auto
-		}
-		
-		const intervalMs = intervalMinutes * 60 * 1000;
-		const filtered = [];
-		let lastTimestamp = 0;
-		
-		data.forEach(entry => {
-			const currentTimestamp = new Date(entry.timestamp).getTime();
-			if (currentTimestamp - lastTimestamp >= intervalMs) {
-				filtered.push(entry);
-				lastTimestamp = currentTimestamp;
-			}
-		});
-		
-		return filtered;
-	}
+                } catch (error) {
+                        handleHistoryError(error);
+                } finally {
+                        hideLoading();
+                }
+        };
 } else {
     // ===================================================================
     //  LIVE API MODE - Original functions for hitting the real API
@@ -1790,7 +1724,7 @@ runAnalytics = async function() {
     validateApiKeyAndProceed = async function(keyToValidate, isAutoLogin = false, remember = false) {
         showLoading(isAutoLogin ? "Authenticating..." : "Validating API Key...");
         try {
-            const response = await fetchWithAuth(`${API_ENDPOINT}/devices`, {}, keyToValidate);
+            const response = await fetchWithAuth(`${API_ENDPOINT}/validate`, {}, keyToValidate);
             if (response.ok) {
                 apiKey = keyToValidate;
                 if (!isAutoLogin) {
@@ -1799,7 +1733,8 @@ runAnalytics = async function() {
                 }
                 showMainDashboard();
                 startAutoRefresh();
-                await refreshDeviceList();
+                refreshDeviceList().finally(hideLoading);
+                return;
             } else if (response.status === 401) {
                 const errorMsg = isAutoLogin ? "Stored API Key is invalid. Please login again." : "Invalid API Key. Please check and try again.";
                 showAuthError(errorMsg);
@@ -1813,16 +1748,14 @@ runAnalytics = async function() {
             showAuthError("Connection error. Could not reach the server.");
             apiKey = '';
         } finally {
-            hideLoading();
+            if (!apiKey) hideLoading();
         }
     };
 
 refreshDeviceList = async function(force = false) {
-	    if (!apiKey) return;
-	    showLoading("Fetching all devices..."); // Updated message
-    	const resolution = document.getElementById('resolutionSelect')?.value || 'raw';
-
-	    try {
+    if (!apiKey) return;
+    showLoading("Fetching devices...");
+    try {
 	        // AUTO-MIGRATE CHECK (only on first load)
 	        if (!window.migrationChecked) {
 	            window.migrationChecked = true;
@@ -1833,9 +1766,7 @@ refreshDeviceList = async function(force = false) {
 	            }
 	        }
 	        
-            // *** THIS IS THE CORRECTED LINE ***
 	        const response = await fetchWithAuth(`${API_ENDPOINT}/devices?include=all`);
-	        
 	        if (!response.ok) {
 	            if (response.status === 401) {
 	                showToastError("Authentication failed. Please log in again.");
@@ -1851,25 +1782,33 @@ refreshDeviceList = async function(force = false) {
 	            
 	            allDevices = data.devices;
 	            allDevices.forEach(dev => {
-	                dev._status = dev.status || getDeviceStatus(dev);
-	                dev._lastUpdateTimestamp = dev.lastUpdated;
-	            });
-	            applyFiltersAndSort();
-	            renderDevices();
-	            populateHistoryDeviceDropdown();
-	            updateDashboardCounters();
-	            if (force) showToastSuccess(`Refreshed ${data.devices.length} devices.`);
-	        } else {
-	            throw new Error("Invalid data structure received");
-	        }
-	    } catch (error) {
-	        console.error("Error refreshing device list:", error);
+                        dev._status = dev.status || getDeviceStatus(dev);
+                        dev._lastUpdateTimestamp = dev.lastUpdated;
+                    });
+                    if (selectedDeviceIDs) {
+                        const fetchedIds = allDevices.map(d => d.deviceId);
+                        const missing = fetchedIds.filter(id => !selectedDeviceIDs.includes(id));
+                        if (missing.length > 0) {
+                            selectedDeviceIDs = [...selectedDeviceIDs, ...missing];
+                            localStorage.setItem(SELECTED_DEVICES_STORAGE_KEY, JSON.stringify(selectedDeviceIDs));
+                        }
+                    }
+                    applyFiltersAndSort();
+                    renderDevices();
+                    populateHistoryDeviceDropdown();
+                    updateDashboardCounters();
+                    if (force) showToastSuccess(`Refreshed ${data.devices.length} devices.`);
+                } else {
+                    throw new Error("Invalid data structure received");
+                }
+            } catch (error) {
+                console.error("Error refreshing device list:", error);
 	        showToastError(`Error fetching devices: ${error.message}`);
-	    } finally {
-			updateResolutionStatus(resolution, false);
-	        hideLoading();
-	    }
-	};
+            } finally {
+                hideLoading();
+            }
+        };
+
 	showDeviceDetails = async function(deviceId) {
 	    if (!apiKey) return;
 	    detailDeviceId = deviceId;
@@ -1878,11 +1817,8 @@ refreshDeviceList = async function(force = false) {
 	    deviceDetailModal.show();
 	    showLoading(`Loading details for ${deviceId}...`);
 	    
-	    // FIXED: Define resolution variable for this function
-	    const resolution = 'raw'; // Default resolution for device details
-	    
-	    try {
-	        const latestResponse = await fetchWithAuth(`${API_ENDPOINT}/device/${deviceId}/latest`);
+            try {
+                const latestResponse = await fetchWithAuth(`${API_ENDPOINT}/device/${deviceId}/latest`);
 	        if (latestResponse.ok) {
 	            const latestResult = await latestResponse.json();
 	            if (latestResult.success && latestResult.data) {
@@ -1899,11 +1835,10 @@ refreshDeviceList = async function(force = false) {
 	        await fetchDetailChartData(deviceId);
 	    } catch (error) {
 	        handleDetailError(error, deviceId);
-	    } finally {
-	        updateResolutionStatus(resolution, false); // Now resolution is properly defined
-	        hideLoading();
-	    }
-	};
+            } finally {
+                hideLoading();
+            }
+        };
 
 fetchDetailChartData = async function(deviceId) {
     const endDate = new Date();
@@ -1932,8 +1867,6 @@ fetchDetailChartData = async function(deviceId) {
 };
     
     fetchHistoricalData = async function() {
-		const resolution = document.getElementById('resolutionSelect').value;
-		updateResolutionStatus(resolution, true); // Show processing
         const deviceId = document.getElementById('historyDeviceSelect').value;
         if (!deviceId) return showToastError("Please select a device.");
         
@@ -1941,9 +1874,8 @@ fetchDetailChartData = async function(deviceId) {
         showLoading("Fetching historical data...");
 
         try {
-            const resolution = document.getElementById('resolutionSelect').value;
             const isLastRunMode = document.getElementById('dateModeLastRun').checked;
-            let url = `${API_ENDPOINT}/analytics?deviceId=${deviceId}&resolution=${resolution}`;
+            let url = `${API_ENDPOINT}/analytics?deviceId=${deviceId}&resolution=raw`;
             
             if (isLastRunMode) {
                 url += `&lastRunDay=true&previousDays=${document.getElementById('previousDaysInput').value || '0'}`;
@@ -1974,7 +1906,7 @@ fetchDetailChartData = async function(deviceId) {
                 document.getElementById('historyMessageArea').style.display = 'none';
                 document.getElementById('exportCsvBtn').disabled = false;
                 document.getElementById('printHistoryBtn').disabled = false;
-                document.getElementById('historyRecordsInfo').textContent = `${historyAllData.length} records loaded (${historyResolution} resolution)`;
+                document.getElementById('historyRecordsInfo').textContent = `${historyAllData.length} records loaded`;
                 showToastSuccess(`Found ${historyAllData.length} records`);
             } else {
                 document.getElementById('historyMessageText').textContent = "No data found for the selected criteria.";
@@ -1983,8 +1915,7 @@ fetchDetailChartData = async function(deviceId) {
         } catch (error) {
             handleHistoryError(error);
         } finally {
-            updateResolutionStatus(resolution, false);
-			hideLoading();
+                        hideLoading();
         }
     };
 
@@ -2136,9 +2067,6 @@ function setupEventListeners() {
         detailAllData = [];
         detailDeviceId = null;
     });
-	document.getElementById('resolutionSelect').addEventListener('change', (e) => {
-	    updateResolutionStatus(e.target.value);
-	});
 }
 
 function loadStateFromStorage() {
@@ -2271,8 +2199,13 @@ function hidePerformanceBadge() {
 
 async function fetchWithAuth(url, options = {}, keyOverride = null) {
     const keyToUse = keyOverride || apiKey;
-    const headers = { ...options.headers, 'X-API-KEY': keyToUse };
-    return fetch(url, { ...options, headers });
+    const headers = { ...(options.headers || {}), 'X-API-KEY': keyToUse };
+    try {
+        return await fetch(url, { ...options, headers, mode: 'cors', cache: 'no-store' });
+    } catch (error) {
+        console.error('Network request failed:', error);
+        throw error;
+    }
 }
 
 function getDeviceStatus(device) {
@@ -2804,6 +2737,7 @@ function createHistoryChart() {
     destroyChart(historyChart);
     const canvas = document.getElementById('historyChart');
     if (!canvas || !historyAllData || historyAllData.length < 2) return;
+    const isAggregated = historyResolution !== 'raw';
     
     // Add toggle controls for history chart
     const chartContainer = canvas.parentElement;
@@ -2813,7 +2747,6 @@ function createHistoryChart() {
         controlsContainer.className = 'history-chart-controls';
         
         // Different labels based on resolution
-        const isAggregated = historyResolution !== 'raw' && historyResolution !== 'auto';
         const flowLabel = isAggregated ? 'Total Water (Gal)' : 'Flow Rate (GPM)';
         const clo2Label = isAggregated ? 'Avg CLO2 (PPM)' : 'CLO2 (PPM)';
         const phLabel = isAggregated ? 'Avg pH' : 'pH';
@@ -2845,7 +2778,7 @@ function createHistoryChart() {
         historyAllData;
     
     const datasets = [];
-    const isAggregated = historyResolution !== 'raw' && historyResolution !== 'auto';
+
     
     // Process data based on resolution
     let flowData, clo2Data, phData, orpData;
@@ -2972,7 +2905,7 @@ function createHistoryChart() {
             plugins: { 
                 title: { 
                     display: true, 
-                    text: `Historical Data (${historyResolution.toUpperCase()} resolution)${isAggregated ? ' - Totalized/Averaged' : ''}`
+                    text: `Historical Data${isAggregated ? ' - Totalized/Averaged' : ''}`
                 },
                 legend: { 
                     display: true, 
@@ -3193,7 +3126,7 @@ function updateHistoryTable() {
     if (historyAllData.length === 0) return;
     
     // Update table headers based on resolution
-    const isAggregated = historyResolution !== 'raw' && historyResolution !== 'auto';
+    const isAggregated = historyResolution !== 'raw';
     const thead = document.querySelector('#historyTable thead tr');
     thead.innerHTML = `
         <th>Timestamp</th>
@@ -3321,8 +3254,8 @@ function changeHistoryPageSize() {
 function exportHistoryToCSV() {
     const deviceId = document.getElementById('historyDeviceSelect').value;
     if (!deviceId || !historyAllData || historyAllData.length === 0) return showToastError("No data to export");
-    const headers = ['Timestamp', 'Flow_GPM', 'Setpoint_PPM', 'Measured_CLO2_PPM', 'Measured_pH', 'Status_Message', 'Error_Code', 'Resolution'];
-    const rows = historyAllData.map(e => [e.timestamp,e.flowRate??e.flow?.actual??e.flow?.avg??'',e.ppm_setpoint??e.ppm?.avg??'',e.measured_clo2??e.clo2?.avg??'',e.measured_ph??e.pH?.avg??'',ERROR_MESSAGES[e.errorCode||0]||`Error ${e.errorCode||0}`,e.errorCode||0,e.resolution||historyResolution||'raw']);
+    const headers = ['Timestamp', 'Flow_GPM', 'Setpoint_PPM', 'Measured_CLO2_PPM', 'Measured_pH', 'Status_Message', 'Error_Code'];
+    const rows = historyAllData.map(e => [e.timestamp,e.flowRate??e.flow?.actual??e.flow?.avg??'',e.ppm_setpoint??e.ppm?.avg??'',e.measured_clo2??e.clo2?.avg??'',e.measured_ph??e.pH?.avg??'',ERROR_MESSAGES[e.errorCode||0]||`Error ${e.errorCode||0}`,e.errorCode||0]);
     const csvContent = headers.join(',') + '\r\n' + rows.map(r => r.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
