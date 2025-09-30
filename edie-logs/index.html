@@ -583,32 +583,103 @@
       </div>
     </div>
 
-    <!-- === Authentication Screen (API Key) === -->
+    <!-- === Authentication Screen === -->
     <div id="authScreen" class="container auth-container">
         <div class="card shadow-sm">
             <div class="card-header">
-                <h4 class="mb-0"><i class="bi bi-key-fill me-2"></i>EDIE Dashboard Login</h4>
+                <h4 class="mb-0"><i class="bi bi-key-fill me-2"></i>EDIE Dashboard</h4>
             </div>
             <div class="card-body p-4">
-                <div class="mb-3">
-                    <label for="apiKeyInput" class="form-label">API Key</label>
-                    <div class="input-group">
-                        <input type="password" class="form-control" id="apiKeyInput" placeholder="Enter your API key" required>
-                        <button class="btn btn-outline-secondary" type="button" id="toggleApiKeyVisibilityBtn" title="Show/Hide API Key">
-                            <i class="bi bi-eye-slash"></i>
+                <!-- Auth Tabs -->
+                <ul class="nav nav-tabs mb-3" id="authTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="user-login-tab" data-bs-toggle="tab" data-bs-target="#user-login" type="button" role="tab">
+                            <i class="bi bi-person-fill me-1"></i>User Login
                         </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="user-register-tab" data-bs-toggle="tab" data-bs-target="#user-register" type="button" role="tab">
+                            <i class="bi bi-person-plus-fill me-1"></i>Register
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="api-key-tab" data-bs-toggle="tab" data-bs-target="#api-key" type="button" role="tab">
+                            <i class="bi bi-key-fill me-1"></i>API Key
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="authTabContent">
+                    <!-- User Login Tab -->
+                    <div class="tab-pane fade show active" id="user-login" role="tabpanel">
+                        <div class="mb-3">
+                            <label for="userLoginEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="userLoginEmail" placeholder="your@email.com" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userLoginPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="userLoginPassword" placeholder="Enter password" required>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="rememberUserCheckbox">
+                            <label class="form-check-label" for="rememberUserCheckbox">
+                                Remember me
+                            </label>
+                        </div>
+                        <button id="userLoginBtn" class="btn btn-primary w-100">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                        </button>
+                        <div id="userLoginError" class="alert alert-danger mt-3 p-2 text-center d-none" role="alert"></div>
+                    </div>
+
+                    <!-- User Registration Tab -->
+                    <div class="tab-pane fade" id="user-register" role="tabpanel">
+                        <div class="mb-3">
+                            <label for="userRegisterName" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="userRegisterName" placeholder="John Doe" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userRegisterEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="userRegisterEmail" placeholder="your@email.com" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userRegisterPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="userRegisterPassword" placeholder="Min. 8 characters" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userRegisterPasswordConfirm" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="userRegisterPasswordConfirm" placeholder="Re-enter password" required>
+                        </div>
+                        <button id="userRegisterBtn" class="btn btn-primary w-100">
+                            <i class="bi bi-person-plus me-2"></i>Create Account
+                        </button>
+                        <div id="userRegisterError" class="alert alert-danger mt-3 p-2 text-center d-none" role="alert"></div>
+                        <div id="userRegisterSuccess" class="alert alert-success mt-3 p-2 text-center d-none" role="alert"></div>
+                    </div>
+
+                    <!-- API Key Tab -->
+                    <div class="tab-pane fade" id="api-key" role="tabpanel">
+                        <div class="mb-3">
+                            <label for="apiKeyInput" class="form-label">API Key</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="apiKeyInput" placeholder="Enter your API key" required>
+                                <button class="btn btn-outline-secondary" type="button" id="toggleApiKeyVisibilityBtn" title="Show/Hide API Key">
+                                    <i class="bi bi-eye-slash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="rememberKeyCheckbox">
+                            <label class="form-check-label" for="rememberKeyCheckbox">
+                                Remember API key
+                            </label>
+                        </div>
+                        <button id="loginBtn" class="btn btn-primary w-100">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                        </button>
+                        <div id="authError" class="alert alert-danger mt-3 p-2 text-center d-none" role="alert"></div>
                     </div>
                 </div>
-                <div class="form-check mb-3">
-                    <input class="form-check-input" type="checkbox" id="rememberKeyCheckbox">
-                    <label class="form-check-label" for="rememberKeyCheckbox">
-                        Remember API key
-                    </label>
-                </div>
-                <button id="loginBtn" class="btn btn-primary w-100">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Login
-                </button>
-                <div id="authError" class="alert alert-danger mt-3 p-2 text-center d-none" role="alert"></div>
             </div>
         </div>
     </div>
@@ -643,6 +714,9 @@
                         </li>
                     </ul>
                     <div class="d-flex align-items-center">
+                        <button id="claimDeviceBtn" class="btn btn-sm btn-outline-light me-2" title="Claim a New Device">
+                            <i class="bi bi-plus-circle me-1"></i><span class="d-none d-md-inline">Claim Device</span>
+                        </button>
                         <button id="selectDevicesBtn" class="btn btn-sm btn-outline-light me-2" title="Select Devices to Display">
                             <i class="bi bi-list-check me-1"></i><span class="d-none d-md-inline">Devices</span>
                         </button>
@@ -1273,6 +1347,34 @@
         </div>
     </div>
 
+    <!-- Claim Device Modal -->
+    <div class="modal fade" id="claimDeviceModal" tabindex="-1" aria-labelledby="claimDeviceModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="claimDeviceModalLabel"><i class="bi bi-plus-circle me-2"></i>Claim New Device</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">Enter the 12-character registration key from your EDIE device to add it to your account.</p>
+                    <div class="mb-3">
+                        <label for="claimDeviceKey" class="form-label">Registration Key</label>
+                        <input type="text" class="form-control text-uppercase" id="claimDeviceKey" placeholder="XXXXXXXXXXXX" maxlength="12" style="font-family: monospace; letter-spacing: 2px;">
+                        <div class="form-text">Find this key on your device's LCD or web interface.</div>
+                    </div>
+                    <div id="claimDeviceError" class="alert alert-danger p-2 d-none" role="alert"></div>
+                    <div id="claimDeviceSuccess" class="alert alert-success p-2 d-none" role="alert"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submitClaimDeviceBtn">
+                        <i class="bi bi-plus-circle me-1"></i>Claim Device
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -1427,6 +1529,7 @@ let analyticsFlowChart = null;
 let analyticsQualityChart = null;
 let deviceDetailModal = null;
 let deviceSelectModal = null;
+let claimDeviceModal = null;
 let errorToast = null;
 let successToast = null;
 
@@ -1965,7 +2068,14 @@ function initializeApp() {
     loadStateFromStorage();
     initializeDateInputs();
 
-    if (apiKey) {
+    // Check for JWT token first
+    const storedJWT = localStorage.getItem('jwt_token');
+    if (storedJWT) {
+        apiKey = storedJWT;
+        document.getElementById('authScreen').classList.add('d-none');
+        document.getElementById('mainDashboard').classList.remove('d-none');
+        refreshDeviceList();
+    } else if (apiKey) {
         document.getElementById('apiKeyInput').value = apiKey;
         document.getElementById('rememberKeyCheckbox').checked = true;
         validateApiKeyAndProceed(apiKey, true);
@@ -1990,6 +2100,7 @@ function initializeTimezone() {
 function initializeModalsAndToast() {
     deviceDetailModal = new bootstrap.Modal(document.getElementById('deviceDetailModal'));
     deviceSelectModal = new bootstrap.Modal(document.getElementById('deviceSelectModal'));
+    claimDeviceModal = new bootstrap.Modal(document.getElementById('claimDeviceModal'));
     errorToast = new bootstrap.Toast(document.getElementById('errorToast'));
     successToast = new bootstrap.Toast(document.getElementById('successToast'));
 }
@@ -2017,17 +2128,26 @@ function initializeChartDefaults() {
 }
 
 function setupEventListeners() {
+    // API Key login
     document.getElementById('loginBtn').addEventListener('click', handleLogin);
     document.getElementById('apiKeyInput').addEventListener('keypress', (e) => e.key === 'Enter' && handleLogin());
     document.getElementById('toggleApiKeyVisibilityBtn').addEventListener('click', toggleApiKeyVisibility);
+
+    // User authentication
+    document.getElementById('userLoginBtn').addEventListener('click', handleUserLogin);
+    document.getElementById('userLoginPassword').addEventListener('keypress', (e) => e.key === 'Enter' && handleUserLogin());
+    document.getElementById('userRegisterBtn').addEventListener('click', handleUserRegister);
+
     document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-    
+
     document.getElementById('navOverviewLink').addEventListener('click', showOverviewSection);
     document.getElementById('navHistoryLink').addEventListener('click', showHistorySection);
     document.getElementById('navAnalyticsLink').addEventListener('click', showAnalyticsSection);
-    
+
     document.getElementById('refreshBtn').addEventListener('click', () => refreshDeviceList(true));
     document.getElementById('selectDevicesBtn').addEventListener('click', openDeviceSelectionModal);
+    document.getElementById('claimDeviceBtn').addEventListener('click', openClaimDeviceModal);
+    document.getElementById('submitClaimDeviceBtn').addEventListener('click', handleClaimDevice);
     document.getElementById('searchDevicesInput').addEventListener('input', handleSearchInput);
     document.getElementById('viewGridBtn').addEventListener('change', () => setViewMode('grid'));
     document.getElementById('viewListBtn').addEventListener('change', () => setViewMode('list'));
@@ -2089,12 +2209,110 @@ function handleLogin() {
     validateApiKeyAndProceed(inputKey, false, remember);
 }
 
+async function handleUserLogin() {
+    const email = document.getElementById('userLoginEmail').value.trim();
+    const password = document.getElementById('userLoginPassword').value;
+    const remember = document.getElementById('rememberUserCheckbox').checked;
+
+    if (!email || !password) {
+        return showUserLoginError("Please enter email and password.");
+    }
+
+    try {
+        const response = await fetch(`${API_ENDPOINT}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            // Store JWT token
+            apiKey = data.token;
+            if (remember) {
+                localStorage.setItem('jwt_token', data.token);
+                localStorage.setItem('user_email', data.user.email);
+            }
+
+            // Hide auth screen and show dashboard
+            hideAuthError('userLoginError');
+            document.getElementById('authScreen').classList.add('d-none');
+            document.getElementById('mainDashboard').classList.remove('d-none');
+
+            // Load devices
+            refreshDeviceList();
+        } else {
+            showUserLoginError(data.message || 'Login failed');
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        showUserLoginError('Network error. Please try again.');
+    }
+}
+
+async function handleUserRegister() {
+    const name = document.getElementById('userRegisterName').value.trim();
+    const email = document.getElementById('userRegisterEmail').value.trim();
+    const password = document.getElementById('userRegisterPassword').value;
+    const passwordConfirm = document.getElementById('userRegisterPasswordConfirm').value;
+
+    hideAuthError('userRegisterError');
+    hideAuthError('userRegisterSuccess');
+
+    if (!name || !email || !password) {
+        return showUserRegisterError("Please fill in all fields.");
+    }
+
+    if (password !== passwordConfirm) {
+        return showUserRegisterError("Passwords do not match.");
+    }
+
+    if (password.length < 8) {
+        return showUserRegisterError("Password must be at least 8 characters.");
+    }
+
+    try {
+        const response = await fetch(`${API_ENDPOINT}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            document.getElementById('userRegisterSuccess').textContent = 'Account created! You can now login.';
+            document.getElementById('userRegisterSuccess').classList.remove('d-none');
+
+            // Clear form
+            document.getElementById('userRegisterName').value = '';
+            document.getElementById('userRegisterEmail').value = '';
+            document.getElementById('userRegisterPassword').value = '';
+            document.getElementById('userRegisterPasswordConfirm').value = '';
+
+            // Switch to login tab after 2 seconds
+            setTimeout(() => {
+                document.getElementById('user-login-tab').click();
+                document.getElementById('userLoginEmail').value = email;
+            }, 2000);
+        } else {
+            showUserRegisterError(data.message || 'Registration failed');
+        }
+    } catch (error) {
+        console.error('Registration error:', error);
+        showUserRegisterError('Network error. Please try again.');
+    }
+}
+
 function handleLogout() {
     apiKey = '';
     allDevices = [];
     selectedDeviceIDs = null;
     localStorage.removeItem(API_KEY_STORAGE_KEY);
     localStorage.removeItem(SELECTED_DEVICES_STORAGE_KEY);
+    localStorage.removeItem('jwt_token');
+    localStorage.removeItem('user_email');
     document.getElementById('apiKeyInput').value = DEFAULT_API_KEY;
     document.getElementById('rememberKeyCheckbox').checked = false;
     stopAutoRefresh();
@@ -2108,6 +2326,23 @@ function showAuthError(message) {
     const errorDiv = document.getElementById('authError');
     errorDiv.textContent = message;
     errorDiv.classList.remove('d-none');
+}
+
+function showUserLoginError(message) {
+    const errorDiv = document.getElementById('userLoginError');
+    errorDiv.textContent = message;
+    errorDiv.classList.remove('d-none');
+}
+
+function showUserRegisterError(message) {
+    const errorDiv = document.getElementById('userRegisterError');
+    errorDiv.textContent = message;
+    errorDiv.classList.remove('d-none');
+}
+
+function hideAuthError(id) {
+    const errorDiv = document.getElementById(id);
+    if (errorDiv) errorDiv.classList.add('d-none');
 }
 
 function toggleApiKeyVisibility() {
@@ -3675,6 +3910,73 @@ function saveDeviceSelection() {
     renderDevices();
     updateDashboardCounters();
     showToastSuccess('Device selection updated');
+}
+
+// Claim Device Modal Functions
+function openClaimDeviceModal() {
+    // Only show for JWT-authenticated users (not API key users)
+    const storedJWT = localStorage.getItem('jwt_token');
+    if (!storedJWT) {
+        showToastError('Device claiming is only available for user accounts. Please login with a user account.');
+        return;
+    }
+
+    hideAuthError('claimDeviceError');
+    hideAuthError('claimDeviceSuccess');
+    document.getElementById('claimDeviceKey').value = '';
+    claimDeviceModal.show();
+}
+
+async function handleClaimDevice() {
+    const registrationKey = document.getElementById('claimDeviceKey').value.trim().toUpperCase();
+
+    hideAuthError('claimDeviceError');
+    hideAuthError('claimDeviceSuccess');
+
+    if (!registrationKey || registrationKey.length !== 12) {
+        document.getElementById('claimDeviceError').textContent = 'Please enter a valid 12-character registration key.';
+        document.getElementById('claimDeviceError').classList.remove('d-none');
+        return;
+    }
+
+    const storedJWT = localStorage.getItem('jwt_token');
+    if (!storedJWT) {
+        document.getElementById('claimDeviceError').textContent = 'You must be logged in to claim a device.';
+        document.getElementById('claimDeviceError').classList.remove('d-none');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_ENDPOINT}/devices/claim`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${storedJWT}`
+            },
+            body: JSON.stringify({ registrationKey })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            document.getElementById('claimDeviceSuccess').textContent = `Device ${data.deviceId} claimed successfully!`;
+            document.getElementById('claimDeviceSuccess').classList.remove('d-none');
+            document.getElementById('claimDeviceKey').value = '';
+
+            // Refresh device list after 2 seconds
+            setTimeout(() => {
+                claimDeviceModal.hide();
+                refreshDeviceList();
+            }, 2000);
+        } else {
+            document.getElementById('claimDeviceError').textContent = data.message || 'Failed to claim device.';
+            document.getElementById('claimDeviceError').classList.remove('d-none');
+        }
+    } catch (error) {
+        console.error('Claim device error:', error);
+        document.getElementById('claimDeviceError').textContent = 'Network error. Please try again.';
+        document.getElementById('claimDeviceError').classList.remove('d-none');
+    }
 }
 
 function startAutoRefresh() {
